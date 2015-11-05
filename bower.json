@@ -1,0 +1,22 @@
+{
+  "name": "looks-and-logic",
+  "description": "Looks & Logic website",
+  "main": "index.js",
+  "authors": [
+    "Jon Higgins"
+  ],
+  "license": "BSD-2-Clause",
+  "moduleType": [
+    "node"
+  ],
+  "homepage": "",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {}
+}
