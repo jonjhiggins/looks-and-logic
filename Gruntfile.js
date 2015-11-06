@@ -27,7 +27,7 @@ module.exports = function(grunt) {
         },
       },
       html: {
-        files: ['src/*.html'],
+        files: ['src/*.html', 'src/modules/*/*.html'],
         tasks: ['includes'],
       },
       bower: {

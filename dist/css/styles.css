@@ -570,6 +570,18 @@ textarea {
   h3 {
     page-break-after: avoid; } }
 
+/*
+ * Layout
+ */
+/* ==========================================================================
+    Variables
+    ========================================================================== */
+/* ==========================================================================
+   Fonts
+   ========================================================================== */
+.container {
+  padding: 3rem; }
+
 /* ==========================================================================
    Modules
    ========================================================================== */
@@ -583,7 +595,55 @@ textarea {
    Menu button
    ========================================================================== */
 .menu__button {
-  width: 3.125rem;
-  height: 3.125rem; }
+  width: 1.75rem;
+  height: 1.5rem;
+  position: relative; }
+
+.menu__button__icon {
+  margin: 0 auto;
+  position: relative;
+  top: 0.625rem;
+  transition-duration: 0s;
+  transition-delay: 0.2s; }
+
+.menu__button__icon,
+.menu__button__icon:before,
+.menu__button__icon:after {
+  width: 1.75rem;
+  height: 0.25rem;
+  background-color: #000;
+  display: block; }
+
+.menu__button__icon:before,
+.menu__button__icon:after {
+  position: absolute;
+  content: ''; }
+
+.menu__button__icon:before {
+  margin-top: 0.625rem; }
+
+.menu__button__icon:after {
+  margin-top: -0.625rem; }
+
+.menu__button:hover .menu__button__icon {
+  background-color: transparent;
+  transition-delay: 0.2s; }
+
+.menu__button__icon:before,
+.menu__button__icon:after {
+  transition-property: margin, transform;
+  transition-duration: 0.2s;
+  transition-delay: 0.2s, 0s; }
+
+.menu__button:hover .menu__button__icon:before,
+.menu__button:hover .menu__button__icon:after {
+  margin-top: 0;
+  transition-delay: 0s, 0.2s; }
+
+.menu__button:hover .menu__button__icon:before {
+  transform: rotate(45deg); }
+
+.menu__button:hover .menu__button__icon:after {
+  transform: rotate(-45deg); }
 
 /*# sourceMappingURL=styles.css.map */

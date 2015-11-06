@@ -6,7 +6,9 @@
     Variables
     ========================================================================== */
 
-    $widthMenuButton: 50;
+    $widthMenuButton: 28;
+    $heightMenuButton: 24;
+    $heightMenuButtonIconLine: 4;
 
 
 /* ==========================================================================
@@ -15,5 +17,60 @@
 
 .menu__button {
   width: rem($widthMenuButton);
-  height: rem($widthMenuButton);
+  height: rem($heightMenuButton);
+	position: relative;
+}
+
+.menu__button__icon {
+	margin: 0 auto;
+	position: relative;
+	top: rem(($heightMenuButton / 2) - ($heightMenuButtonIconLine / 2));
+  transition-duration: 0s;
+	transition-delay: 0.2s;
+}
+
+.menu__button__icon,
+.menu__button__icon:before,
+.menu__button__icon:after {
+	width: rem($widthMenuButton);
+	height: rem($heightMenuButtonIconLine);
+	background-color: #000;
+	display: block;
+}
+
+.menu__button__icon:before,
+.menu__button__icon:after {
+	position: absolute;
+	content: '';
+}
+
+.menu__button__icon:before {
+	margin-top: rem(($heightMenuButton / 2) - ($heightMenuButtonIconLine / 2));
+}
+.menu__button__icon:after {
+	margin-top: rem((-$heightMenuButton / 2) - (-$heightMenuButtonIconLine / 2));
+}
+
+.menu__button:hover .menu__button__icon {
+	background-color: rgba(0,0,0,0.0);
+	transition-delay: 0.2s;
+}
+.menu__button__icon:before,
+.menu__button__icon:after {
+	transition-property: margin, transform;
+	transition-duration: 0.2s;
+	transition-delay: 0.2s, 0s;
+}
+.menu__button:hover .menu__button__icon:before,
+.menu__button:hover .menu__button__icon:after {
+	margin-top: 0;
+	transition-delay: 0s, 0.2s;
+}
+
+.menu__button:hover .menu__button__icon:before {
+	transform: rotate(45deg);
+}
+
+.menu__button:hover .menu__button__icon:after {
+	transform: rotate(-45deg);
 }

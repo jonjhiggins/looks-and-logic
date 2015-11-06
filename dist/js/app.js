@@ -9232,7 +9232,6 @@ var Menu = module.exports = function() {
   var $body = $('body'),
       $button = $('#menu__button');
 
-  $button.css('border', '1px solid red');
 };
 
 },{"jquery":1}]},{},[2]);
