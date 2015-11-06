@@ -1,0 +1,23 @@
+/*
+ * Section module
+ */
+
+/* ==========================================================================
+   Outer layout
+   ========================================================================== */
+
+.section {
+  height: 100vh;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:nth-child(odd) {
+    background-color: #efefef;
+  }
+}
+
+.section__content {
+  flex: none;
+}
