@@ -33,6 +33,10 @@ module.exports = function(grunt) {
       bower: {
         files: ['/bower_components/*'],
         tasks: ['wiredep']
+      },
+      images: {
+        files: ['src/img/*.{jpg,gif,svg,png}'],
+        tasks: ['wiredep']
       }
     },
 
@@ -67,8 +71,8 @@ module.exports = function(grunt) {
       },
       images: {
         files: [
-          {expand: true, cwd: 'src', src: ['*.png', '*.jpg', '*.gif'], dest: 'dist'},
-          {expand: true, cwd: 'src/img', src: ['*.png', '*.jpg', '*.gif'], dest: 'dist/img'},
+          {expand: true, cwd: 'src', src: ['*.{jpg,gif,svg,png}'], dest: 'dist'},
+          {expand: true, cwd: 'src/img', src: ['*.{jpg,gif,svg,png}'], dest: 'dist/img'},
         ],
       },
       jsVendor: {

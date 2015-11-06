@@ -1,22 +1,22 @@
-
 /*
- * Layout
+ * ShareButton module
  */
 
  /* ==========================================================================
     Variables
     ========================================================================== */
 
-    $paddingContainer: 48;
+    $sizeMenuButton: 24;
 
 /* ==========================================================================
-   Containers
+    Button
    ========================================================================== */
 
-   .container {
-     margin: rem($paddingContainer);
-   }
-
-   .container--relative {
-     position: relative;
+   .shareButton__icon {
+     display: block;
+     width: rem($sizeMenuButton);
+     height: rem($sizeMenuButton);
+     position: absolute;
+     top: 0;
+     right: 0;
    }
