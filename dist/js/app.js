@@ -9213,11 +9213,36 @@ return jQuery;
 },{}],2:[function(require,module,exports){
 /** @module main */
 
-var Menu = require('./../modules/menu/menu');
+var Menu = require('./../modules/menu/menu'),
+    ArrowDownButton = require('./../modules/ArrowDownButton/ArrowDownButton');
 
-var menu = new Menu();
+var menu = new Menu(),
+    arrowDownButton = new ArrowDownButton();
 
-},{"./../modules/menu/menu":3}],3:[function(require,module,exports){
+},{"./../modules/ArrowDownButton/ArrowDownButton":3,"./../modules/menu/menu":4}],3:[function(require,module,exports){
+/** @module ArrowDownButton */
+
+var $ = require('jquery');
+
+/**
+ * @constructor ArrowDownButton
+ */
+
+var ArrowDownButton = module.exports = function() {
+  'use strict';
+
+  var $arrowDownButton = $('#arrowDownButton');
+
+  $arrowDownButton.on('click', arrowDownClick);
+};
+
+var arrowDownClick = function (e) {
+  e.preventDefault();
+  var hash = $(this).prop('hash');
+  $('html, body').animate({scrollTop: $(hash).offset().top }, 400);
+};
+
+},{"jquery":1}],4:[function(require,module,exports){
 /** @module Menu */
 
 var $ = require('jquery');

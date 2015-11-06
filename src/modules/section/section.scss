@@ -12,6 +12,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
 
   &:nth-child(odd) {
     background-color: #efefef;

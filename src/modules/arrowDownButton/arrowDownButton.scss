@@ -1,0 +1,17 @@
+/*
+ * arrowDownButton module
+ */
+
+/* ==========================================================================
+
+   ========================================================================== */
+
+.arrowDownButton__icon {
+  width: rem(24);
+  height: rem(24);
+  display: block;
+  position: absolute;
+  bottom: rem($paddingContainer / 2);
+  left: 50%;
+  margin-left: rem(-12);
+}
