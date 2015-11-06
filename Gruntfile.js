@@ -21,7 +21,7 @@ module.exports = function(grunt) {
       },
       scss: {
         files: ['src/scss/*.scss', 'src/modules/*/*.scss'],
-        tasks: ['sass'],
+        tasks: ['sass', 'postcss'],
         options: {
           spawn: false,
         },
@@ -115,6 +115,24 @@ module.exports = function(grunt) {
           silent: true
         }
       }
+    },
+
+    postcss: {
+      options: {
+        map: {
+            inline: false, // save all sourcemaps as separate files...
+            annotation: 'dist/css/maps/' // ...to the specified directory
+        },
+
+        processors: [
+          require('pixrem')(), // add fallbacks for rem units
+          require('autoprefixer')({browsers: 'last 2 versions'}), // add vendor prefixes
+          require('cssnano')() // minify the result
+        ]
+      },
+      dist: {
+        src: 'dist/css/*.css'
+      }
     }
 
   });
@@ -122,6 +140,6 @@ module.exports = function(grunt) {
   require('load-grunt-tasks')(grunt);
 
   // Default task(s).
-  grunt.registerTask('default', ['clean', 'wiredep', 'copy', 'includes', 'browserify', 'sass', 'browserSync', 'watch']);
+  grunt.registerTask('default', ['clean', 'wiredep', 'copy', 'includes', 'browserify', 'sass', 'postcss', 'browserSync', 'watch']);
 
 };

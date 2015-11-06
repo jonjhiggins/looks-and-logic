@@ -19,6 +19,7 @@
   width: rem($widthMenuButton);
   height: rem($heightMenuButton);
 	position: relative;
+  cursor: pointer;
 }
 
 .menu__button__icon {
@@ -55,12 +56,21 @@
 	background-color: rgba(0,0,0,0.0);
 	transition-delay: 0.2s;
 }
+
+// Autoprefix off styles only: bug with two many transition-property values
 .menu__button__icon:before,
 .menu__button__icon:after {
+  /* autoprefixer: off */
+  -webkit-transition-property: margin, -webkit-transform;
 	transition-property: margin, transform;
+}
+
+.menu__button__icon:before,
+.menu__button__icon:after {
 	transition-duration: 0.2s;
 	transition-delay: 0.2s, 0s;
 }
+
 .menu__button:hover .menu__button__icon:before,
 .menu__button:hover .menu__button__icon:after {
 	margin-top: 0;
