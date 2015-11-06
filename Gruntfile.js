@@ -28,7 +28,7 @@ module.exports = function(grunt) {
       },
       html: {
         files: ['src/*.html'],
-        tasks: ['copy:html'],
+        tasks: ['includes'],
       },
       bower: {
         files: ['/bower_components/*'],
@@ -60,11 +60,6 @@ module.exports = function(grunt) {
     },
 
     copy: {
-      html: {
-        files: [
-          {expand: true, cwd: 'src', src: ['*.html'], dest: 'dist'},
-        ],
-      },
       txtXml: {
         files: [
           {expand: true, cwd: 'src', src: ['*.txt', '*.xml'], dest: 'dist'},
@@ -110,11 +105,23 @@ module.exports = function(grunt) {
       dist: ['dist'],
     },
 
+    includes: {
+      files: {
+        src: ['src/*.html'], // Source files
+        dest: 'dist', // Destination directory
+        flatten: true,
+        cwd: '.',
+        options: {
+          silent: true
+        }
+      }
+    }
+
   });
 
   require('load-grunt-tasks')(grunt);
 
   // Default task(s).
-  grunt.registerTask('default', ['clean', 'wiredep', 'copy', 'browserify', 'sass', 'browserSync', 'watch']);
+  grunt.registerTask('default', ['clean', 'wiredep', 'copy', 'includes', 'browserify', 'sass', 'browserSync', 'watch']);
 
 };
