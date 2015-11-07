@@ -15,7 +15,13 @@
   position: relative;
 
   &:nth-child(odd) {
-    background-color: #efefef;
+    background-color: $colourWhite;
+    color: $colourBlack;
+  }
+
+  &:nth-child(even) {
+    background-color: $colourBlack;
+    color: $colourWhite;
   }
 }
 

@@ -1,6 +1,14 @@
 /** @module ArrowDownButton */
 
-var $ = require('jquery');
+/*globals Power2:true, console*/
+
+var $ = require('jquery'),
+	TweenLite = require('./../../../node_modules/gsap/src/uncompressed/TweenLite.js'),
+  ScrollToPlugin = require('./../../../node_modules/gsap/src/uncompressed/plugins/ScrollToPlugin.js');
+
+var options = {
+  scrollDownDuration: 0.8
+};
 
 /**
  * @constructor ArrowDownButton
@@ -16,6 +24,7 @@ var ArrowDownButton = module.exports = function() {
 
 var arrowDownClick = function (e) {
   e.preventDefault();
-  var hash = $(this).prop('hash');
-  $('html, body').animate({scrollTop: $(hash).offset().top }, 400);
+  var hash = $(this).prop('hash'),
+      sectionTop = $(hash).offset().top;
+  TweenLite.to(window, options.scrollDownDuration, {scrollTo:{y: sectionTop}, ease:Power2.easeOut});
 };
