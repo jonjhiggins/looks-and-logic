@@ -8,11 +8,19 @@
 
 .arrowDownButton__icon {
   width: rem(24);
-  height: rem(24);
+  height: rem(12);
+  background: url(/img/icon--arrow-down.svg) 0 -12px no-repeat;
+  background-size: 100%;
   display: block;
   position: fixed;
   bottom: rem($paddingContainer / 2);
   left: 50%;
   margin-left: rem(-12);
   z-index: 20;
+}
+
+.arrowDownButton[data-colour="white"] {
+	.arrowDownButton__icon {
+		background-position: 0 0;
+	}
 }

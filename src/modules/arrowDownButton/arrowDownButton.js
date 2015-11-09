@@ -10,7 +10,9 @@ var options = {
   scrollDownDuration: 0.8
 };
 
-var $button = $('#arrowDownButton');
+var $button = $('#arrowDownButton'),
+    $currentSection = $('.section').eq(0), //@TODO change depending on scroll position
+    $nextSection;
 
 /**
  * @constructor ArrowDownButton
@@ -18,6 +20,7 @@ var $button = $('#arrowDownButton');
 
 var ArrowDownButton = module.exports = function() {
   'use strict';
+  changeIconColour();
   $button.on('click', buttonClick);
 };
 
@@ -50,15 +53,25 @@ var buttonClick = function (e) {
  */
 
 var scrollComplete = function () {
-  // @TODO update hash
-  buttonShow();
+
+  // Update button's hash to next section
+  var hash = $button.prop('hash');
+
+  $currentSection = $(hash);
+  $nextSection = $currentSection.next();
+
+  if ($nextSection.length) {
+    $button.prop('hash', '#' + $nextSection.prop('id'));
+    buttonShow();
+  }
+
 };
 
 /**
  * @function buttonHide
  */
 
-var buttonHide = function (argument) {
+var buttonHide = function () {
   $button.addClass('hidden');
 };
 
@@ -66,7 +79,20 @@ var buttonHide = function (argument) {
  * @function buttonShow
  */
 
-var buttonShow = function (argument) {
-  // @TODO change icon colour
+var buttonShow = function () {
+  changeIconColour();
   $button.removeClass('hidden');
+};
+
+/**
+ * Change icon colour to stand out from background
+ * @function changeIconColour
+ */
+
+var changeIconColour = function () {
+  if ($currentSection.attr('data-background') === 'white') {
+    $button.attr('data-colour', 'black');
+  } else {
+    $button.attr('data-colour', 'white');
+  }
 };

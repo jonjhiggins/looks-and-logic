@@ -14,12 +14,12 @@
   align-items: center;
   justify-content: center;
 
-  &:nth-child(odd) {
+  &[data-background="white"] {
     background-color: $colourWhite;
     color: $colourBlack;
   }
 
-  &:nth-child(even) {
+  &[data-background="black"] {
     background-color: $colourBlack;
     color: $colourWhite;
   }
