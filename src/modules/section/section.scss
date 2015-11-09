@@ -9,10 +9,10 @@
 .section {
   height: 100vh;
   text-align: center;
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  position: relative;
 
   &:nth-child(odd) {
     background-color: $colourWhite;
@@ -27,4 +27,28 @@
 
 .section__content {
   flex: none;
+  width: 100%;
+}
+
+/* ==========================================================================
+   Section: intro
+   ========================================================================== */
+
+.section--intro {
+
+  .section__content {
+    height: 100%;
+  }
+
+  .container {
+    height: 100%;
+    width: 100%;
+  }
+
+  .section__logo {
+    width: 66%;
+    height: 100%;
+    display: block;
+    margin: 0 auto;
+  }
 }
