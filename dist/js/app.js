@@ -11244,6 +11244,7 @@ var options = {
 };
 
 var $button = $('#arrowDownButton'),
+	$window = $(window),
     $currentSection = $('.section').eq(0), //@TODO change depending on scroll position
     $nextSection;
 
@@ -11255,6 +11256,7 @@ var ArrowDownButton = module.exports = function() {
   'use strict';
   changeIconColour();
   $button.on('click', buttonClick);
+  $window.one('scroll', pageScroll);
 };
 
 /**
@@ -11328,6 +11330,15 @@ var changeIconColour = function () {
   } else {
     $button.attr('data-colour', 'white');
   }
+};
+
+/**
+ * Hide the arrow when scrolling normally
+ * @function pageScroll
+ */
+
+var pageScroll = function () {
+  buttonHide();
 };
 
 },{"./../../../node_modules/gsap/src/uncompressed/TweenLite.js":1,"./../../../node_modules/gsap/src/uncompressed/plugins/ScrollToPlugin.js":2,"jquery":3}],6:[function(require,module,exports){
