@@ -11225,12 +11225,14 @@ return jQuery;
 /** @module main */
 
 var Menu = require('./../modules/menu/menu'),
-    ArrowDownButton = require('./../modules/ArrowDownButton/ArrowDownButton');
+    ArrowDownButton = require('./../modules/ArrowDownButton/ArrowDownButton'),
+    Section = require('./../modules/section/section');
 
 var menu = new Menu(),
-    arrowDownButton = new ArrowDownButton();
+    arrowDownButton = new ArrowDownButton(),
+    section = new Section();
 
-},{"./../modules/ArrowDownButton/ArrowDownButton":5,"./../modules/menu/menu":6}],5:[function(require,module,exports){
+},{"./../modules/ArrowDownButton/ArrowDownButton":5,"./../modules/menu/menu":6,"./../modules/section/section":7}],5:[function(require,module,exports){
 /** @module ArrowDownButton */
 
 /*globals Power2:true, console*/
@@ -11355,6 +11357,49 @@ var Menu = module.exports = function() {
 
   var $body = $('body'),
       $button = $('#menu__button');
+
+};
+
+},{"jquery":3}],7:[function(require,module,exports){
+/** @module Section */
+/*globals Power2:true, console*/
+
+var $ = require('jquery');
+
+/**
+* jQuery elements
+* @namespace $cache
+* @property {jQuery} $window
+*/
+
+var $cache = {
+    $window: $(window)
+};
+
+/**
+ * @constructor Section
+ */
+
+var Section = module.exports = function() {
+  'use strict';
+
+  /**
+   * @function init
+   */
+
+  var init = function() {
+      $cache.$window.on('scroll', onPageScroll); //@TODO debounce
+  };
+
+  /**
+   * @function onPageScroll
+   */
+
+  var onPageScroll = function() {
+      console.log('onPageScroll');
+  };
+
+  init();
 
 };
 
