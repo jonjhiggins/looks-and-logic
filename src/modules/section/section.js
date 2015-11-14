@@ -1,7 +1,8 @@
 /** @module Section */
 /*globals Power2:true, console*/
 
-var $ = require('jquery');
+var $ = require('jquery'),
+    ScrollMagic = require('scrollmagic');
 
 /**
 * jQuery elements
@@ -14,22 +15,57 @@ var $cache = {
 };
 
 /**
+* ScrollMagic controller
+* @var {Object} scrollScenes
+*/
+
+var scrollScenes = new ScrollMagic.Controller();
+
+/**
  * Common JS for all section components
  * @constructor Section
  * @param {Number} sectionIndex
  * @param {jQuery} $section
  */
 
-var Section = module.exports = function(sectionIndex, $section) {
+var Section = module.exports = function(sectionIndex, $section, totalSections) {
   'use strict';
+
+  /**
+  * jQuery elements
+  * @namespace $prop
+  * @property {boolean} isFirst is it first section?
+  */
+
+  var props = {
+    isFirst: (sectionIndex === 0),
+    isLast: (sectionIndex === totalSections - 1)
+  };
 
   /**
    * @function init
    */
 
   var init = function() {
+
+    // Run once for first section only
+    if (props.isFirst) {
+      initSectionController();
+    }
+
+    // Run for each section
     setBackgroundColours();
-    $cache.$window.on('scroll', onPageScroll); //@TODO debounce
+    addScrollScene();
+  };
+
+  /**
+   * Controller methods that only need to be run once,
+   * rather than for all sections
+   * @function initSectionController
+   */
+
+  var initSectionController = function() {
+
   };
 
   /**
@@ -58,11 +94,39 @@ var Section = module.exports = function(sectionIndex, $section) {
   };
 
   /**
-   * @function onPageScroll
+   * Add waypoint to scrollmagic controller so scroll events are triggered
+   * @function addScrollScene
    */
 
-  var onPageScroll = function() {
-      console.log('onPageScroll');
+  var addScrollScene = function() {
+      var scene = new ScrollMagic.Scene({
+                        triggerElement: $section.get(0)
+                      })
+                      .on('start', function () {
+                          // On scrolling into last section, duplicate sections
+                          // for infinite loop effect
+                          if (props.isLast) {
+                            duplicateSections();
+                          }
+                      })
+                      .addTo(scrollScenes);
+  };
+
+  /**
+   * Duplicate previous sections so that they appear in an infinite loop
+   * @function duplicateSections
+   */
+
+  var duplicateSections = function () {
+    // Only duplicate if there are no sections after current "last" section
+    // @TODO unset old last section when new one is in place
+    if (!$section.next().length) {
+      var $parent = $section.parent('.sections'),
+          $newSections = $parent.find('.section').clone();
+
+      $parent.append($newSections);
+
+    }
   };
 
   init();

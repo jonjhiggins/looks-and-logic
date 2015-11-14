@@ -10,12 +10,16 @@ var $ = require('jquery'),
 // Variables
 
 var sections = [],
-	menu = new Menu(),
+	$sections = $('.section'),
+	sectionsLength = $sections.length;
+
+// Init single modules
+var menu = new Menu(),
     arrowDownButton = new ArrowDownButton();
 
 
 // Init each section
 
 $('.section').each(function (index, item) {
-	sections[index] = new Section(index, $(item));
+	sections[index] = new Section(index, $(item), sectionsLength);
 });
