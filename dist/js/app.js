@@ -11224,15 +11224,27 @@ return jQuery;
 },{}],4:[function(require,module,exports){
 /** @module main */
 
-var Menu = require('./../modules/menu/menu'),
+// Requires
+
+var $ = require('jquery'),
+	Menu = require('./../modules/menu/menu'),
     ArrowDownButton = require('./../modules/ArrowDownButton/ArrowDownButton'),
     Section = require('./../modules/section/section');
 
-var menu = new Menu(),
-    arrowDownButton = new ArrowDownButton(),
-    section = new Section();
+// Variables
 
-},{"./../modules/ArrowDownButton/ArrowDownButton":5,"./../modules/menu/menu":6,"./../modules/section/section":7}],5:[function(require,module,exports){
+var sections = [],
+	menu = new Menu(),
+    arrowDownButton = new ArrowDownButton();
+
+
+// Init each section
+
+$('.section').each(function (index, item) {
+	sections[index] = new Section(index, $(item));
+});
+
+},{"./../modules/ArrowDownButton/ArrowDownButton":5,"./../modules/menu/menu":6,"./../modules/section/section":7,"jquery":3}],5:[function(require,module,exports){
 /** @module ArrowDownButton */
 
 /*globals Power2:true, console*/
@@ -11377,10 +11389,13 @@ var $cache = {
 };
 
 /**
+ * Common JS for all section components
  * @constructor Section
+ * @param {Number} sectionIndex
+ * @param {jQuery} $section
  */
 
-var Section = module.exports = function() {
+var Section = module.exports = function(sectionIndex, $section) {
   'use strict';
 
   /**
@@ -11388,7 +11403,33 @@ var Section = module.exports = function() {
    */
 
   var init = function() {
-      $cache.$window.on('scroll', onPageScroll); //@TODO debounce
+    setBackgroundColours();
+    $cache.$window.on('scroll', onPageScroll); //@TODO debounce
+  };
+
+  /**
+   * Set the background colours of each section
+   * These should alternate white/black - unless data-background-same is set to true
+   * @function setBackgroundColours
+   */
+
+  var setBackgroundColours = function() {
+
+      var background,
+          previousSectionBackground = $section.prev().data('background');
+
+      if ($section.data('section-first')) {
+        // If first section set to white
+        background = 'white';
+      } else if ($section.data('background-same')) {
+        // If background-same, repeat background of previous section
+        background = previousSectionBackground;
+      } else {
+        // Else, reverse background of previous section
+        background = previousSectionBackground === 'white' ? 'black' : 'white';
+      }
+
+      $section.attr('data-background', background);
   };
 
   /**

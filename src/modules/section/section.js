@@ -14,10 +14,13 @@ var $cache = {
 };
 
 /**
+ * Common JS for all section components
  * @constructor Section
+ * @param {Number} sectionIndex
+ * @param {jQuery} $section
  */
 
-var Section = module.exports = function() {
+var Section = module.exports = function(sectionIndex, $section) {
   'use strict';
 
   /**
@@ -25,7 +28,33 @@ var Section = module.exports = function() {
    */
 
   var init = function() {
-      $cache.$window.on('scroll', onPageScroll); //@TODO debounce
+    setBackgroundColours();
+    $cache.$window.on('scroll', onPageScroll); //@TODO debounce
+  };
+
+  /**
+   * Set the background colours of each section
+   * These should alternate white/black - unless data-background-same is set to true
+   * @function setBackgroundColours
+   */
+
+  var setBackgroundColours = function() {
+
+      var background,
+          previousSectionBackground = $section.prev().data('background');
+
+      if ($section.data('section-first')) {
+        // If first section set to white
+        background = 'white';
+      } else if ($section.data('background-same')) {
+        // If background-same, repeat background of previous section
+        background = previousSectionBackground;
+      } else {
+        // Else, reverse background of previous section
+        background = previousSectionBackground === 'white' ? 'black' : 'white';
+      }
+
+      $section.attr('data-background', background);
   };
 
   /**
