@@ -14166,12 +14166,16 @@ var $ = require('jquery'),
 
 /**
 * jQuery elements
-* @namespace $cache
-* @property {jQuery} $window
+* @namespace cache
+* @property {jQuery} window
+* @property {jQuery} originalSections sections stored once for duplication
+* @property {jQuery} $parent containing .sections element
 */
 
-var $cache = {
-    $window: $(window)
+var cache = {
+    $window: $(window),
+    $originalSections: null,
+    $parent: null
 };
 
 /**
@@ -14179,7 +14183,7 @@ var $cache = {
 * @var {Object} scrollScenes
 */
 
-var scrollScenes = new ScrollMagic.Controller();
+var scrollScenes;
 
 /**
  * Common JS for all section components
@@ -14203,10 +14207,17 @@ var Section = module.exports = function(sectionIndex, $section, totalSections) {
   };
 
   /**
+   * Initialise the component
+   * Everything here should be undone using the "reset" function
    * @function init
    */
 
   var init = function() {
+
+    // Cache sections for later duplication
+    if (!cache.$originalSections) {
+        cacheOriginalSections();
+    }
 
     // Run once for first section only
     if (props.isFirst) {
@@ -14225,7 +14236,7 @@ var Section = module.exports = function(sectionIndex, $section, totalSections) {
    */
 
   var initSectionController = function() {
-
+      scrollScenes = new ScrollMagic.Controller();
   };
 
   /**
@@ -14273,20 +14284,50 @@ var Section = module.exports = function(sectionIndex, $section, totalSections) {
   };
 
   /**
+   * Cache sections once for later duplication
+   * @function cacheOriginalSections
+   */
+
+  var cacheOriginalSections = function () {
+      var $parent = $section.parent('.sections');
+      cache.$originalSections = $parent.find('.section');
+      cache.$parent = $parent;
+  };
+
+  /**
    * Duplicate previous sections so that they appear in an infinite loop
    * @function duplicateSections
    */
 
   var duplicateSections = function () {
     // Only duplicate if there are no sections after current "last" section
-    // @TODO unset old last section when new one is in place
     if (!$section.next().length) {
-      var $parent = $section.parent('.sections'),
-          $newSections = $parent.find('.section').clone();
+        // Duplicate and append original sections
+        var $newSections = cache.$originalSections.clone();
+        cache.$parent.append($newSections);
 
-      $parent.append($newSections);
-
+      // Reset everything
+      reset();
     }
+  };
+
+  /**
+   * Reset all component behaviour, remove handlers
+   * @function reset
+   */
+
+  var reset = function() {
+      scrollScenes.destroy(true);
+
+      // @TODO this seems like the wrong place for this 
+      var sections = [],
+      	$sections = $('.section'),
+      	sectionsLength = $sections.length;
+
+      // Re-init each section
+      $('.section').each(function (index, item) {
+      	sections[index] = new Section(index, $(item), sectionsLength);
+      });
   };
 
   init();
