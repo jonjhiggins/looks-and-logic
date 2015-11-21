@@ -1,0 +1,29 @@
+/*
+ * Section: intro module
+ */
+
+
+/* ==========================================================================
+   Section: intro
+   ========================================================================== */
+
+.section--intro {
+
+  .section__content {
+    height: 100%;
+  }
+
+  .container {
+    height: 100%;
+    width: 100%;
+  }
+
+  .section__logo {
+    width: 66%;
+    height: 100%;
+    display: block;
+    margin: 0 auto;
+    background: url(../img/logo--no-ball.svg) 50% 50% no-repeat;
+    background-size: contain;
+  }
+}
