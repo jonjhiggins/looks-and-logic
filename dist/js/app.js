@@ -14010,7 +14010,9 @@ return jQuery;
 var $ = require('jquery'),
 	Menu = require('./../modules/menu/menu'),
     ArrowDownButton = require('./../modules/ArrowDownButton/ArrowDownButton'),
-    Section = require('./../modules/section/section');
+	Balls = require('./../modules/balls/balls'),
+    Section = require('./../modules/section/section'),
+	SectionIntro = require('./../modules/sectionIntro/sectionIntro');
 
 // Variables
 
@@ -14020,7 +14022,8 @@ var sections = [],
 
 // Init single modules
 var menu = new Menu(),
-    arrowDownButton = new ArrowDownButton();
+    arrowDownButton = new ArrowDownButton(),
+	balls = new Balls();
 
 
 // Init each section
@@ -14029,7 +14032,11 @@ $('.section').each(function (index, item) {
 	sections[index] = new Section(index, $(item), sectionsLength);
 });
 
-},{"./../modules/ArrowDownButton/ArrowDownButton":6,"./../modules/menu/menu":7,"./../modules/section/section":8,"jquery":3}],6:[function(require,module,exports){
+// Init single sections @TODO move to section.js?
+
+var sectionIntro = new SectionIntro($('.section--intro'));
+
+},{"./../modules/ArrowDownButton/ArrowDownButton":6,"./../modules/balls/balls":7,"./../modules/menu/menu":8,"./../modules/section/section":9,"./../modules/sectionIntro/sectionIntro":10,"jquery":3}],6:[function(require,module,exports){
 /** @module ArrowDownButton */
 
 /*globals Power2:true, console*/
@@ -14141,6 +14148,56 @@ var pageScroll = function () {
 };
 
 },{"./../../../node_modules/gsap/src/uncompressed/TweenLite.js":1,"./../../../node_modules/gsap/src/uncompressed/plugins/ScrollToPlugin.js":2,"jquery":3}],7:[function(require,module,exports){
+/** @module Balls */
+/*globals Power2:true, console*/
+
+/**
+ * @constructor Balls
+ */
+
+ var $ = require('jquery');
+
+ /**
+ * jQuery elements
+ * @namespace cache
+ * @property {jQuery} window
+ * @property {jQuery} originalSections sections stored once for duplication
+ * @property {jQuery} $parent containing .sections element
+ */
+
+ var cache = {
+     $window: $(window),
+     $ball1: $('#ball--1'),
+     $ball2: $('#ball--2')
+ };
+
+
+var Balls = module.exports = function() {
+  'use strict';
+
+
+  /**
+   * Initialise the component
+   * @function init
+   */
+
+  var init = function() {
+
+      cache.$window.on('ball1Drop', function() {
+          cache.$ball1.css({
+              position: 'fixed',
+              bottom: 0,
+              top: 'auto'
+          });
+      });
+  };
+
+
+  init();
+
+};
+
+},{"jquery":3}],8:[function(require,module,exports){
 /** @module Menu */
 
 var $ = require('jquery');
@@ -14157,7 +14214,7 @@ var Menu = module.exports = function() {
 
 };
 
-},{"jquery":3}],8:[function(require,module,exports){
+},{"jquery":3}],9:[function(require,module,exports){
 /** @module Section */
 /*globals Power2:true, console*/
 
@@ -14271,14 +14328,20 @@ var Section = module.exports = function(sectionIndex, $section, totalSections) {
 
   var addScrollScene = function() {
       var scene = new ScrollMagic.Scene({
-                        triggerElement: $section.get(0)
+                        triggerElement: $section.get(0),
+                        duration: $section.height()
                       })
                       .on('start', function () {
+                          $section.trigger('sectionEnter');
+
                           // On scrolling into last section, duplicate sections
                           // for infinite loop effect
                           if (props.isLast) {
                             duplicateSections();
                           }
+                      })
+                      .on('end', function () {
+                          $section.trigger('sectionLeave');
                       })
                       .addTo(scrollScenes);
   };
@@ -14319,7 +14382,7 @@ var Section = module.exports = function(sectionIndex, $section, totalSections) {
   var reset = function() {
       scrollScenes.destroy(true);
 
-      // @TODO this seems like the wrong place for this 
+      // @TODO this seems like the wrong place for this
       var sections = [],
       	$sections = $('.section'),
       	sectionsLength = $sections.length;
@@ -14329,6 +14392,59 @@ var Section = module.exports = function(sectionIndex, $section, totalSections) {
       	sections[index] = new Section(index, $(item), sectionsLength);
       });
   };
+
+  init();
+
+};
+
+},{"jquery":3,"scrollmagic":4}],10:[function(require,module,exports){
+/** @module Section */
+/*globals Power2:true, console*/
+
+var $ = require('jquery'),
+    ScrollMagic = require('scrollmagic');
+
+/**
+* jQuery elements
+* @namespace cache
+* @property {jQuery} window
+*/
+
+var cache = {
+    $window: $(window)
+};
+
+/**
+ * Common JS for all section components
+ * @constructor Section
+ * @param {Number} sectionIndex
+ * @param {jQuery} $section
+ */
+
+var SectionIntro = module.exports = function($element) {
+  'use strict';
+
+  /**
+   * Initialise the component
+   * Everything here should be undone using the "reset" function
+   * @function init
+   */
+
+  var init = function() {
+      $element.on('sectionLeave', function() {
+          cache.$window.trigger('ball1Drop');
+      });
+  };
+
+  /**
+   * Reset all component behaviour, remove handlers
+   * @function reset
+   */
+
+  var reset = function() {
+
+  };
+
 
   init();
 

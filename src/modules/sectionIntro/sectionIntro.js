@@ -8,29 +8,11 @@ var $ = require('jquery'),
 * jQuery elements
 * @namespace cache
 * @property {jQuery} window
-* @property {jQuery} originalSections sections stored once for duplication
-* @property {jQuery} $parent containing .sections element
 */
 
 var cache = {
-    $window: $(window),
-    $originalSections: null,
-    $parent: null
+    $window: $(window)
 };
-
-/**
-* Number of sections on first run
-* @var {number} originalSectionsLength
-*/
-
-var originalSectionsLength;
-
-/**
-* ScrollMagic controller
-* @var {Object} scrollScenes
-*/
-
-var scrollScenes;
 
 /**
  * Common JS for all section components
@@ -39,19 +21,8 @@ var scrollScenes;
  * @param {jQuery} $section
  */
 
-var Section = module.exports = function(sectionIndex, $section, totalSections) {
+var SectionIntro = module.exports = function($element) {
   'use strict';
-
-  /**
-  * jQuery elements
-  * @namespace $prop
-  * @property {boolean} isFirst is it first section?
-  */
-
-  var props = {
-    isFirst: (sectionIndex === 0),
-    isLast: (sectionIndex === totalSections - 1)
-  };
 
   /**
    * Initialise the component
@@ -60,116 +31,9 @@ var Section = module.exports = function(sectionIndex, $section, totalSections) {
    */
 
   var init = function() {
-
-    // Cache sections for later duplication
-    if (!cache.$originalSections) {
-        cacheOriginalSections();
-    }
-
-    if (!originalSectionsLength) {
-        originalSectionsLength = cache.$originalSections.length;
-    }
-
-    // Run once for first section only
-    if (props.isFirst) {
-      initSectionController();
-    }
-
-    // Run for each section
-    setBackgroundColours();
-    addScrollScene();
-  };
-
-  /**
-   * Controller methods that only need to be run once,
-   * rather than for all sections
-   * @function initSectionController
-   */
-
-  var initSectionController = function() {
-      scrollScenes = new ScrollMagic.Controller();
-  };
-
-  /**
-   * Set the background colours of each section
-   * These should alternate white/black - unless data-background-same is set to true
-   * @function setBackgroundColours
-   */
-
-  var setBackgroundColours = function() {
-
-      var background,
-          previousSectionBackground = $section.prev().data('background');
-
-      if ($section.data('section-first')) {
-        // If first section set to white
-        background = 'white';
-      } else if ($section.data('background-same')) {
-        // If background-same, repeat background of previous section
-        background = previousSectionBackground;
-      } else {
-        // Else, reverse background of previous section
-        background = previousSectionBackground === 'white' ? 'black' : 'white';
-      }
-
-      $section.attr('data-background', background);
-  };
-
-  /**
-   * Add waypoint to scrollmagic controller so scroll events are triggered
-   * @function addScrollScene
-   */
-
-  var addScrollScene = function() {
-      var scene = new ScrollMagic.Scene({
-                        triggerElement: $section.get(0)
-                      })
-                      .on('start', function () {
-                          // On scrolling into last section, duplicate sections
-                          // for infinite loop effect
-                          if (props.isLast) {
-                            duplicateSections();
-                          }
-                      })
-                      .addTo(scrollScenes);
-  };
-
-  /**
-   * Cache sections once for later duplication
-   * @function cacheOriginalSections
-   */
-
-  var cacheOriginalSections = function () {
-      console.log('cacheOriginalSections');
-      cache.$parent = $section.parent('.sections');
-      cache.$originalSections = cache.$parent.find('.section');
-
-      if (originalSectionsLength) {
-          cache.$originalSections = cache.$originalSections.slice(0, originalSectionsLength);
-      }
-  };
-
-  /**
-   * Duplicate previous sections so that they appear in an infinite loop
-   * @function duplicateSections
-   */
-
-  var duplicateSections = function () {
-    // Only duplicate if there are no sections after current "last" section
-    if (!$section.next().length) {
-        // Duplicate and append original sections
-        var $newSections = cache.$originalSections.clone();
-
-        if (totalSections > 14) {
-            cache.$originalSections.remove();
-            cache.$originalSections = null;
-        }
-
-        cache.$parent.append($newSections);
-
-        // Reset everything
-        reset();
-    }
+      $element.on('sectionLeave', function() {
+          cache.$window.trigger('ball1Drop');
+      });
   };
 
   /**
@@ -178,20 +42,9 @@ var Section = module.exports = function(sectionIndex, $section, totalSections) {
    */
 
   var reset = function() {
-      scrollScenes.destroy(true);
 
-      console.log(totalSections);
-
-      // @TODO this seems like the wrong place for this
-      var sections = [],
-      	$sections = $('.section'),
-      	sectionsLength = $sections.length;
-
-      // Re-init each section
-      $('.section').each(function (index, item) {
-      	sections[index] = new Section(index, $(item), sectionsLength);
-      });
   };
+
 
   init();
 

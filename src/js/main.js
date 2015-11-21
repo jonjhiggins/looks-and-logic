@@ -5,7 +5,9 @@
 var $ = require('jquery'),
 	Menu = require('./../modules/menu/menu'),
     ArrowDownButton = require('./../modules/ArrowDownButton/ArrowDownButton'),
-    Section = require('./../modules/section/section');
+	Balls = require('./../modules/balls/balls'),
+    Section = require('./../modules/section/section'),
+	SectionIntro = require('./../modules/sectionIntro/sectionIntro');
 
 // Variables
 
@@ -15,7 +17,8 @@ var sections = [],
 
 // Init single modules
 var menu = new Menu(),
-    arrowDownButton = new ArrowDownButton();
+    arrowDownButton = new ArrowDownButton(),
+	balls = new Balls();
 
 
 // Init each section
@@ -23,3 +26,7 @@ var menu = new Menu(),
 $('.section').each(function (index, item) {
 	sections[index] = new Section(index, $(item), sectionsLength);
 });
+
+// Init single sections @TODO move to section.js?
+
+var sectionIntro = new SectionIntro($('.section--intro'));

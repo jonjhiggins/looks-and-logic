@@ -111,14 +111,20 @@ var Section = module.exports = function(sectionIndex, $section, totalSections) {
 
   var addScrollScene = function() {
       var scene = new ScrollMagic.Scene({
-                        triggerElement: $section.get(0)
+                        triggerElement: $section.get(0),
+                        duration: $section.height()
                       })
                       .on('start', function () {
+                          $section.trigger('sectionEnter');
+
                           // On scrolling into last section, duplicate sections
                           // for infinite loop effect
                           if (props.isLast) {
                             duplicateSections();
                           }
+                      })
+                      .on('end', function () {
+                          $section.trigger('sectionLeave');
                       })
                       .addTo(scrollScenes);
   };
@@ -159,7 +165,7 @@ var Section = module.exports = function(sectionIndex, $section, totalSections) {
   var reset = function() {
       scrollScenes.destroy(true);
 
-      // @TODO this seems like the wrong place for this 
+      // @TODO this seems like the wrong place for this
       var sections = [],
       	$sections = $('.section'),
       	sectionsLength = $sections.length;
