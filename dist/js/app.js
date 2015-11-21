@@ -22976,7 +22976,7 @@ var Section = module.exports = function(sectionIndex, $section, totalSections) {
 
   var cacheOriginalSections = function () {
       var $parent = $section.parent('.sections');
-      cache.$originalSections = $parent.find('.section');
+      cache.$originalSections = $parent.find('.section').clone();
       cache.$parent = $parent;
   };
 
@@ -22989,8 +22989,7 @@ var Section = module.exports = function(sectionIndex, $section, totalSections) {
     // Only duplicate if there are no sections after current "last" section
     if (!$section.next().length) {
         // Duplicate and append original sections
-        var $newSections = cache.$originalSections.clone();
-        cache.$parent.append($newSections);
+        cache.$parent.append(cache.$originalSections.clone());
 
       // Reset everything
       reset();
@@ -23012,8 +23011,10 @@ var Section = module.exports = function(sectionIndex, $section, totalSections) {
 
       // Re-init each section
       $('.section').each(function (index, item) {
+
       	sections[index] = new Section(index, $(item), sectionsLength);
       });
+
   };
 
   init();
