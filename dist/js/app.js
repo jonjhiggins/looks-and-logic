@@ -22752,6 +22752,16 @@ var cache = {
 var Balls = module.exports = function() {
     'use strict';
 
+    /**
+    * Module properties, states and settings
+    * @namespace $prop
+    * @property {boolean} ballDropped has ball dropped yet?
+    */
+
+    var props = {
+      ballDropped: false
+    };
+
 
     /**
      * Initialise the component
@@ -22770,13 +22780,22 @@ var Balls = module.exports = function() {
      */
 
     var ball1Drop = function() {
-        var windowHeight = cache.$window.height(),
+
+        // Only drop ball once
+        if (props.ballDropped) {
+            return;
+        }
+
+        var $sections = $('.sections .section'),
+            sectionsHeight = $sections.eq(0).height() + $sections.eq(1).height(), // first 2 sections height
             ball1TopPosition = cache.$ball1.offset().top + cache.$ball1.height(),
-            newPosition = windowHeight + (windowHeight / 3) - ball1TopPosition;
+            newPosition = sectionsHeight - ball1TopPosition;
 
             cache.$ball1.css({
                 'transform': 'translateY(' + newPosition + 'px) scale(0.9, 1)',
             });
+
+        props.ballDropped = true;
     };
 
     /**
