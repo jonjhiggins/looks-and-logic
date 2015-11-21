@@ -29,6 +29,7 @@
   },
   "dependencies": {
     "jquery": "^2.1.4",
-    "gsap": "~1.18.0"
+    "gsap": "~1.18.0",
+    "snapsvg": "~0.4.0"
   }
 }

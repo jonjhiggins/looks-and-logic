@@ -33,6 +33,8 @@ var Balls = module.exports = function() {
 
     var init = function() {
         cache.$window.on('ball1Drop', ball1Drop);
+        cache.$window.on('balls:showBall1', showBall.bind(cache.$ball1));
+        cache.$window.on('balls:showBall2', showBall.bind(cache.$ball2));
     };
 
     /**
@@ -42,12 +44,28 @@ var Balls = module.exports = function() {
 
     var ball1Drop = function() {
         var windowHeight = cache.$window.height(),
-            ball1TopPosition = cache.$ball1.offset().top,
-            newPosition = (windowHeight * 2) + ball1TopPosition;
+            ball1TopPosition = cache.$ball1.offset().top + cache.$ball1.height(),
+            newPosition = windowHeight + (windowHeight / 3) - ball1TopPosition;
+            
+            cache.$ball1.css({
+                'transform': 'translateY(' + newPosition + 'px)',
+            });
+    };
 
-            console.log(newPosition);
+    /**
+     * Show ball 1
+     * @function showBall1
+     * @param {object} event
+     * @param {object} position
+     */
 
-            cache.$ball1.css('transform', 'translateY(' + newPosition + 'px)');
+    var showBall = function(event, position) {
+        this.css({
+            top: position.top,
+            left: position.left,
+            width: position.width,
+            height: position.height
+        });
     };
 
 

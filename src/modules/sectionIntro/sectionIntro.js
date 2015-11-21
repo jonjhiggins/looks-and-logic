@@ -2,50 +2,81 @@
 /*globals Power2:true, console*/
 
 var $ = require('jquery'),
-    ScrollMagic = require('scrollmagic');
+    ScrollMagic = require('scrollmagic'),
+    snap = require('snapsvg');
 
 /**
-* jQuery elements
-* @namespace cache
-* @property {jQuery} window
-*/
-
-var cache = {
-    $window: $(window)
-};
-
-/**
- * Common JS for all section components
- * @constructor Section
- * @param {Number} sectionIndex
- * @param {jQuery} $section
+ * @constructor SectionIntro
+ * @param {jQuery} $element section element
  */
 
 var SectionIntro = module.exports = function($element) {
-  'use strict';
+    'use strict';
 
-  /**
-   * Initialise the component
-   * Everything here should be undone using the "reset" function
-   * @function init
-   */
+    /**
+     * jQuery elements
+     * @namespace cache
+     * @property {jQuery} window
+     * @property {jQuery} $logo
+     * @property {jQuery} $logoSvg logo's svg element
+     */
 
-  var init = function() {
-      $element.on('sectionLeave', function() {
-          cache.$window.trigger('ball1Drop');
-      });
-  };
+    var cache = {
+        $window: $(window),
+        $logo: $element.find('.section__logo'),
+        $logoSvg: $element.find('.section__logo svg')
+    };
 
-  /**
-   * Reset all component behaviour, remove handlers
-   * @function reset
-   */
+    /**
+     * Initialise the component
+     * Everything here should be undone using the "reset" function
+     * @function init
+     */
 
-  var reset = function() {
+    var init = function() {
+        $element.on('sectionLeave', function() {
+            cache.$window.trigger('ball1Drop');
+        });
 
-  };
+        loadSVG();
 
 
-  init();
+    };
+
+    /**
+     * Reset all component behaviour, remove handlers
+     * @function reset
+     */
+
+    var loadSVG = function() {
+
+        var svgObject = snap(cache.$logoSvg.get(0));
+        snap.load('../img/logo.svg', function(loadedSVG) {
+            // Add SVG
+            svgObject.append(loadedSVG);
+            // Hide background image
+            cache.$logo.addClass('section__logo--with-svg');
+
+            var ball1Position = svgObject.select('#ball1').node.getBoundingClientRect(),
+                ball2Position = svgObject.select('#ball2').node.getBoundingClientRect();
+
+            //@TODO promise
+
+            cache.$window.trigger('balls:showBall1', ball1Position);
+            cache.$window.trigger('balls:showBall2', ball2Position);
+        });
+    };
+
+    /**
+     * Reset all component behaviour, remove handlers
+     * @function reset
+     */
+
+    var reset = function() {
+
+    };
+
+
+    init();
 
 };

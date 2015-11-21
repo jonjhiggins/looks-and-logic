@@ -1,47 +1,13 @@
 /*
  * balls module
  */
-/* ==========================================================================
-     Variables
-    ========================================================================== */
-$ballWidth: 120;
-$ballHeight: 108;
-$ball1LeftPosition: 468;
-$ball1TopPosition: 24;
-$ball2LeftPosition: 350;
-$ball2TopPosition: 297;
 
 /* ==========================================================================
     Shared
    ========================================================================== */
 .ball {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    .container {
-        height: 100%;
-        width: 100%;
-        display: flex;
-        align-items: center;
-    }
-    .ball__content {
-        width: $logoScreenPortraitWidth;
-        height: 0;
-        padding-top: ($logoOriginalHeight / $logoOriginalWidth) * $logoScreenPortraitWidth;
-        margin: 0 auto;
-        position: relative;
-    }
-    .ball__image {
-        position: absolute;
-        transform: scale(1.025);
-        width: ($ballWidth / $logoOriginalWidth) * 100%;
-        height: ($ballHeight / $logoOriginalHeight) * 100%;
-        display: block;
-        margin: 0 auto;
-        background: url(../img/ball--black.svg) 50% 50% no-repeat;
-    }
+    background: url(../img/ball--black.svg) 50% 50% no-repeat;
 }
 
 /* ==========================================================================
@@ -49,31 +15,4 @@ $ball2TopPosition: 297;
    ========================================================================== */
 .ball--1 {
     transition: transform 400ms ease;
-    .ball__image {
-        top: ($ball1TopPosition / $logoOriginalHeight) * 100%;
-        left: ($ball1LeftPosition / $logoOriginalWidth) * 100%;
-
-    }
-}
-
-/* ==========================================================================
-   Ball 2
-  ========================================================================== */
-.ball--2 {
-    .ball__image {
-        top: ($ball2TopPosition / $logoOriginalHeight) * 100%;
-        left: ($ball2LeftPosition / $logoOriginalWidth) * 100%;
-    }
-}
-
-/* ==========================================================================
-     Responsive
-     ========================================================================== */
-@media only screen and (orientation: landscape) {
-    .ball {
-        .ball__content {
-            width: $logoScreenLandscapeWidth;
-            padding-top: ($logoOriginalHeight / $logoOriginalWidth) * $logoScreenLandscapeWidth;
-        }
-    }
 }
