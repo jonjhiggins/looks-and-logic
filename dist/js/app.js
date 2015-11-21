@@ -22856,9 +22856,10 @@ var Section = module.exports = function(sectionIndex, $section, totalSections) {
   'use strict';
 
   /**
-  * jQuery elements
+  * Module properties, states and settings
   * @namespace $prop
   * @property {boolean} isFirst is it first section?
+  * @property {boolean} isLast is it last section?
   */
 
   var props = {
