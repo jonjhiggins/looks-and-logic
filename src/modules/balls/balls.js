@@ -5,9 +5,9 @@
  * @constructor Balls
  */
 
- var $ = require('jquery');
+var $ = require('jquery');
 
- /**
+/**
  * jQuery elements
  * @namespace cache
  * @property {jQuery} window
@@ -15,34 +15,42 @@
  * @property {jQuery} $parent containing .sections element
  */
 
- var cache = {
-     $window: $(window),
-     $ball1: $('#ball--1'),
-     $ball2: $('#ball--2')
- };
+var cache = {
+    $window: $(window),
+    $ball1: $('#ball--1'),
+    $ball2: $('#ball--2')
+};
 
 
 var Balls = module.exports = function() {
-  'use strict';
+    'use strict';
 
 
-  /**
-   * Initialise the component
-   * @function init
-   */
+    /**
+     * Initialise the component
+     * @function init
+     */
 
-  var init = function() {
+    var init = function() {
+        cache.$window.on('ball1Drop', ball1Drop);
+    };
 
-      cache.$window.on('ball1Drop', function() {
-          cache.$ball1.css({
-              position: 'fixed',
-              bottom: 0,
-              top: 'auto'
-          });
-      });
-  };
+    /**
+     * Drop ball 1 down a screen
+     * @function ball1Drop
+     */
+
+    var ball1Drop = function() {
+        var windowHeight = cache.$window.height(),
+            ball1TopPosition = cache.$ball1.offset().top,
+            newPosition = (windowHeight * 2) + ball1TopPosition;
+
+            console.log(newPosition);
+
+            cache.$ball1.css('transform', 'translateY(' + newPosition + 'px)');
+    };
 
 
-  init();
+    init();
 
 };

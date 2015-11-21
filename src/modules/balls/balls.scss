@@ -48,9 +48,11 @@ $ball2TopPosition: 297;
     Ball 1
    ========================================================================== */
 .ball--1 {
+    transition: transform 400ms ease;
     .ball__image {
         top: ($ball1TopPosition / $logoOriginalHeight) * 100%;
         left: ($ball1LeftPosition / $logoOriginalWidth) * 100%;
+
     }
 }
 
