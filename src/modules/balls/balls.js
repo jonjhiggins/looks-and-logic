@@ -46,9 +46,9 @@ var Balls = module.exports = function() {
         var windowHeight = cache.$window.height(),
             ball1TopPosition = cache.$ball1.offset().top + cache.$ball1.height(),
             newPosition = windowHeight + (windowHeight / 3) - ball1TopPosition;
-            
+
             cache.$ball1.css({
-                'transform': 'translateY(' + newPosition + 'px)',
+                'transform': 'translateY(' + newPosition + 'px) scale(0.9, 1)',
             });
     };
 
