@@ -59,15 +59,19 @@ var ArrowDownButton = module.exports = function(controller) {
      */
 
     var getNextSection = function($currentSection) {
-    	// Accounts for scrollmagic pin's extra div
+
         var $nextSection;
 
+        // Normal section
         if ($currentSection.next('.section').length) {
             $nextSection = $currentSection.next();
-        } else {
+        // Sections next to scrollmagic pin's extra div
+        } else if ($currentSection.next('div').length) {
             $nextSection = $currentSection.next().find('.section');
+        // Sections within scrollmagic pin's extra div
+        } else {
+            $nextSection = $currentSection.parent().next('.section');
         }
-
 
     	return $nextSection;
     };
@@ -116,6 +120,8 @@ var ArrowDownButton = module.exports = function(controller) {
         hash = $button.prop('hash');
         $currentSection = $(hash);
         $nextSection = getNextSection($currentSection);
+
+        console.log($nextSection);
 
         if ($nextSection.length) {
             $button.prop('hash', '#' + $nextSection.prop('id'));
