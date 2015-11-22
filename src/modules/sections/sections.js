@@ -1,7 +1,11 @@
 /** @module Sections */
 /*globals console*/
 
-var $ = require('jquery');
+var $ = require('jquery'),
+    Section = require('./../../modules/section/section'),
+    SectionIntro = require('./../../modules/sectionIntro/sectionIntro'),
+    SectionMakingDigitalHuman = require('./../../modules/sectionMakingDigitalHuman/sectionMakingDigitalHuman'),
+    SectionCuriousPlayfulInformative = require('./../../modules/sectionCuriousPlayfulInformative/sectionCuriousPlayfulInformative');
 
 /**
  * jQuery elements
@@ -40,8 +44,38 @@ var Sections = module.exports = function(controller, $sections) {
 
         cache.$window.on('sections:duplicateSections', duplicateSections);
 
+        initSections();
 
     };
+
+    /**
+     * Init all common and specific section JS
+     * @function initSections
+     */
+
+    var initSections = function() {
+
+        var sectionsLength = $sections.find('.section').length;
+
+        // Init sections: common
+
+        $('.section').each(function (index, item) {
+        	controller.props.sections[index] = new Section(controller, $(item), index, sectionsLength);
+        });
+
+        // Init sections: specific
+        var $sectionIntro = $('.section--intro').eq(0),
+        	$sectionMakingDigitalHuman = $('.section--making-digital-human').eq(0),
+        	$sectionCuriousPlayfulInformative = $('.section--curious-playful-informative').eq(0);
+
+
+        var sectionIntro = new SectionIntro(controller, $sectionIntro, $sectionIntro.index()),
+        	sectionMakingDigitalHuman = new SectionMakingDigitalHuman(controller, $sectionMakingDigitalHuman, $sectionMakingDigitalHuman.index()),
+        	sectionCuriousPlayfulInformative = new SectionCuriousPlayfulInformative(controller, $sectionCuriousPlayfulInformative, $sectionCuriousPlayfulInformative.index());
+    };
+
+
+
 
 
     /**
@@ -76,18 +110,11 @@ var Sections = module.exports = function(controller, $sections) {
      */
 
     var reset = function() {
-
         controller.resetScrollScenes();
 
-        // @TODO this seems like the wrong place for this
-        var sections = [],
-            $sections = $('.section'),
-            sectionsLength = $sections.length;
+        // Need to reset each section
 
-        // Re-init each section
-        // $('.section').each(function(index, item) {
-        //     sections[index] = new Section(index, $(item), sectionsLength);
-        // });
+        initSections();
 
     };
 
