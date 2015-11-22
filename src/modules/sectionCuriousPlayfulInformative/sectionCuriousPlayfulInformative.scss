@@ -1,0 +1,25 @@
+/*
+ * sectionCuriousPlayfulInformative module
+ */
+
+/* ==========================================================================
+   Common
+   ========================================================================== */
+
+   .section--curious-playful-informative {
+
+       .section__content {
+           display: none; //@TODO visually hidden
+       }
+       &[data-section-in-view="true"] {
+
+           .section__content {
+               display: block;
+               position: fixed;
+               top: 50%;
+               left: 0;
+               width: 100%;
+               margin-top: -($designFontSize / $designWidth * 100vw) / 2 // Half fontsize
+           }
+       }
+   }

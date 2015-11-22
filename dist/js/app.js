@@ -22956,6 +22956,7 @@ var Section = module.exports = function(sectionIndex, $section, totalSections) {
             })
             .on('start', function() {
                 $section.trigger('sectionEnter');
+                $section.attr('data-section-in-view', true);
 
                 // On scrolling into last section, duplicate sections
                 // for infinite loop effect
@@ -22965,13 +22966,20 @@ var Section = module.exports = function(sectionIndex, $section, totalSections) {
             })
             .on('end', function() {
                 $section.trigger('sectionLeave');
+                $section.attr('data-section-in-view', '');
             });
 
         //@TODO this shouldn't be here!
         if (sectionIndex === 1) {
             scene.setPin($section.get(0), {pushFollowers: false});
-            scene.duration = $section.height() * 3;
         }
+
+        //@TODO this shouldn't be here!
+        if (sectionIndex === 2) {
+            //scene.setPin($section.find('.section__content').get(0), {pushFollowers: false});
+            //scene.duration = $section.height() * 3;
+        }
+
 
         scene.addTo(scrollScenes);
     };
