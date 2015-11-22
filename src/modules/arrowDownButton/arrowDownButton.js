@@ -121,8 +121,6 @@ var ArrowDownButton = module.exports = function(controller) {
         $currentSection = $(hash);
         $nextSection = getNextSection($currentSection);
 
-        console.log($nextSection);
-
         if ($nextSection.length) {
             $button.prop('hash', '#' + $nextSection.prop('id'));
             buttonShow();
