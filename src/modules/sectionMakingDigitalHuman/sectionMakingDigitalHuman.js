@@ -1,12 +1,20 @@
-/** @module _blank */
+/** @module sectionMakingDigitalHuman */
 
 var $ = require('jquery');
 
 /**
- * @constructor _blank
+ * @constructor sectionMakingDigitalHuman
  * @param {object} controller
  */
 
-var _blank = module.exports = function(controller) {
-  'use strict';
+var sectionMakingDigitalHuman = module.exports = function(controller, $section, index) {
+    'use strict';
+
+    // Add pin
+    var sectionObject = controller.props.sections[index],
+        scene = sectionObject.props.scene;
+
+    scene.setPin($section.get(0), {
+        pushFollowers: false
+    });
 };

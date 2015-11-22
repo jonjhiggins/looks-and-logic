@@ -22589,33 +22589,43 @@ var $ = require('jquery'),
 	Menu = require('./../modules/menu/menu'),
     ArrowDownButton = require('./../modules/ArrowDownButton/ArrowDownButton'),
 	Balls = require('./../modules/balls/balls'),
-    Section = require('./../modules/section/section'),
-	SectionIntro = require('./../modules/sectionIntro/sectionIntro');
+    Sections = require('./../modules/sections/sections'),
+	Section = require('./../modules/section/section'),
+	SectionIntro = require('./../modules/sectionIntro/sectionIntro'),
+	SectionMakingDigitalHuman = require('./../modules/sectionMakingDigitalHuman/sectionMakingDigitalHuman'),
+	SectionCuriousPlayfulInformative = require('./../modules/sectionCuriousPlayfulInformative/sectionCuriousPlayfulInformative');
+
 
 // Variables
 
-var sections = [],
-	$sections = $('.section'),
+var $sections = $('.section'),
 	sectionsLength = $sections.length;
 
 // Init single modules
 var controller = new Controller(),
-	menu = new Menu(controller),
     arrowDownButton = new ArrowDownButton(controller),
-	balls = new Balls(controller);
+	menu = new Menu(controller),
+	balls = new Balls(controller),
+	sections = new Sections(controller, $('.sections').eq(0));
 
 
-// Init each section
+// Init sections: common
 
 $('.section').each(function (index, item) {
-	sections[index] = new Section(controller, index, $(item), sectionsLength);
+	controller.props.sections[index] = new Section(controller, $(item), index, sectionsLength);
 });
 
-// Init single sections @TODO move to section.js?
+// Init sections: specific
+var $sectionIntro = $('.section--intro').eq(0),
+	$sectionMakingDigitalHuman = $('.section--making-digital-human').eq(0),
+	$sectionCuriousPlayfulInformative = $('.section--curious-playful-informative').eq(0);
 
-var sectionIntro = new SectionIntro(controller, $('.section--intro'));
 
-},{"./../modules/ArrowDownButton/ArrowDownButton":8,"./../modules/balls/balls":9,"./../modules/controller/controller":10,"./../modules/menu/menu":11,"./../modules/section/section":12,"./../modules/sectionIntro/sectionIntro":13,"jquery":3}],8:[function(require,module,exports){
+var sectionIntro = new SectionIntro(controller, $sectionIntro, $sectionIntro.index()),
+	sectionMakingDigitalHuman = new SectionMakingDigitalHuman(controller, $sectionMakingDigitalHuman, $sectionMakingDigitalHuman.index()),
+	sectionCuriousPlayfulInformative = new SectionCuriousPlayfulInformative(controller, $sectionCuriousPlayfulInformative, $sectionCuriousPlayfulInformative.index());
+
+},{"./../modules/ArrowDownButton/ArrowDownButton":8,"./../modules/balls/balls":9,"./../modules/controller/controller":10,"./../modules/menu/menu":11,"./../modules/section/section":12,"./../modules/sectionCuriousPlayfulInformative/sectionCuriousPlayfulInformative":13,"./../modules/sectionIntro/sectionIntro":14,"./../modules/sectionMakingDigitalHuman/sectionMakingDigitalHuman":15,"./../modules/sections/sections":16,"jquery":3}],8:[function(require,module,exports){
 /** @module ArrowDownButton */
 
 /*globals Power2:true, console*/
@@ -22665,7 +22675,7 @@ var ArrowDownButton = module.exports = function(controller) {
     	if (nextSectionId) {
     		$button.prop('hash', nextSectionId);
     	} else {
-    		$window.on('sections:sectionsInited', setInitialHash);
+    		$window.on('section:sectionsInited', setInitialHash);
     	}
     };
 
@@ -22896,6 +22906,8 @@ var Balls = module.exports = function(controller) {
  * @constructor controller
  */
 
+ var ScrollMagic = require('scrollmagic');
+
 var controller = module.exports = function() {
   'use strict';
 
@@ -22903,16 +22915,30 @@ var controller = module.exports = function() {
    * App properties, states and settings
    * @namespace $prop
    * @property {boolean} autoScrolling is app auto-scrolling? Used to differentiate manual scrolling
+   * @property {array} sections app's sections
+   * @property {object} scrollScenes scrollmagic controller
    */
 
   this.props = {
-      autoScrolling: false
+      autoScrolling: false,
+      sections: [],
+      scrollScenes: new ScrollMagic.Controller()
+  };
+
+  /**
+   * Reset scrollScenes
+   * @method resetScrollScenes
+   */
+
+  this.resetScrollScenes = function() {
+      this.props.scrollScenes.destroy(true);
+      this.props.scrollScenes = new ScrollMagic.Controller();
   };
 
   return this;
 };
 
-},{}],11:[function(require,module,exports){
+},{"scrollmagic":4}],11:[function(require,module,exports){
 /** @module Menu */
 
 var $ = require('jquery');
@@ -22941,93 +22967,61 @@ var $ = require('jquery'),
  * jQuery elements
  * @namespace cache
  * @property {jQuery} window
- * @property {jQuery} originalSections sections stored once for duplication
- * @property {jQuery} $parent containing .sections element
  */
 
 var cache = {
-    $window: $(window),
-    $originalSections: null,
-    $parent: null
+    $window: $(window)
 };
-
-/**
- * ScrollMagic controller
- * @var {Object} scrollScenes
- */
-
-var scrollScenes;
 
 /**
  * Common JS for all section components
  * @constructor Section
  * @param {object} controller
- * @param {Number} sectionIndex
  * @param {jQuery} $section
+ * @param {number} index
+ * @param {number} sectionsLength
  */
 
-var Section = module.exports = function(controller, sectionIndex, $section, totalSections) {
+var Section = module.exports = function(controller, $section, index, sectionsLength) {
     'use strict';
 
     /**
-     * Module properties, states and settings
+     * App properties, states and settings
      * @namespace $prop
-     * @property {boolean} isFirst is it first section?
-     * @property {boolean} isLast is it last section?
+     * @property {boolean} isLast
+     * @property {object} scene scrollMagic scene
      */
 
-    var props = {
-        isFirst: (sectionIndex === 0),
-        isLast: (sectionIndex === totalSections - 1)
+    this.props = {
+        isLast: index === (sectionsLength - 1),
+        scene: null,
     };
 
     /**
      * Initialise the component
      * Everything here should be undone using the "reset" function
-     * @function init
+     * @method init
      */
 
-    var init = function() {
-
-        // Cache sections for later duplication
-        if (!cache.$originalSections) {
-            cacheOriginalSections();
-        }
-
-        // Run once for first section only
-        if (props.isFirst) {
-            initSectionController();
-        }
-
+    this.init = function() {
         // Run for each section
-        setBackgroundColours();
-        addScrollScene();
-        addId();
-
+        this.setBackgroundColours();
+        this.addScrollScene();
+        this.addId();
 
         // All sections initialised - must remain at end of init function
-        if (props.isLast) {
-            cache.$window.trigger('sections:sectionsInited');
+        if (this.props.isLast) {
+            cache.$window.trigger('section:sectionsInited');
         }
     };
 
     /**
-     * Controller methods that only need to be run once,
-     * rather than for all sections
-     * @function initSectionController
-     */
-
-    var initSectionController = function() {
-        scrollScenes = new ScrollMagic.Controller();
-    };
-
-    /**
-     * Set the background colours of each section
+     * Set the background colours of a section
      * These should alternate white/black - unless data-background-same is set to true
-     * @function setBackgroundColours
+     * @method setBackgroundColours
      */
 
-    var setBackgroundColours = function() {
+    this.setBackgroundColours = function() {
 
         var background,
             previousSectionBackground = $section.prev().data('background') ? $section.prev().data('background') : $section.prev().find('.section').data('background');
@@ -23051,8 +23045,8 @@ var Section = module.exports = function(controller, sectionIndex, $section, tota
      * @function addScrollScene
      */
 
-    var addScrollScene = function() {
-        var scene = new ScrollMagic.Scene({
+    this.addScrollScene = function() {
+        this.props.scene = new ScrollMagic.Scene({
                 triggerElement: $section.get(0),
                 duration: $section.height()
             })
@@ -23062,94 +23056,52 @@ var Section = module.exports = function(controller, sectionIndex, $section, tota
 
                 // On scrolling into last section, duplicate sections
                 // for infinite loop effect
-                if (props.isLast) {
-                    duplicateSections();
+                if (this.props.isLast) {
+                    cache.$window.trigger('sections:duplicateSections', $section);
                 }
-            })
+
+            }.bind(this))
             .on('end', function() {
                 $section.trigger('sectionLeave');
                 $section.attr('data-section-in-view', '');
             });
 
-        //@TODO this shouldn't be here!
-        if (sectionIndex === 1) {
-            scene.setPin($section.get(0), {pushFollowers: false});
-        }
-
-        //@TODO this shouldn't be here!
-        if (sectionIndex === 2) {
-            //scene.setPin($section.find('.section__content').get(0), {pushFollowers: false});
-            //scene.duration = $section.height() * 3;
-        }
-
-
-        scene.addTo(scrollScenes);
+        this.props.scene.addTo(controller.props.scrollScenes);
     };
 
     /**
      * Add ID (used for navigation, component indicator etc)
-     * @function addId
+     * @method addId
      */
 
-     var addId = function() {
+     this.addId = function() {
          if (!$section.attr('id')) {
-             $section.attr('id', 'section--' + sectionIndex);
+             // @TODO should be index not random
+             $section.attr('id', 'section--' + Math.round(Math.random() * 10000));
          }
      };
 
+    this.init();
 
-    /**
-     * Cache sections once for later duplication
-     * @function cacheOriginalSections
-     */
-
-    var cacheOriginalSections = function() {
-        var $parent = $section.parent('.sections');
-        cache.$originalSections = $parent.find('.section').clone();
-        cache.$parent = $parent;
-    };
-
-    /**
-     * Duplicate previous sections so that they appear in an infinite loop
-     * @function duplicateSections
-     */
-
-    var duplicateSections = function() {
-        // Only duplicate if there are no sections after current "last" section
-        if (!$section.next().length) {
-            // Duplicate and append original sections
-            cache.$parent.append(cache.$originalSections.clone());
-
-            // Reset everything
-            reset();
-        }
-    };
-
-    /**
-     * Reset all component behaviour, remove handlers
-     * @function reset
-     */
-
-    var reset = function() {
-        scrollScenes.destroy(true);
-
-        // @TODO this seems like the wrong place for this
-        var sections = [],
-            $sections = $('.section'),
-            sectionsLength = $sections.length;
-
-        // Re-init each section
-        $('.section').each(function(index, item) {
-            sections[index] = new Section(index, $(item), sectionsLength);
-        });
-
-    };
-
-    init();
+    return this;
 
 };
 
 },{"jquery":3,"scrollmagic":4}],13:[function(require,module,exports){
+/** @module sectionCuriousPlayfulInformative */
+
+var $ = require('jquery');
+
+/**
+ * @constructor sectionCuriousPlayfulInformative
+ * @param {object} controller
+ */
+
+var sectionCuriousPlayfulInformative = module.exports = function(controller) {
+  'use strict';
+};
+
+},{"jquery":3}],14:[function(require,module,exports){
 /** @module Section */
 /*globals Power2:true, console*/
 
@@ -23234,4 +23186,126 @@ var SectionIntro = module.exports = function(controller, $element) {
 
 };
 
-},{"jquery":3,"scrollmagic":4,"snapsvg":5}]},{},[7]);
+},{"jquery":3,"scrollmagic":4,"snapsvg":5}],15:[function(require,module,exports){
+/** @module sectionMakingDigitalHuman */
+
+var $ = require('jquery');
+
+/**
+ * @constructor sectionMakingDigitalHuman
+ * @param {object} controller
+ */
+
+var sectionMakingDigitalHuman = module.exports = function(controller, $section, index) {
+    'use strict';
+
+    // Add pin
+    var sectionObject = controller.props.sections[index],
+        scene = sectionObject.props.scene;
+
+    scene.setPin($section.get(0), {
+        pushFollowers: false
+    });
+};
+
+},{"jquery":3}],16:[function(require,module,exports){
+/** @module Sections */
+/*globals console*/
+
+var $ = require('jquery');
+
+/**
+ * jQuery elements
+ * @namespace cache
+ * @property {jQuery} window
+ * @property {jQuery} originalSections sections stored once for duplication
+ * @property {jQuery} currentSections live sections
+ */
+
+var cache = {
+    $window: $(window),
+    $originalSections: null,
+    $currentSection: null
+};
+
+/**
+ * Common JS for all section components
+ * @constructor Section
+ * @param {object} controller
+ * @param {jQuery} $sections
+ */
+
+var Sections = module.exports = function(controller, $sections) {
+    'use strict';
+
+    /**
+     * Initialise the component
+     * Everything here should be undone using the "reset" function
+     * @function init
+     */
+
+    var init = function() {
+
+        // Cache sections for later duplication
+        cacheOriginalSections();
+
+        cache.$window.on('sections:duplicateSections', duplicateSections);
+
+
+    };
+
+
+    /**
+     * Cache sections once for later duplication
+     * @function cacheOriginalSections
+     */
+
+    var cacheOriginalSections = function() {
+        cache.$originalSections = $sections.find('.section').clone();
+    };
+
+    /**
+     * Duplicate previous sections so that they appear in an infinite loop
+     * @function duplicateSections
+     */
+
+    var duplicateSections = function(event, section) {
+        var $section = $(section);
+        // Only duplicate if there are no sections after current "last" section
+        if (!$section.next().length) {
+            // Duplicate and append original sections
+            $sections.append(cache.$originalSections.clone());
+
+            // Reset everything
+            reset();
+        }
+    };
+
+    /**
+     * Reset all component behaviour, remove handlers
+     * @function reset
+     */
+
+    var reset = function() {
+
+        controller.resetScrollScenes();
+
+        // @TODO this seems like the wrong place for this
+        var sections = [],
+            $sections = $('.section'),
+            sectionsLength = $sections.length;
+
+        // Re-init each section
+        // $('.section').each(function(index, item) {
+        //     sections[index] = new Section(index, $(item), sectionsLength);
+        // });
+
+    };
+
+    init();
+
+    return this;
+
+};
+
+},{"jquery":3}]},{},[7]);

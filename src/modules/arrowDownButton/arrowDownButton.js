@@ -47,7 +47,7 @@ var ArrowDownButton = module.exports = function(controller) {
     	if (nextSectionId) {
     		$button.prop('hash', nextSectionId);
     	} else {
-    		$window.on('sections:sectionsInited', setInitialHash);
+    		$window.on('section:sectionsInited', setInitialHash);
     	}
     };
 
