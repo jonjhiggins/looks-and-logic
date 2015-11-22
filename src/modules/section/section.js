@@ -19,11 +19,11 @@ var cache = {
  * @constructor Section
  * @param {object} controller
  * @param {jQuery} $section
- * @param {number} index
+ * @param {number} sectionIndex
  * @param {number} sectionsLength
  */
 
-var Section = module.exports = function(controller, $section, index, sectionsLength) {
+var Section = module.exports = function(controller, $section, sectionIndex, sectionsLength) {
     'use strict';
 
     /**
@@ -34,7 +34,7 @@ var Section = module.exports = function(controller, $section, index, sectionsLen
      */
 
     this.props = {
-        isLast: index === (sectionsLength - 1),
+        isLast: sectionIndex === (sectionsLength - 1),
         scene: null,
     };
 
@@ -117,8 +117,7 @@ var Section = module.exports = function(controller, $section, index, sectionsLen
 
      this.addId = function() {
          if (!$section.attr('id')) {
-             // @TODO should be index not random
-             $section.attr('id', 'section--' + Math.round(Math.random() * 10000));
+             $section.attr('id', 'section--' + sectionIndex);
          }
      };
 
