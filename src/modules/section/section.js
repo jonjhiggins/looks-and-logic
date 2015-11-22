@@ -69,6 +69,12 @@ var Section = module.exports = function(sectionIndex, $section, totalSections) {
         setBackgroundColours();
         addScrollScene();
         addId();
+
+
+        // All sections initialised - must remain at end of init function
+        if (props.isLast) {
+            cache.$window.trigger('sections:sectionsInited');
+        }
     };
 
     /**

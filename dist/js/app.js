@@ -22619,15 +22619,15 @@ var sectionIntro = new SectionIntro($('.section--intro'));
 /*globals Power2:true, console*/
 
 var $ = require('jquery'),
-	TweenLite = require('./../../../node_modules/gsap/src/uncompressed/TweenLite.js'),
-  ScrollToPlugin = require('./../../../node_modules/gsap/src/uncompressed/plugins/ScrollToPlugin.js');
+    TweenLite = require('./../../../node_modules/gsap/src/uncompressed/TweenLite.js'),
+    ScrollToPlugin = require('./../../../node_modules/gsap/src/uncompressed/plugins/ScrollToPlugin.js');
 
 var options = {
-  scrollDownDuration: 0.8
+    scrollDownDuration: 0.8
 };
 
 var $button = $('#arrowDownButton'),
-	$window = $(window),
+    $window = $(window),
     $currentSection = $('.section').eq(0), //@TODO change depending on scroll position
     $nextSection;
 
@@ -22636,10 +22636,29 @@ var $button = $('#arrowDownButton'),
  */
 
 var ArrowDownButton = module.exports = function() {
-  'use strict';
-  changeIconColour();
-  $button.on('click', buttonClick);
-  $window.one('scroll', pageScroll);
+    'use strict';
+    changeIconColour();
+    setInitialHash();
+    $button.on('click', buttonClick);
+    $window.one('scroll', pageScroll);
+};
+
+/**
+ * Set hash/href of button to next section
+ * @function setInitialHash
+ */
+
+var setInitialHash = function() {
+	// @TODO $nextSection selector simplify. accounts for scrollmagic pin
+    var $nextSection = $currentSection.next().hasClass('.section') ? $currentSection.next() : $currentSection.next().find('.section'),
+		nextSectionId = $nextSection.attr('id');
+console.log($nextSection);
+	if (nextSectionId) {
+		$button.prop('hash', nextSectionId);
+	} else {
+		$window.on('sections:sectionsInited', setInitialHash);
+	}
+
 };
 
 /**
@@ -22647,22 +22666,24 @@ var ArrowDownButton = module.exports = function() {
  * @function buttonClick
  */
 
-var buttonClick = function (e) {
+var buttonClick = function(e) {
 
-  e.preventDefault();
+    e.preventDefault();
 
-  var hash = $(this).prop('hash'),
-      sectionTop = $(hash).offset().top;
+    var hash = $(this).prop('hash'),
+        sectionTop = $(hash).offset().top;
 
-  // Scroll to next section top
-  TweenLite.to(window, options.scrollDownDuration, {
-      scrollTo:{y: sectionTop},
-      ease:Power2.easeOut,
-      onComplete: scrollComplete
+    // Scroll to next section top
+    TweenLite.to(window, options.scrollDownDuration, {
+        scrollTo: {
+            y: sectionTop
+        },
+        ease: Power2.easeOut,
+        onComplete: scrollComplete
     });
 
-  // Hide arrow
-  buttonHide();
+    // Hide arrow
+    buttonHide();
 };
 
 /**
@@ -22670,18 +22691,18 @@ var buttonClick = function (e) {
  * @function scrollComplete
  */
 
-var scrollComplete = function () {
+var scrollComplete = function() {
 
-  // Update button's hash to next section
-  var hash = $button.prop('hash');
+    // Update button's hash to next section
+    var hash = $button.prop('hash');
 
-  $currentSection = $(hash);
-  $nextSection = $currentSection.next();
+    $currentSection = $(hash);
+    $nextSection = $currentSection.next();
 
-  if ($nextSection.length) {
-    $button.prop('hash', '#' + $nextSection.prop('id'));
-    buttonShow();
-  }
+    if ($nextSection.length) {
+        $button.prop('hash', '#' + $nextSection.prop('id'));
+        buttonShow();
+    }
 
 };
 
@@ -22689,17 +22710,17 @@ var scrollComplete = function () {
  * @function buttonHide
  */
 
-var buttonHide = function () {
-  $button.addClass('hidden');
+var buttonHide = function() {
+    $button.addClass('hidden');
 };
 
 /**
  * @function buttonShow
  */
 
-var buttonShow = function () {
-  changeIconColour();
-  $button.removeClass('hidden');
+var buttonShow = function() {
+    changeIconColour();
+    $button.removeClass('hidden');
 };
 
 /**
@@ -22707,12 +22728,12 @@ var buttonShow = function () {
  * @function changeIconColour
  */
 
-var changeIconColour = function () {
-  if ($currentSection.attr('data-background') === 'white') {
-    $button.attr('data-colour', 'black');
-  } else {
-    $button.attr('data-colour', 'white');
-  }
+var changeIconColour = function() {
+    if ($currentSection.attr('data-background') === 'white') {
+        $button.attr('data-colour', 'black');
+    } else {
+        $button.attr('data-colour', 'white');
+    }
 };
 
 /**
@@ -22720,8 +22741,8 @@ var changeIconColour = function () {
  * @function pageScroll
  */
 
-var pageScroll = function () {
-  buttonHide();
+var pageScroll = function() {
+    buttonHide();
 };
 
 },{"./../../../node_modules/gsap/src/uncompressed/TweenLite.js":1,"./../../../node_modules/gsap/src/uncompressed/plugins/ScrollToPlugin.js":2,"jquery":3}],9:[function(require,module,exports){
@@ -22908,6 +22929,12 @@ var Section = module.exports = function(sectionIndex, $section, totalSections) {
         setBackgroundColours();
         addScrollScene();
         addId();
+
+
+        // All sections initialised - must remain at end of init function
+        if (props.isLast) {
+            cache.$window.trigger('sections:sectionsInited');
+        }
     };
 
     /**
