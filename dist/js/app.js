@@ -23023,7 +23023,7 @@ var Section = module.exports = function(controller, $section, sectionIndex, sect
                 triggerElement: $section.get(0),
                 duration: $section.height()
             })
-            .on('start', function() {
+            .on('enter', function() {
                 $section.trigger('sectionEnter');
                 $section.attr('data-section-in-view', true);
 
@@ -23034,7 +23034,7 @@ var Section = module.exports = function(controller, $section, sectionIndex, sect
                 }
 
             }.bind(this))
-            .on('end', function() {
+            .on('leave', function() {
                 $section.trigger('sectionLeave');
                 $section.attr('data-section-in-view', '');
             });
