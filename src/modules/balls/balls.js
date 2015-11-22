@@ -22,9 +22,9 @@ var cache = {
 };
 
 
-var Balls = module.exports = function() {
+var Balls = module.exports = function(controller) {
     'use strict';
-
+    
     /**
     * Module properties, states and settings
     * @namespace $prop

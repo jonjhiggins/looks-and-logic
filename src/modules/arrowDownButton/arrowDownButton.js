@@ -17,14 +17,19 @@ var $button = $('#arrowDownButton'),
 
 /**
  * @constructor ArrowDownButton
+ * @param {object} controller
  */
 
-var ArrowDownButton = module.exports = function() {
+var ArrowDownButton = module.exports = function(controller) {
     'use strict';
     changeIconColour();
     setInitialHash();
     $button.on('click', buttonClick);
     $window.one('scroll', pageScroll);
+
+    console.log(controller.props.property);
+    controller.props.property = 'aaa';
+    console.warn(controller.props.property);
 };
 
 /**
@@ -36,7 +41,7 @@ var setInitialHash = function() {
 	// @TODO $nextSection selector simplify. accounts for scrollmagic pin
     var $nextSection = $currentSection.next().hasClass('.section') ? $currentSection.next() : $currentSection.next().find('.section'),
 		nextSectionId = $nextSection.attr('id');
-console.log($nextSection);
+
 	if (nextSectionId) {
 		$button.prop('hash', nextSectionId);
 	} else {

@@ -7,10 +7,11 @@ var $ = require('jquery'),
 
 /**
  * @constructor SectionIntro
+ * @param {object} controller
  * @param {jQuery} $element section element
  */
 
-var SectionIntro = module.exports = function($element) {
+var SectionIntro = module.exports = function(controller, $element) {
     'use strict';
 
     /**

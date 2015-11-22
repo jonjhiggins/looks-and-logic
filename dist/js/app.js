@@ -22585,6 +22585,7 @@ return Snap;
 // Requires
 
 var $ = require('jquery'),
+	Controller = require('./../modules/controller/controller'),
 	Menu = require('./../modules/menu/menu'),
     ArrowDownButton = require('./../modules/ArrowDownButton/ArrowDownButton'),
 	Balls = require('./../modules/balls/balls'),
@@ -22598,22 +22599,23 @@ var sections = [],
 	sectionsLength = $sections.length;
 
 // Init single modules
-var menu = new Menu(),
-    arrowDownButton = new ArrowDownButton(),
-	balls = new Balls();
+var controller = new Controller(),
+	menu = new Menu(controller),
+    arrowDownButton = new ArrowDownButton(controller),
+	balls = new Balls(controller);
 
 
 // Init each section
 
 $('.section').each(function (index, item) {
-	sections[index] = new Section(index, $(item), sectionsLength);
+	sections[index] = new Section(controller, index, $(item), sectionsLength);
 });
 
 // Init single sections @TODO move to section.js?
 
-var sectionIntro = new SectionIntro($('.section--intro'));
+var sectionIntro = new SectionIntro(controller, $('.section--intro'));
 
-},{"./../modules/ArrowDownButton/ArrowDownButton":8,"./../modules/balls/balls":9,"./../modules/menu/menu":10,"./../modules/section/section":11,"./../modules/sectionIntro/sectionIntro":12,"jquery":3}],8:[function(require,module,exports){
+},{"./../modules/ArrowDownButton/ArrowDownButton":8,"./../modules/balls/balls":9,"./../modules/controller/controller":10,"./../modules/menu/menu":11,"./../modules/section/section":12,"./../modules/sectionIntro/sectionIntro":13,"jquery":3}],8:[function(require,module,exports){
 /** @module ArrowDownButton */
 
 /*globals Power2:true, console*/
@@ -22633,14 +22635,19 @@ var $button = $('#arrowDownButton'),
 
 /**
  * @constructor ArrowDownButton
+ * @param {object} controller
  */
 
-var ArrowDownButton = module.exports = function() {
+var ArrowDownButton = module.exports = function(controller) {
     'use strict';
     changeIconColour();
     setInitialHash();
     $button.on('click', buttonClick);
     $window.one('scroll', pageScroll);
+
+    console.log(controller.props.property);
+    controller.props.property = 'aaa';
+    console.warn(controller.props.property);
 };
 
 /**
@@ -22652,7 +22659,7 @@ var setInitialHash = function() {
 	// @TODO $nextSection selector simplify. accounts for scrollmagic pin
     var $nextSection = $currentSection.next().hasClass('.section') ? $currentSection.next() : $currentSection.next().find('.section'),
 		nextSectionId = $nextSection.attr('id');
-console.log($nextSection);
+
 	if (nextSectionId) {
 		$button.prop('hash', nextSectionId);
 	} else {
@@ -22770,9 +22777,9 @@ var cache = {
 };
 
 
-var Balls = module.exports = function() {
+var Balls = module.exports = function(controller) {
     'use strict';
-
+    
     /**
     * Module properties, states and settings
     * @namespace $prop
@@ -22841,15 +22848,33 @@ var Balls = module.exports = function() {
 };
 
 },{"jquery":3}],10:[function(require,module,exports){
+/** @module controller */
+
+/**
+ * @constructor controller
+ */
+
+var controller = module.exports = function() {
+  'use strict';
+
+  this.props = {
+      
+  };
+
+  return this;
+};
+
+},{}],11:[function(require,module,exports){
 /** @module Menu */
 
 var $ = require('jquery');
 
 /**
  * @constructor Menu
+ * @param {object} controller
  */
 
-var Menu = module.exports = function() {
+var Menu = module.exports = function(controller) {
   'use strict';
 
   var $body = $('body'),
@@ -22857,7 +22882,7 @@ var Menu = module.exports = function() {
 
 };
 
-},{"jquery":3}],11:[function(require,module,exports){
+},{"jquery":3}],12:[function(require,module,exports){
 /** @module Section */
 /*globals Power2:true, console*/
 
@@ -22888,11 +22913,12 @@ var scrollScenes;
 /**
  * Common JS for all section components
  * @constructor Section
+ * @param {object} controller
  * @param {Number} sectionIndex
  * @param {jQuery} $section
  */
 
-var Section = module.exports = function(sectionIndex, $section, totalSections) {
+var Section = module.exports = function(controller, sectionIndex, $section, totalSections) {
     'use strict';
 
     /**
@@ -23075,7 +23101,7 @@ var Section = module.exports = function(sectionIndex, $section, totalSections) {
 
 };
 
-},{"jquery":3,"scrollmagic":4}],12:[function(require,module,exports){
+},{"jquery":3,"scrollmagic":4}],13:[function(require,module,exports){
 /** @module Section */
 /*globals Power2:true, console*/
 
@@ -23085,10 +23111,11 @@ var $ = require('jquery'),
 
 /**
  * @constructor SectionIntro
+ * @param {object} controller
  * @param {jQuery} $element section element
  */
 
-var SectionIntro = module.exports = function($element) {
+var SectionIntro = module.exports = function(controller, $element) {
     'use strict';
 
     /**

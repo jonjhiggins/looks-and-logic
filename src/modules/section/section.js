@@ -28,11 +28,12 @@ var scrollScenes;
 /**
  * Common JS for all section components
  * @constructor Section
+ * @param {object} controller
  * @param {Number} sectionIndex
  * @param {jQuery} $section
  */
 
-var Section = module.exports = function(sectionIndex, $section, totalSections) {
+var Section = module.exports = function(controller, sectionIndex, $section, totalSections) {
     'use strict';
 
     /**
