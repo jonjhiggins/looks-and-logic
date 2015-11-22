@@ -22907,6 +22907,7 @@ var Section = module.exports = function(sectionIndex, $section, totalSections) {
         // Run for each section
         setBackgroundColours();
         addScrollScene();
+        addId();
     };
 
     /**
@@ -22985,6 +22986,18 @@ var Section = module.exports = function(sectionIndex, $section, totalSections) {
     };
 
     /**
+     * Add ID (used for navigation, component indicator etc)
+     * @function addId
+     */
+
+     var addId = function() {
+         if (!$section.attr('id')) {
+             $section.attr('id', 'section--' + sectionIndex);
+         }
+     };
+
+
+    /**
      * Cache sections once for later duplication
      * @function cacheOriginalSections
      */
@@ -23026,7 +23039,6 @@ var Section = module.exports = function(sectionIndex, $section, totalSections) {
 
         // Re-init each section
         $('.section').each(function(index, item) {
-
             sections[index] = new Section(index, $(item), sectionsLength);
         });
 
