@@ -8,7 +8,10 @@
 
    .section--curious-playful-informative {
 
-       transform: translateY(-33.33vh); // Move up so it's in view in previous section
+       width: 100%;
+       position: relative !important; // @TODO this is overriding ScrollMagic :/
+       top: 0 !important;
+
        .section__content {
            display: none; //@TODO visually hidden
        }
