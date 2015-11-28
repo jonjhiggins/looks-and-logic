@@ -52,7 +52,7 @@ var Section = module.exports = function(controller, $section, sectionIndex, sect
 
         // All sections initialised - must remain at end of init function
         if (this.props.isLast) {
-            cache.$window.trigger('section:sectionsInited');
+            controller.emitter.emit('section:sectionsInited');
         }
     };
 
@@ -87,23 +87,24 @@ var Section = module.exports = function(controller, $section, sectionIndex, sect
      */
 
     this.addScrollScene = function() {
+
         this.props.scene = new ScrollMagic.Scene({
                 triggerElement: $section.get(0),
                 duration: $section.height()
             })
             .on('enter', function() {
-                $section.trigger('sectionEnter');
+                controller.emitter.emit('section:sectionEnter', $section);
                 $section.attr('data-section-in-view', true);
 
                 // On scrolling into last section, duplicate sections
                 // for infinite loop effect
                 if (this.props.isLast) {
-                    cache.$window.trigger('sections:duplicateSections', $section);
+                    controller.emitter.emit('sections:duplicateSections', $section);
                 }
 
             }.bind(this))
             .on('leave', function() {
-                $section.trigger('sectionLeave');
+                controller.emitter.emit('section:sectionLeave', $section);
                 $section.attr('data-section-in-view', '');
             });
 

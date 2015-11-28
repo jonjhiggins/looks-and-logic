@@ -42,7 +42,7 @@ var Sections = module.exports = function(controller, $sections) {
         // Cache sections for later duplication
         cacheOriginalSections();
 
-        cache.$window.on('sections:duplicateSections', duplicateSections);
+        controller.emitter.on('sections:duplicateSections', duplicateSections);
 
         initSections();
 

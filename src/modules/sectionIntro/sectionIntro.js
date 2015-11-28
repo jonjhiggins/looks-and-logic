@@ -35,8 +35,11 @@ var SectionIntro = module.exports = function(controller, $element) {
      */
 
     var init = function() {
-        $element.on('sectionLeave', function() {
-            cache.$window.trigger('ball1Drop');
+        controller.emitter.on('section:sectionLeave', function($sectionLeave) {
+            // When leaving this section, trigger ball1Drop
+            if ($sectionLeave.get(0) === $element.get(0)) {
+                controller.emitter.emit('balls:ball1Drop');
+            }
         });
 
         loadSVG();
@@ -60,11 +63,10 @@ var SectionIntro = module.exports = function(controller, $element) {
 
             var ball1Position = svgObject.select('#ball1').node.getBoundingClientRect(),
                 ball2Position = svgObject.select('#ball2').node.getBoundingClientRect();
-
             //@TODO promise
 
-            cache.$window.trigger('balls:showBall1', ball1Position);
-            cache.$window.trigger('balls:showBall2', ball2Position);
+            controller.emitter.emit('balls:showBall1', ball1Position);
+            controller.emitter.emit('balls:showBall2', ball2Position);
         });
     };
 

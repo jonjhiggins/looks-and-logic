@@ -24,7 +24,7 @@ var cache = {
 
 var Balls = module.exports = function(controller) {
     'use strict';
-    
+
     /**
     * Module properties, states and settings
     * @namespace $prop
@@ -42,9 +42,9 @@ var Balls = module.exports = function(controller) {
      */
 
     var init = function() {
-        cache.$window.on('ball1Drop', ball1Drop);
-        cache.$window.on('balls:showBall1', showBall.bind(cache.$ball1));
-        cache.$window.on('balls:showBall2', showBall.bind(cache.$ball2));
+        controller.emitter.on('balls:ball1Drop', ball1Drop);
+        controller.emitter.on('balls:showBall1', showBall.bind(cache.$ball1));
+        controller.emitter.on('balls:showBall2', showBall.bind(cache.$ball2));
     };
 
     /**
@@ -74,11 +74,10 @@ var Balls = module.exports = function(controller) {
     /**
      * Show ball 1
      * @function showBall1
-     * @param {object} event
      * @param {object} position
      */
 
-    var showBall = function(event, position) {
+    var showBall = function(position) {
         this.css({
             top: position.top,
             left: position.left,

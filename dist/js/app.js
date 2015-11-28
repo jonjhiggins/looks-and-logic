@@ -1,4 +1,307 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+function EventEmitter() {
+  this._events = this._events || {};
+  this._maxListeners = this._maxListeners || undefined;
+}
+module.exports = EventEmitter;
+
+// Backwards-compat with node 0.10.x
+EventEmitter.EventEmitter = EventEmitter;
+
+EventEmitter.prototype._events = undefined;
+EventEmitter.prototype._maxListeners = undefined;
+
+// By default EventEmitters will print a warning if more than 10 listeners are
+// added to it. This is a useful default which helps finding memory leaks.
+EventEmitter.defaultMaxListeners = 10;
+
+// Obviously not all Emitters should be limited to 10. This function allows
+// that to be increased. Set to zero for unlimited.
+EventEmitter.prototype.setMaxListeners = function(n) {
+  if (!isNumber(n) || n < 0 || isNaN(n))
+    throw TypeError('n must be a positive number');
+  this._maxListeners = n;
+  return this;
+};
+
+EventEmitter.prototype.emit = function(type) {
+  var er, handler, len, args, i, listeners;
+
+  if (!this._events)
+    this._events = {};
+
+  // If there is no 'error' event listener then throw.
+  if (type === 'error') {
+    if (!this._events.error ||
+        (isObject(this._events.error) && !this._events.error.length)) {
+      er = arguments[1];
+      if (er instanceof Error) {
+        throw er; // Unhandled 'error' event
+      }
+      throw TypeError('Uncaught, unspecified "error" event.');
+    }
+  }
+
+  handler = this._events[type];
+
+  if (isUndefined(handler))
+    return false;
+
+  if (isFunction(handler)) {
+    switch (arguments.length) {
+      // fast cases
+      case 1:
+        handler.call(this);
+        break;
+      case 2:
+        handler.call(this, arguments[1]);
+        break;
+      case 3:
+        handler.call(this, arguments[1], arguments[2]);
+        break;
+      // slower
+      default:
+        len = arguments.length;
+        args = new Array(len - 1);
+        for (i = 1; i < len; i++)
+          args[i - 1] = arguments[i];
+        handler.apply(this, args);
+    }
+  } else if (isObject(handler)) {
+    len = arguments.length;
+    args = new Array(len - 1);
+    for (i = 1; i < len; i++)
+      args[i - 1] = arguments[i];
+
+    listeners = handler.slice();
+    len = listeners.length;
+    for (i = 0; i < len; i++)
+      listeners[i].apply(this, args);
+  }
+
+  return true;
+};
+
+EventEmitter.prototype.addListener = function(type, listener) {
+  var m;
+
+  if (!isFunction(listener))
+    throw TypeError('listener must be a function');
+
+  if (!this._events)
+    this._events = {};
+
+  // To avoid recursion in the case that type === "newListener"! Before
+  // adding it to the listeners, first emit "newListener".
+  if (this._events.newListener)
+    this.emit('newListener', type,
+              isFunction(listener.listener) ?
+              listener.listener : listener);
+
+  if (!this._events[type])
+    // Optimize the case of one listener. Don't need the extra array object.
+    this._events[type] = listener;
+  else if (isObject(this._events[type]))
+    // If we've already got an array, just append.
+    this._events[type].push(listener);
+  else
+    // Adding the second element, need to change to array.
+    this._events[type] = [this._events[type], listener];
+
+  // Check for listener leak
+  if (isObject(this._events[type]) && !this._events[type].warned) {
+    var m;
+    if (!isUndefined(this._maxListeners)) {
+      m = this._maxListeners;
+    } else {
+      m = EventEmitter.defaultMaxListeners;
+    }
+
+    if (m && m > 0 && this._events[type].length > m) {
+      this._events[type].warned = true;
+      console.error('(node) warning: possible EventEmitter memory ' +
+                    'leak detected. %d listeners added. ' +
+                    'Use emitter.setMaxListeners() to increase limit.',
+                    this._events[type].length);
+      if (typeof console.trace === 'function') {
+        // not supported in IE 10
+        console.trace();
+      }
+    }
+  }
+
+  return this;
+};
+
+EventEmitter.prototype.on = EventEmitter.prototype.addListener;
+
+EventEmitter.prototype.once = function(type, listener) {
+  if (!isFunction(listener))
+    throw TypeError('listener must be a function');
+
+  var fired = false;
+
+  function g() {
+    this.removeListener(type, g);
+
+    if (!fired) {
+      fired = true;
+      listener.apply(this, arguments);
+    }
+  }
+
+  g.listener = listener;
+  this.on(type, g);
+
+  return this;
+};
+
+// emits a 'removeListener' event iff the listener was removed
+EventEmitter.prototype.removeListener = function(type, listener) {
+  var list, position, length, i;
+
+  if (!isFunction(listener))
+    throw TypeError('listener must be a function');
+
+  if (!this._events || !this._events[type])
+    return this;
+
+  list = this._events[type];
+  length = list.length;
+  position = -1;
+
+  if (list === listener ||
+      (isFunction(list.listener) && list.listener === listener)) {
+    delete this._events[type];
+    if (this._events.removeListener)
+      this.emit('removeListener', type, listener);
+
+  } else if (isObject(list)) {
+    for (i = length; i-- > 0;) {
+      if (list[i] === listener ||
+          (list[i].listener && list[i].listener === listener)) {
+        position = i;
+        break;
+      }
+    }
+
+    if (position < 0)
+      return this;
+
+    if (list.length === 1) {
+      list.length = 0;
+      delete this._events[type];
+    } else {
+      list.splice(position, 1);
+    }
+
+    if (this._events.removeListener)
+      this.emit('removeListener', type, listener);
+  }
+
+  return this;
+};
+
+EventEmitter.prototype.removeAllListeners = function(type) {
+  var key, listeners;
+
+  if (!this._events)
+    return this;
+
+  // not listening for removeListener, no need to emit
+  if (!this._events.removeListener) {
+    if (arguments.length === 0)
+      this._events = {};
+    else if (this._events[type])
+      delete this._events[type];
+    return this;
+  }
+
+  // emit removeListener for all listeners on all events
+  if (arguments.length === 0) {
+    for (key in this._events) {
+      if (key === 'removeListener') continue;
+      this.removeAllListeners(key);
+    }
+    this.removeAllListeners('removeListener');
+    this._events = {};
+    return this;
+  }
+
+  listeners = this._events[type];
+
+  if (isFunction(listeners)) {
+    this.removeListener(type, listeners);
+  } else {
+    // LIFO order
+    while (listeners.length)
+      this.removeListener(type, listeners[listeners.length - 1]);
+  }
+  delete this._events[type];
+
+  return this;
+};
+
+EventEmitter.prototype.listeners = function(type) {
+  var ret;
+  if (!this._events || !this._events[type])
+    ret = [];
+  else if (isFunction(this._events[type]))
+    ret = [this._events[type]];
+  else
+    ret = this._events[type].slice();
+  return ret;
+};
+
+EventEmitter.listenerCount = function(emitter, type) {
+  var ret;
+  if (!emitter._events || !emitter._events[type])
+    ret = 0;
+  else if (isFunction(emitter._events[type]))
+    ret = 1;
+  else
+    ret = emitter._events[type].length;
+  return ret;
+};
+
+function isFunction(arg) {
+  return typeof arg === 'function';
+}
+
+function isNumber(arg) {
+  return typeof arg === 'number';
+}
+
+function isObject(arg) {
+  return typeof arg === 'object' && arg !== null;
+}
+
+function isUndefined(arg) {
+  return arg === void 0;
+}
+
+},{}],2:[function(require,module,exports){
 (function (global){
 /*!
  * VERSION: 1.18.0
@@ -1886,7 +2189,7 @@
 
 })((typeof(module) !== "undefined" && module.exports && typeof(global) !== "undefined") ? global : this || window, "TweenLite");
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],2:[function(require,module,exports){
+},{}],3:[function(require,module,exports){
 (function (global){
 /*!
  * VERSION: 1.7.5
@@ -2009,7 +2312,7 @@ var _gsScope = (typeof(module) !== "undefined" && module.exports && typeof(globa
 
 }); if (_gsScope._gsDefine) { _gsScope._gsQueue.pop()(); }
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],3:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 /*!
  * jQuery JavaScript Library v2.1.4
  * http://jquery.com/
@@ -11221,7 +11524,7 @@ return jQuery;
 
 }));
 
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 /*!
  * ScrollMagic v2.0.5 (2015-04-29)
  * The javascript library for magical scroll interactions.
@@ -14002,7 +14305,7 @@ return jQuery;
 
 	return ScrollMagic;
 }));
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 // Snap.svg 0.4.0
 // 
 // Copyright (c) 2013 – 2015 Adobe Systems Incorporated. All rights reserved.
@@ -22174,7 +22477,7 @@ Snap.plugin(function (Snap, Element, Paper, glob, Fragment) {
 
 return Snap;
 }));
-},{"eve":6}],6:[function(require,module,exports){
+},{"eve":7}],7:[function(require,module,exports){
 // Copyright (c) 2013 Adobe Systems Incorporated. All rights reserved.
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -22579,7 +22882,7 @@ return Snap;
     (typeof module != "undefined" && module.exports) ? (module.exports = eve) : (typeof define === "function" && define.amd ? (define("eve", [], function() { return eve; })) : (glob.eve = eve));
 })(this);
 
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 /** @module main */
 
 // Requires
@@ -22598,7 +22901,7 @@ var controller = new Controller(),
 	balls = new Balls(controller),
 	sections = new Sections(controller, $('.sections').eq(0));
 
-},{"./../modules/ArrowDownButton/ArrowDownButton":8,"./../modules/balls/balls":9,"./../modules/controller/controller":10,"./../modules/menu/menu":11,"./../modules/sections/sections":16,"jquery":3}],8:[function(require,module,exports){
+},{"./../modules/ArrowDownButton/ArrowDownButton":9,"./../modules/balls/balls":10,"./../modules/controller/controller":11,"./../modules/menu/menu":12,"./../modules/sections/sections":17,"jquery":4}],9:[function(require,module,exports){
 /** @module ArrowDownButton */
 
 /*globals Power2:true, console*/
@@ -22642,13 +22945,14 @@ var ArrowDownButton = module.exports = function(controller) {
      */
 
     var setInitialHash = function() {
+
         var $nextSection = getNextSection($currentSection),
             nextSectionId = $nextSection.attr('id');
 
     	if (nextSectionId) {
     		$button.prop('hash', nextSectionId);
     	} else {
-    		$window.on('section:sectionsInited', setInitialHash);
+    		controller.emitter.on('section:sectionsInited', setInitialHash);
     	}
     };
 
@@ -22777,7 +23081,7 @@ var ArrowDownButton = module.exports = function(controller) {
 
 };
 
-},{"./../../../node_modules/gsap/src/uncompressed/TweenLite.js":1,"./../../../node_modules/gsap/src/uncompressed/plugins/ScrollToPlugin.js":2,"jquery":3}],9:[function(require,module,exports){
+},{"./../../../node_modules/gsap/src/uncompressed/TweenLite.js":2,"./../../../node_modules/gsap/src/uncompressed/plugins/ScrollToPlugin.js":3,"jquery":4}],10:[function(require,module,exports){
 /** @module Balls */
 /*globals Power2:true, console*/
 
@@ -22804,7 +23108,7 @@ var cache = {
 
 var Balls = module.exports = function(controller) {
     'use strict';
-    
+
     /**
     * Module properties, states and settings
     * @namespace $prop
@@ -22822,9 +23126,9 @@ var Balls = module.exports = function(controller) {
      */
 
     var init = function() {
-        cache.$window.on('ball1Drop', ball1Drop);
-        cache.$window.on('balls:showBall1', showBall.bind(cache.$ball1));
-        cache.$window.on('balls:showBall2', showBall.bind(cache.$ball2));
+        controller.emitter.on('balls:ball1Drop', ball1Drop);
+        controller.emitter.on('balls:showBall1', showBall.bind(cache.$ball1));
+        controller.emitter.on('balls:showBall2', showBall.bind(cache.$ball2));
     };
 
     /**
@@ -22854,11 +23158,10 @@ var Balls = module.exports = function(controller) {
     /**
      * Show ball 1
      * @function showBall1
-     * @param {object} event
      * @param {object} position
      */
 
-    var showBall = function(event, position) {
+    var showBall = function(position) {
         this.css({
             top: position.top,
             left: position.left,
@@ -22872,46 +23175,53 @@ var Balls = module.exports = function(controller) {
 
 };
 
-},{"jquery":3}],10:[function(require,module,exports){
+},{"jquery":4}],11:[function(require,module,exports){
 /** @module controller */
 
 /**
  * @constructor controller
  */
 
- var ScrollMagic = require('scrollmagic');
+var ScrollMagic = require('scrollmagic'),
+    EventEmitter = require('events').EventEmitter;
 
 var controller = module.exports = function() {
-  'use strict';
+    'use strict';
 
-  /**
-   * App properties, states and settings
-   * @namespace $prop
-   * @property {boolean} autoScrolling is app auto-scrolling? Used to differentiate manual scrolling
-   * @property {array} sections app's sections
-   * @property {object} scrollScenes scrollmagic controller
-   */
+    /**
+     * @property {object} emitter trigger and listen to events 
+     */
 
-  this.props = {
-      autoScrolling: false,
-      sections: [],
-      scrollScenes: new ScrollMagic.Controller()
-  };
+    this.emitter = new EventEmitter();
 
-  /**
-   * Reset scrollScenes
-   * @method resetScrollScenes
-   */
+    /**
+     * App properties, states and settings
+     * @namespace $prop
+     * @property {boolean} autoScrolling is app auto-scrolling? Used to differentiate manual scrolling
+     * @property {array} sections app's sections
+     * @property {object} scrollScenes scrollmagic controller
+     */
 
-  this.resetScrollScenes = function() {
-      this.props.scrollScenes.destroy(true);
-      this.props.scrollScenes = new ScrollMagic.Controller();
-  };
+    this.props = {
+        autoScrolling: false,
+        sections: [],
+        scrollScenes: new ScrollMagic.Controller()
+    };
 
-  return this;
+    /**
+     * Reset scrollScenes
+     * @method resetScrollScenes
+     */
+
+    this.resetScrollScenes = function() {
+        this.props.scrollScenes.destroy(true);
+        this.props.scrollScenes = new ScrollMagic.Controller();
+    };
+
+    return this;
 };
 
-},{"scrollmagic":4}],11:[function(require,module,exports){
+},{"events":1,"scrollmagic":5}],12:[function(require,module,exports){
 /** @module Menu */
 
 var $ = require('jquery');
@@ -22929,7 +23239,7 @@ var Menu = module.exports = function(controller) {
 
 };
 
-},{"jquery":3}],12:[function(require,module,exports){
+},{"jquery":4}],13:[function(require,module,exports){
 /** @module Section */
 /*globals Power2:true, console*/
 
@@ -22984,7 +23294,7 @@ var Section = module.exports = function(controller, $section, sectionIndex, sect
 
         // All sections initialised - must remain at end of init function
         if (this.props.isLast) {
-            cache.$window.trigger('section:sectionsInited');
+            controller.emitter.emit('section:sectionsInited');
         }
     };
 
@@ -23019,23 +23329,24 @@ var Section = module.exports = function(controller, $section, sectionIndex, sect
      */
 
     this.addScrollScene = function() {
+
         this.props.scene = new ScrollMagic.Scene({
                 triggerElement: $section.get(0),
                 duration: $section.height()
             })
             .on('enter', function() {
-                $section.trigger('sectionEnter');
+                controller.emitter.emit('section:sectionEnter', $section);
                 $section.attr('data-section-in-view', true);
 
                 // On scrolling into last section, duplicate sections
                 // for infinite loop effect
                 if (this.props.isLast) {
-                    cache.$window.trigger('sections:duplicateSections', $section);
+                    controller.emitter.emit('sections:duplicateSections', $section);
                 }
 
             }.bind(this))
             .on('leave', function() {
-                $section.trigger('sectionLeave');
+                controller.emitter.emit('section:sectionLeave', $section);
                 $section.attr('data-section-in-view', '');
             });
 
@@ -23059,7 +23370,7 @@ var Section = module.exports = function(controller, $section, sectionIndex, sect
 
 };
 
-},{"jquery":3,"scrollmagic":4}],13:[function(require,module,exports){
+},{"jquery":4,"scrollmagic":5}],14:[function(require,module,exports){
 /** @module sectionCuriousPlayfulInformative */
 
 var $ = require('jquery');
@@ -23073,7 +23384,7 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller) {
   'use strict';
 };
 
-},{"jquery":3}],14:[function(require,module,exports){
+},{"jquery":4}],15:[function(require,module,exports){
 /** @module Section */
 /*globals Power2:true, console*/
 
@@ -23111,8 +23422,11 @@ var SectionIntro = module.exports = function(controller, $element) {
      */
 
     var init = function() {
-        $element.on('sectionLeave', function() {
-            cache.$window.trigger('ball1Drop');
+        controller.emitter.on('section:sectionLeave', function($sectionLeave) {
+            // When leaving this section, trigger ball1Drop
+            if ($sectionLeave.get(0) === $element.get(0)) {
+                controller.emitter.emit('balls:ball1Drop');
+            }
         });
 
         loadSVG();
@@ -23136,11 +23450,10 @@ var SectionIntro = module.exports = function(controller, $element) {
 
             var ball1Position = svgObject.select('#ball1').node.getBoundingClientRect(),
                 ball2Position = svgObject.select('#ball2').node.getBoundingClientRect();
-
             //@TODO promise
 
-            cache.$window.trigger('balls:showBall1', ball1Position);
-            cache.$window.trigger('balls:showBall2', ball2Position);
+            controller.emitter.emit('balls:showBall1', ball1Position);
+            controller.emitter.emit('balls:showBall2', ball2Position);
         });
     };
 
@@ -23158,7 +23471,7 @@ var SectionIntro = module.exports = function(controller, $element) {
 
 };
 
-},{"jquery":3,"scrollmagic":4,"snapsvg":5}],15:[function(require,module,exports){
+},{"jquery":4,"scrollmagic":5,"snapsvg":6}],16:[function(require,module,exports){
 /** @module sectionMakingDigitalHuman */
 
 var $ = require('jquery');
@@ -23180,7 +23493,7 @@ var sectionMakingDigitalHuman = module.exports = function(controller, $section, 
     });
 };
 
-},{"jquery":3}],16:[function(require,module,exports){
+},{"jquery":4}],17:[function(require,module,exports){
 /** @module Sections */
 /*globals console*/
 
@@ -23225,7 +23538,7 @@ var Sections = module.exports = function(controller, $sections) {
         // Cache sections for later duplication
         cacheOriginalSections();
 
-        cache.$window.on('sections:duplicateSections', duplicateSections);
+        controller.emitter.on('sections:duplicateSections', duplicateSections);
 
         initSections();
 
@@ -23307,4 +23620,4 @@ var Sections = module.exports = function(controller, $sections) {
 
 };
 
-},{"./../../modules/section/section":12,"./../../modules/sectionCuriousPlayfulInformative/sectionCuriousPlayfulInformative":13,"./../../modules/sectionIntro/sectionIntro":14,"./../../modules/sectionMakingDigitalHuman/sectionMakingDigitalHuman":15,"jquery":3}]},{},[7]);
+},{"./../../modules/section/section":13,"./../../modules/sectionCuriousPlayfulInformative/sectionCuriousPlayfulInformative":14,"./../../modules/sectionIntro/sectionIntro":15,"./../../modules/sectionMakingDigitalHuman/sectionMakingDigitalHuman":16,"jquery":4}]},{},[8]);
