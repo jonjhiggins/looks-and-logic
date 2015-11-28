@@ -9,6 +9,8 @@ var $ = require('jquery'),
 	Balls = require('./../modules/balls/balls'),
     Sections = require('./../modules/sections/sections');
 
+window.$ = $;
+
 // Init modules
 var controller = new Controller(),
     arrowDownButton = new ArrowDownButton(controller),

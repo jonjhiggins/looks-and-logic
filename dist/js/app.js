@@ -22894,6 +22894,8 @@ var $ = require('jquery'),
 	Balls = require('./../modules/balls/balls'),
     Sections = require('./../modules/sections/sections');
 
+window.$ = $;
+
 // Init modules
 var controller = new Controller(),
     arrowDownButton = new ArrowDownButton(controller),
@@ -23155,10 +23157,11 @@ var Balls = module.exports = function(controller) {
             return;
         }
 
+
         var $sections = $('.sections .section'),
-            sectionsHeight = $sections.eq(0).height() + $sections.eq(1).height(), // first 2 sections height
+            section2Top = $sections.eq(2).offset().top, // first 2 sections height
             ball1TopPosition = cache.$ball1.offset().top + cache.$ball1.height(),
-            newPosition = sectionsHeight - ball1TopPosition;
+            newPosition = section2Top - ball1TopPosition;
 
             cache.$ball1.css({
                 'transform': 'translateY(' + newPosition + 'px) scale(0.9, 1)',
