@@ -8,11 +8,12 @@
 
    .section--curious-playful-informative {
 
+       transform: translateY(-33.33vh); // Move up so it's in view in previous section
        .section__content {
            display: none; //@TODO visually hidden
        }
-       &[data-section-in-view="true"] {
 
+       &[data-section-in-view="true"] {
            .section__content {
                display: block;
                position: fixed;
