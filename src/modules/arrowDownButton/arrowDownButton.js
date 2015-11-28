@@ -92,6 +92,9 @@ var ArrowDownButton = module.exports = function(controller) {
         // Update controller state
         controller.props.autoScrolling = true;
 
+        // Hide button while scrolling - so it doesn't cover content
+        $button.addClass('arrowDownButton--is-scrolling');
+
         // Scroll to next section top
         TweenLite.to(window, options.scrollDownDuration, {
             scrollTo: {
@@ -116,6 +119,9 @@ var ArrowDownButton = module.exports = function(controller) {
         window.setTimeout(function() {
             controller.props.autoScrolling = false;
         }, 300);
+
+        // Show button following being hidden while scrolling
+        $button.removeClass('arrowDownButton--is-scrolling');
 
         // Update button's hash to next section
         hash = $button.prop('hash');
@@ -152,6 +158,12 @@ var ArrowDownButton = module.exports = function(controller) {
      */
 
     var changeIconColour = function() {
+        // If no background colour, section hasn't been inited yet
+        if (!$currentSection.attr('data-background')) {
+            controller.emitter.once('section:sectionsInited', changeIconColour);
+            return;
+        }
+
         if ($currentSection.attr('data-background') === 'white') {
             $button.attr('data-colour', 'black');
         } else {

@@ -9,7 +9,7 @@
 .arrowDownButton__icon {
   width: rem(24);
   height: rem(12);
-  background: url(../img/icon--arrow-down.svg) 0 -12px no-repeat;
+  background: url(../img/icon--arrow-down.svg) 0 0 no-repeat;
   background-size: 100%;
   display: block;
   position: fixed;
@@ -17,10 +17,27 @@
   left: 50%;
   margin-left: rem(-12);
   z-index: 20;
+  transition: opacity 400ms ease;
+}
+
+.arrowDownButton__icon--black {
+    opacity: 0;
+    background-position: 0 -12px;
 }
 
 .arrowDownButton[data-colour="black"] {
-	.arrowDownButton__icon {
-		background-position: 0 0;
+    .arrowDownButton__icon--white {
+		opacity: 0;
 	}
+	.arrowDownButton__icon--black {
+		opacity: 1;
+	}
+}
+
+// Hide button while scrolling - so it doesn't cover content
+.arrowDownButton.arrowDownButton--is-scrolling {
+    .arrowDownButton__icon {
+        transition: opacity 50ms ease;
+        opacity: 0;
+    }
 }
