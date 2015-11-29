@@ -28,7 +28,7 @@ var Section = module.exports = function(controller, $section, sectionIndex, sect
 
     /**
      * App properties, states and settings
-     * @namespace $prop
+     * @namespace prop
      * @property {boolean} isLast
      * @property {object} scene scrollMagic scene
      */

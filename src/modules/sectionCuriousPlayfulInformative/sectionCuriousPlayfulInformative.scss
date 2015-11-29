@@ -8,22 +8,16 @@
 
    .section--curious-playful-informative {
 
-       width: 100%;
-       position: relative !important; // @TODO this is overriding ScrollMagic :/
-       top: 0 !important;
+       overflow: hidden; // Mask out text until it's revealed on scroll down
 
+       // Have to position absolutely for the pinning to centre
+       // via translateY on scroll (in JS)
        .section__content {
-           //display: none; //@TODO visually hidden
-       }
-
-       &[data-section-in-view="true"] {
-           .section__content {
-            //    display: block;
-            //    position: fixed;
-            //    top: 50%;
-            //    left: 0;
-            //    width: 100%;
-            //    margin-top: -($designFontSize / $designWidth * 100vw) / 2 // Half fontsize
-           }
+           position: absolute;
+           display: block;
+           flex: none;
+           width: 100%;
+           height: 100%;
+           left: 0;
        }
    }
