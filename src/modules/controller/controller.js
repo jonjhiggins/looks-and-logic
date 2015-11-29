@@ -86,6 +86,28 @@ var controller = module.exports = function() {
         this.props.scrollScenes = new ScrollMagic.Controller();
     };
 
+    /**
+     * Get next section, taking into account scrollmagic wrappers
+     * @method getNextSection
+     * @param {jQuery} $currentSection
+     * @returns {jQuery} $nextSection
+     */
+
+    this.getNextSection = function($currentSection) {
+        var $nextSection;
+        // Normal section
+        if ($currentSection.next('.section').length) {
+            $nextSection = $currentSection.next();
+        // Sections next to scrollmagic pin's extra div
+        } else if ($currentSection.next('div').length) {
+            $nextSection = $currentSection.next().find('.section');
+        // Sections within scrollmagic pin's extra div
+        } else {
+            $nextSection = $currentSection.parent().next('.section');
+        }
+    	return $nextSection;
+    };
+
     this.init();
 
     return this;

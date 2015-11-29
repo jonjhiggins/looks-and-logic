@@ -42,7 +42,7 @@ var ArrowDownButton = module.exports = function(controller) {
 
     var setInitialHash = function() {
 
-        var $nextSection = getNextSection($currentSection),
+        var $nextSection = controller.getNextSection($currentSection),
             nextSectionId = $nextSection.attr('id');
 
     	if (nextSectionId) {
@@ -50,31 +50,6 @@ var ArrowDownButton = module.exports = function(controller) {
     	} else {
     		controller.emitter.on('section:sectionsInited', setInitialHash);
     	}
-    };
-
-    /**
-     * Get next section. @TODO should this be in section module?
-     * @function getNextSection
-     * @param {jQuery} $currentSection
-     * @returns {jQuery} $nextSection
-     */
-
-    var getNextSection = function($currentSection) {
-
-        var $nextSection;
-
-        // Normal section
-        if ($currentSection.next('.section').length) {
-            $nextSection = $currentSection.next();
-        // Sections next to scrollmagic pin's extra div
-        } else if ($currentSection.next('div').length) {
-            $nextSection = $currentSection.next().find('.section');
-        // Sections within scrollmagic pin's extra div
-        } else {
-            $nextSection = $currentSection.parent().next('.section');
-        }
-
-    	return $nextSection;
     };
 
     /**
@@ -126,7 +101,7 @@ var ArrowDownButton = module.exports = function(controller) {
         // Update button's hash to next section
         hash = $button.prop('hash');
         $currentSection = $(hash);
-        $nextSection = getNextSection($currentSection);
+        $nextSection = controller.getNextSection($currentSection);
 
         if ($nextSection.length) {
             $button.prop('hash', '#' + $nextSection.prop('id'));
@@ -158,13 +133,24 @@ var ArrowDownButton = module.exports = function(controller) {
      */
 
     var changeIconColour = function() {
+
+        var $backgroundSection; // section behind the arrowDownButton
+
         // If no background colour, section hasn't been inited yet
         if (!$currentSection.attr('data-background')) {
             controller.emitter.once('section:sectionsInited', changeIconColour);
             return;
         }
 
-        if ($currentSection.attr('data-background') === 'white') {
+        // Check if next section is overlapping current section,
+        // requiring arrow to take into account that section's background colour
+        if (controller.props.windowHeight === $currentSection.height()) {
+            $backgroundSection = $currentSection; // normal
+        } else {
+            $backgroundSection = controller.getNextSection($currentSection); // overlapping
+        }
+
+        if ($backgroundSection.attr('data-background') === 'white') {
             $button.attr('data-colour', 'black');
         } else {
             $button.attr('data-colour', 'white');
