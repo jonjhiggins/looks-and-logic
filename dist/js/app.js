@@ -23564,6 +23564,13 @@ var SectionIntro = module.exports = function(controller, $element) {
     var svgObject = null;
 
     /**
+     * has ball 1 dropped?
+     * @var {boolean} ballDropped
+     */
+
+    var ball1Dropped = false;
+
+    /**
      * Initialise the component
      * Everything here should be undone using the "reset" function
      * @function init
@@ -23631,7 +23638,9 @@ var SectionIntro = module.exports = function(controller, $element) {
 
 
         //@TODO promise
-        controller.emitter.emit('balls:showBall1', ball1Position);
+        if (!ball1Dropped){
+            controller.emitter.emit('balls:showBall1', ball1Position);
+        }
         controller.emitter.emit('balls:showBall2', ball2Position);
     };
 
@@ -23645,7 +23654,7 @@ var SectionIntro = module.exports = function(controller, $element) {
         // When leaving this section, trigger ball1Drop
         if ($sectionLeave.get(0) === $element.get(0)) {
             controller.emitter.emit('balls:ball1Drop');
-            controller.emitter.removeListener('window:resize', measureAndShowBalls);
+            ball1Dropped = true;
         }
     };
 
