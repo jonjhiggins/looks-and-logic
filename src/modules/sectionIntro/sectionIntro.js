@@ -79,10 +79,28 @@ var SectionIntro = module.exports = function(controller, $element) {
         // Temporarily show balls in background image for measuring
         cache.$logo.removeClass('section__logo--with-svg');
         // Measure balls within SVGs
-        var ball1Position = svgObject.select('#ball1').node.getBoundingClientRect(),
-            ball2Position = svgObject.select('#ball2').node.getBoundingClientRect();
+        var ball1ClientRect = svgObject.select('#ball1').node.getBoundingClientRect(),
+            ball2ClientRect = svgObject.select('#ball2').node.getBoundingClientRect(),
+            ball1JQueryOffset = $('#ball1').offset(),
+            ball2JQueryOffset = $('#ball2').offset(),
+            ball1Position = {
+                top: ball1JQueryOffset.top, // For some reason, this jQuery value is accurate
+                                            // in iOS following address bar resize
+                                            // when ClientRect is not
+                left: ball1JQueryOffset.left,
+                width: ball1ClientRect.width,
+                height: ball1ClientRect.height
+            },
+            ball2Position = {
+                top: ball2JQueryOffset.top,
+                left: ball2JQueryOffset.left,
+                width: ball2ClientRect.width,
+                height: ball2ClientRect.height
+            };
+
         // Hide background image
         cache.$logo.addClass('section__logo--with-svg');
+
 
         //@TODO promise
         controller.emitter.emit('balls:showBall1', ball1Position);
