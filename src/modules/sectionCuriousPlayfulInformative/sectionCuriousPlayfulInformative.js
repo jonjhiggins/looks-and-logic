@@ -1,7 +1,8 @@
 /** @module sectionCuriousPlayfulInformative */
 
 var $ = require('jquery'),
-    ScrollMagic = require('scrollmagic');
+    ScrollMagic = require('scrollmagic'),
+    raf = require('raf');
 
 /**
  * @constructor sectionCuriousPlayfulInformative
@@ -63,12 +64,23 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
             duration: $section.height(), // refreshed on resize in refreshDimensions
             triggerHook: 1
         }).on('progress', function(e) {
-            // translateY the title so it stays fixed in centre of screen
-            var translateAmount = -((controller.props.windowHeight / 2) - (e.progress * controller.props.windowHeight) + (this.props.titleHeight / 2));
-            cache.$sectionContent.css('transform', 'translateY(' + translateAmount + 'px)');
+            raf(this.pinTitleProgress.bind(this, e));
         }.bind(this));
 
         this.scenePinTitle.addTo(controller.props.scrollScenes);
+    };
+
+    /**
+     * Called on each scroll during scenePinTitle
+     * @method pinTitleProgress
+     * @param {object} e event
+     */
+
+    this.pinTitleProgress = function(e) {
+        // translateY the title so it stays fixed in centre of screen
+        var translateAmount = -((controller.props.windowHeight / 2) - (e.progress * controller.props.windowHeight) + (this.props.titleHeight / 2));
+        // @TODO look at reducing jiggle in Safari. Could try making title position: fixed when translateAmount > 0
+        cache.$sectionContent.css('transform', 'translateY(' + translateAmount + 'px) translateZ(0)');
     };
 
     /**
