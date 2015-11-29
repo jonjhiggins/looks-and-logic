@@ -22933,10 +22933,26 @@ var ArrowDownButton = module.exports = function(controller) {
      */
 
     var init = function() {
-        changeIconColour();
+        buttonShow();
         setInitialHash();
-        $button.on('click', buttonClick);
-        $window.on('scroll', pageScroll); // @TODO debounce or pub/sub
+        attachDetachEvents(true);
+    };
+
+    /**
+     * @function attachDetachEvents
+     * @param {boolean} attach attach the events?
+     */
+
+    var attachDetachEvents = function(attach) {
+        if (attach) {
+            controller.emitter.on('sections:reset', reset.bind(null, true));
+            $button.on('click', buttonClick);
+            $window.on('scroll', pageScroll); // @TODO debounce
+        } else {
+            controller.emitter.removelistener('sections:reset', reset.bind(null, true));
+            $button.off('click', buttonClick);
+            $window.off('scroll', pageScroll);
+        }
     };
 
 
@@ -23076,6 +23092,24 @@ var ArrowDownButton = module.exports = function(controller) {
         }
 
     };
+
+    /**
+     * Reset everything
+     * @function reset
+     * @param {boolean} reinitialise reinit the component after resetting
+     */
+
+    var reset = function(reinitialise) {
+
+        // Detach events
+        attachDetachEvents(false);
+
+        if (reinitialise) {
+            init();
+        }
+    };
+
+
 
     init();
 
@@ -23235,6 +23269,8 @@ var controller = module.exports = function() {
 
          // Attach events
          this.emitter.on('window:resize', this.refreshDimensions.bind(this));
+         this.emitter.on('sections:reset', this.resetScrollScenes.bind(this));
+
      };
 
      /**
@@ -23842,7 +23878,7 @@ var Sections = module.exports = function(controller, $sections) {
      */
 
     var reset = function() {
-        controller.resetScrollScenes();
+        controller.emitter.emit('sections:reset');
 
         // Need to reset each section
 

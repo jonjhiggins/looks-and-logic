@@ -125,7 +125,7 @@ var Sections = module.exports = function(controller, $sections) {
      */
 
     var reset = function() {
-        controller.resetScrollScenes();
+        controller.emitter.emit('sections:reset');
 
         // Need to reset each section
 

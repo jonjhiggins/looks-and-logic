@@ -56,6 +56,8 @@ var controller = module.exports = function() {
 
          // Attach events
          this.emitter.on('window:resize', this.refreshDimensions.bind(this));
+         this.emitter.on('sections:reset', this.resetScrollScenes.bind(this));
+
      };
 
      /**
