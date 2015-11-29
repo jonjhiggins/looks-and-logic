@@ -25,16 +25,21 @@
         background: url(../img/logo.svg) 50% 50% no-repeat;
         flex: none;
 
-        &.section__logo--with-svg {
-            background: none;
-        }
-
         svg {
             width: 100%;
             height: 100%;
+        }
 
-            #ball1 {
-                display: none;
+        // When loaded, hide background SVG and balls within
+        // SVG (these are separate images)
+        &.section__logo--with-svg {
+            background: none;
+
+            svg {
+                #ball1,
+                #ball2 {
+                    display: none;
+                }
             }
         }
     }

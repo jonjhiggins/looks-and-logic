@@ -23524,13 +23524,15 @@ var SectionIntro = module.exports = function(controller, $element) {
         snap.load('../img/logo.svg', function(loadedSVG) {
             // Add SVG
             svgObject.append(loadedSVG);
+
+            // Measure balls within SVGs
+            var ball1Position = svgObject.select('#ball1').node.getBoundingClientRect(),
+                ball2Position = svgObject.select('#ball2').node.getBoundingClientRect();
+
             // Hide background image
             cache.$logo.addClass('section__logo--with-svg');
 
-            var ball1Position = svgObject.select('#ball1').node.getBoundingClientRect(),
-                ball2Position = svgObject.select('#ball2').node.getBoundingClientRect();
             //@TODO promise
-
             controller.emitter.emit('balls:showBall1', ball1Position);
             controller.emitter.emit('balls:showBall2', ball2Position);
         });
