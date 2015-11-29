@@ -27,13 +27,20 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
 
     /**
      * properties, states and settings
-     * @namespace prop
+     * @namespace props
      * @property {number} titleHeight
      */
 
     this.props = {
         titleHeight: 0
     };
+
+    /**
+     * scrollMagic scene for pinning title
+     * @property {number} scenePinTitle
+     */
+
+    this.scenePinTitle = null;
 
     /**
      * Initialise the component
@@ -43,14 +50,17 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
 
     this.init = function() {
 
-        this.refreshDimensions(); // @TODO refresh on resize
+        this.refreshDimensions();
+
+        // Attach events
+        controller.emitter.on('window:resize', this.refreshDimensions.bind(this));
 
         // pin title to centre via absolute position and translateY
         // can't use scrollMagic pin as uses fixed position and we need to
         // use overflow to mask out the title until its reveal on scroll
-        var pinTitle = new ScrollMagic.Scene({
+        this.scenePinTitle = new ScrollMagic.Scene({
             triggerElement: $section.get(0),
-            duration: $section.height(),
+            duration: $section.height(), // refreshed on resize in refreshDimensions
             triggerHook: 1
         }).on('progress', function(e) {
             // translateY the title so it stays fixed in centre of screen
@@ -58,7 +68,7 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
             cache.$sectionContent.css('transform', 'translateY(' + translateAmount + 'px)');
         }.bind(this));
 
-        pinTitle.addTo(controller.props.scrollScenes);
+        this.scenePinTitle.addTo(controller.props.scrollScenes);
     };
 
     /**
@@ -68,6 +78,10 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
 
     this.refreshDimensions = function() {
         this.props.titleHeight = cache.$sectionTitle.height();
+
+        if (this.scenePinTitle) {
+            this.scenePinTitle.duration($section.height());
+        }
     };
 
     this.init();

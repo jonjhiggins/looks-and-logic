@@ -31,11 +31,13 @@ var Section = module.exports = function(controller, $section, sectionIndex, sect
      * @namespace prop
      * @property {boolean} isLast
      * @property {object} scene scrollMagic scene
+     * @property {jquery} $section element exported for use in other modules
      */
 
     this.props = {
         isLast: sectionIndex === (sectionsLength - 1),
         scene: null,
+        $section: $section
     };
 
     /**
@@ -90,7 +92,7 @@ var Section = module.exports = function(controller, $section, sectionIndex, sect
 
         this.props.scene = new ScrollMagic.Scene({
                 triggerElement: $section.get(0),
-                duration: $section.height()
+                duration: $section.height() // this is updated on resize in sections.js
             })
             .on('enter', function() {
                 controller.emitter.emit('section:sectionEnter', $section);

@@ -50,7 +50,21 @@ var controller = module.exports = function() {
 
      this.init = function () {
          this.refreshDimensions();
-         cache.$window.on('resize', this.refreshDimensions.bind(this)); //@TODO debouce
+
+         // All window resizes through common function
+         cache.$window.on('resize', this.windowResize.bind(this));
+
+         // Attach events
+         this.emitter.on('window:resize', this.refreshDimensions.bind(this));
+     };
+
+     /**
+      * All window resizes through common function
+      * @method windowResize
+      */
+
+     this.windowResize = function() {
+         this.emitter.emit('window:resize');  //@TODO debouce
      };
 
      /**

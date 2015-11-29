@@ -42,7 +42,9 @@ var Sections = module.exports = function(controller, $sections) {
         // Cache sections for later duplication
         cacheOriginalSections();
 
+        // Attach events
         controller.emitter.on('sections:duplicateSections', duplicateSections);
+        controller.emitter.on('window:resize', refreshDimensions);
 
         initSections();
 
@@ -103,6 +105,19 @@ var Sections = module.exports = function(controller, $sections) {
             reset();
         }
     };
+
+    /**
+     * Refresh dimensions
+     * @function refreshDimensions
+     */
+
+     var refreshDimensions = function () {
+         // Update scene duration for each section (as based off section/viewport height)
+         $.each(controller.props.sections, function(index, item) {
+             var scene = item.props.scene;
+             scene.duration(item.props.$section.height());
+        });
+     };
 
     /**
      * Reset all component behaviour, remove handlers
