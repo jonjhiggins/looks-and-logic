@@ -7,4 +7,13 @@
 
 .section--making-digital-human {
 
+    // Variables
+    $nextSectionOverlap: 33.333; // Next section needs to appear 33.3% overlapping this one
+
+    // Layout
+    height: (100 - $nextSectionOverlap) * 1vh;
+
+    .section__title {
+        margin-top: ($nextSectionOverlap / 2) * 1vh;
+    }
 }
