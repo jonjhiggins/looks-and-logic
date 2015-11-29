@@ -4,14 +4,25 @@
  * @constructor controller
  */
 
-var ScrollMagic = require('scrollmagic'),
+var $ = require('jquery'),
+    ScrollMagic = require('scrollmagic'),
     EventEmitter = require('events').EventEmitter;
+
+/**
+ * jQuery elements
+ * @namespace cache
+ * @property {jQuery} window
+ */
+
+var cache = {
+    $window: $(window),
+};
 
 var controller = module.exports = function() {
     'use strict';
 
     /**
-     * @property {object} emitter trigger and listen to events 
+     * @property {object} emitter trigger and listen to events
      */
 
     this.emitter = new EventEmitter();
@@ -22,13 +33,34 @@ var controller = module.exports = function() {
      * @property {boolean} autoScrolling is app auto-scrolling? Used to differentiate manual scrolling
      * @property {array} sections app's sections
      * @property {object} scrollScenes scrollmagic controller
+     * @property {number} windowHeight
      */
 
     this.props = {
         autoScrolling: false,
         sections: [],
-        scrollScenes: new ScrollMagic.Controller()
+        scrollScenes: new ScrollMagic.Controller(),
+        windowHeight: 0
     };
+
+    /**
+     * Initialise component
+     * @method init
+     */
+
+     this.init = function () {
+         this.refreshDimensions();
+         cache.$window.on('resize', this.refreshDimensions.bind(this)); //@TODO debouce
+     };
+
+     /**
+      * Refresh dimensions
+      * @method refreshDimensions
+      */
+
+      this.refreshDimensions = function () {
+          this.props.windowHeight = cache.$window.height();
+      };
 
     /**
      * Reset scrollScenes
@@ -39,6 +71,8 @@ var controller = module.exports = function() {
         this.props.scrollScenes.destroy(true);
         this.props.scrollScenes = new ScrollMagic.Controller();
     };
+
+    this.init();
 
     return this;
 };

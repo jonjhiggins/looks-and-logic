@@ -15,6 +15,8 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
      * jQuery elements
      * @namespace cache
      * @property {jQuery} window
+     * @property {jQuery} $sectionContent
+     * @property {jQuery} $sectionTitle
      */
 
     var cache = {
@@ -26,12 +28,10 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
     /**
      * properties, states and settings
      * @namespace prop
-     * @property {number} windowHeight
      * @property {number} titleHeight
      */
 
     this.props = {
-        windowHeight: 0, //@TODO store in controller?
         titleHeight: 0
     };
 
@@ -42,7 +42,7 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
      */
 
     this.init = function() {
-        
+
         this.refreshDimensions(); // @TODO refresh on resize
 
         // pin title to centre via absolute position and translateY
@@ -53,9 +53,8 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
             duration: $section.height(),
             triggerHook: 1
         }).on('progress', function(e) {
-
-            var translateAmount = -((this.props.windowHeight / 2) - (e.progress * this.props.windowHeight) + (this.props.titleHeight / 2));
-
+            // translateY the title so it stays fixed in centre of screen
+            var translateAmount = -((controller.props.windowHeight / 2) - (e.progress * controller.props.windowHeight) + (this.props.titleHeight / 2));
             cache.$sectionContent.css('transform', 'translateY(' + translateAmount + 'px)');
         }.bind(this));
 
@@ -68,7 +67,6 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
      */
 
     this.refreshDimensions = function() {
-        this.props.windowHeight = cache.$window.height();
         this.props.titleHeight = cache.$sectionTitle.height();
     };
 

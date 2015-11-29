@@ -23197,14 +23197,25 @@ var Balls = module.exports = function(controller) {
  * @constructor controller
  */
 
-var ScrollMagic = require('scrollmagic'),
+var $ = require('jquery'),
+    ScrollMagic = require('scrollmagic'),
     EventEmitter = require('events').EventEmitter;
+
+/**
+ * jQuery elements
+ * @namespace cache
+ * @property {jQuery} window
+ */
+
+var cache = {
+    $window: $(window),
+};
 
 var controller = module.exports = function() {
     'use strict';
 
     /**
-     * @property {object} emitter trigger and listen to events 
+     * @property {object} emitter trigger and listen to events
      */
 
     this.emitter = new EventEmitter();
@@ -23215,13 +23226,34 @@ var controller = module.exports = function() {
      * @property {boolean} autoScrolling is app auto-scrolling? Used to differentiate manual scrolling
      * @property {array} sections app's sections
      * @property {object} scrollScenes scrollmagic controller
+     * @property {number} windowHeight
      */
 
     this.props = {
         autoScrolling: false,
         sections: [],
-        scrollScenes: new ScrollMagic.Controller()
+        scrollScenes: new ScrollMagic.Controller(),
+        windowHeight: 0
     };
+
+    /**
+     * Initialise component
+     * @method init
+     */
+
+     this.init = function () {
+         this.refreshDimensions();
+         cache.$window.on('resize', this.refreshDimensions.bind(this)); //@TODO debouce
+     };
+
+     /**
+      * Refresh dimensions
+      * @method refreshDimensions
+      */
+
+      this.refreshDimensions = function () {
+          this.props.windowHeight = cache.$window.height();
+      };
 
     /**
      * Reset scrollScenes
@@ -23233,10 +23265,12 @@ var controller = module.exports = function() {
         this.props.scrollScenes = new ScrollMagic.Controller();
     };
 
+    this.init();
+
     return this;
 };
 
-},{"events":1,"scrollmagic":5}],12:[function(require,module,exports){
+},{"events":1,"jquery":4,"scrollmagic":5}],12:[function(require,module,exports){
 /** @module Menu */
 
 var $ = require('jquery');
@@ -23403,6 +23437,8 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
      * jQuery elements
      * @namespace cache
      * @property {jQuery} window
+     * @property {jQuery} $sectionContent
+     * @property {jQuery} $sectionTitle
      */
 
     var cache = {
@@ -23414,12 +23450,10 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
     /**
      * properties, states and settings
      * @namespace prop
-     * @property {number} windowHeight
      * @property {number} titleHeight
      */
 
     this.props = {
-        windowHeight: 0, //@TODO store in controller?
         titleHeight: 0
     };
 
@@ -23430,7 +23464,7 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
      */
 
     this.init = function() {
-        
+
         this.refreshDimensions(); // @TODO refresh on resize
 
         // pin title to centre via absolute position and translateY
@@ -23441,9 +23475,8 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
             duration: $section.height(),
             triggerHook: 1
         }).on('progress', function(e) {
-
-            var translateAmount = -((this.props.windowHeight / 2) - (e.progress * this.props.windowHeight) + (this.props.titleHeight / 2));
-
+            // translateY the title so it stays fixed in centre of screen
+            var translateAmount = -((controller.props.windowHeight / 2) - (e.progress * controller.props.windowHeight) + (this.props.titleHeight / 2));
             cache.$sectionContent.css('transform', 'translateY(' + translateAmount + 'px)');
         }.bind(this));
 
@@ -23456,7 +23489,6 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
      */
 
     this.refreshDimensions = function() {
-        this.props.windowHeight = cache.$window.height();
         this.props.titleHeight = cache.$sectionTitle.height();
     };
 
