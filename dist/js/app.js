@@ -22921,6 +22921,16 @@ var $button = $('#arrowDownButton'),
     $currentSection = $('.section').eq(0); //@TODO change depending on scroll position
 
 /**
+ * Bound events for add/removal
+ * @namespace events
+ * @property {function} reset
+ */
+
+var events = {
+    reset: null
+};
+
+/**
  * @constructor ArrowDownButton
  * @param {object} controller
  */
@@ -22935,6 +22945,9 @@ var ArrowDownButton = module.exports = function(controller) {
     var init = function() {
         buttonShow();
         setInitialHash();
+        // Bind events
+        events.reset = reset.bind(null, true);
+        // Attach events
         attachDetachEvents(true);
     };
 
@@ -22945,11 +22958,11 @@ var ArrowDownButton = module.exports = function(controller) {
 
     var attachDetachEvents = function(attach) {
         if (attach) {
-            controller.emitter.on('sections:reset', reset.bind(null, true));
+            controller.emitter.on('sections:reset', events.reset);
             $button.on('click', buttonClick);
             $window.on('scroll', pageScroll); // @TODO debounce
         } else {
-            controller.emitter.removeListener('sections:reset', reset.bind(null, true));
+            controller.emitter.removeListener('sections:reset', events.reset);
             $button.off('click', buttonClick);
             $window.off('scroll', pageScroll);
         }
@@ -22967,11 +22980,11 @@ var ArrowDownButton = module.exports = function(controller) {
         var $nextSection = controller.getNextSection($currentSection),
             nextSectionId = $nextSection.attr('id');
 
-    	if (nextSectionId) {
-    		$button.prop('hash', nextSectionId);
-    	} else {
-    		controller.emitter.on('section:sectionsInited', setInitialHash);
-    	}
+        if (nextSectionId) {
+            $button.prop('hash', nextSectionId);
+        } else {
+            controller.emitter.on('section:sectionsInited', setInitialHash);
+        }
     };
 
     /**
@@ -23158,11 +23171,13 @@ var Balls = module.exports = function(controller) {
     * @namespace events
     * @property {function} showBall1
     * @property {function} showBall2
+    * @property {function} reset
     */
 
     var events = {
       showBall1: null,
-      showBall2: null
+      showBall2: null,
+      reset: null
     };
 
 
@@ -23175,6 +23190,7 @@ var Balls = module.exports = function(controller) {
         // Bind events
         events.showBall1 = showBall.bind(cache.$ball1);
         events.showBall2 = showBall.bind(cache.$ball2);
+        events.reset = reset.bind(null, true);
         // Attach events
         attachDetachEvents(true);
         // Reset ball1 position and dropped prop
@@ -23191,12 +23207,12 @@ var Balls = module.exports = function(controller) {
 
     var attachDetachEvents = function(attach) {
         if (attach) {
-            controller.emitter.on('sections:reset', reset.bind(null, true));
+            controller.emitter.on('sections:reset', events.reset);
             controller.emitter.on('balls:ball1Drop', ball1Drop);
             controller.emitter.on('balls:showBall1', events.showBall1);
             controller.emitter.on('balls:showBall2', events.showBall2);
         } else {
-            controller.emitter.removeListener('sections:reset', reset.bind(null, true));
+            controller.emitter.removeListener('sections:reset', events.reset);
             controller.emitter.removeListener('balls:ball1Drop', ball1Drop);
             controller.emitter.removeListener('balls:showBall1', events.showBall1);
             controller.emitter.removeListener('balls:showBall2', events.showBall2);
@@ -23295,7 +23311,6 @@ var controller = module.exports = function() {
      */
 
     this.emitter = new EventEmitter();
-    this.emitter.setMaxListeners(20);
 
     /**
      * App properties, states and settings

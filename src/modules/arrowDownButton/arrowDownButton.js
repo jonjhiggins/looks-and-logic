@@ -15,6 +15,16 @@ var $button = $('#arrowDownButton'),
     $currentSection = $('.section').eq(0); //@TODO change depending on scroll position
 
 /**
+ * Bound events for add/removal
+ * @namespace events
+ * @property {function} reset
+ */
+
+var events = {
+    reset: null
+};
+
+/**
  * @constructor ArrowDownButton
  * @param {object} controller
  */
@@ -29,6 +39,9 @@ var ArrowDownButton = module.exports = function(controller) {
     var init = function() {
         buttonShow();
         setInitialHash();
+        // Bind events
+        events.reset = reset.bind(null, true);
+        // Attach events
         attachDetachEvents(true);
     };
 
@@ -39,11 +52,11 @@ var ArrowDownButton = module.exports = function(controller) {
 
     var attachDetachEvents = function(attach) {
         if (attach) {
-            controller.emitter.on('sections:reset', reset.bind(null, true));
+            controller.emitter.on('sections:reset', events.reset);
             $button.on('click', buttonClick);
             $window.on('scroll', pageScroll); // @TODO debounce
         } else {
-            controller.emitter.removeListener('sections:reset', reset.bind(null, true));
+            controller.emitter.removeListener('sections:reset', events.reset);
             $button.off('click', buttonClick);
             $window.off('scroll', pageScroll);
         }
@@ -61,11 +74,11 @@ var ArrowDownButton = module.exports = function(controller) {
         var $nextSection = controller.getNextSection($currentSection),
             nextSectionId = $nextSection.attr('id');
 
-    	if (nextSectionId) {
-    		$button.prop('hash', nextSectionId);
-    	} else {
-    		controller.emitter.on('section:sectionsInited', setInitialHash);
-    	}
+        if (nextSectionId) {
+            $button.prop('hash', nextSectionId);
+        } else {
+            controller.emitter.on('section:sectionsInited', setInitialHash);
+        }
     };
 
     /**

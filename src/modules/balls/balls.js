@@ -40,11 +40,13 @@ var Balls = module.exports = function(controller) {
     * @namespace events
     * @property {function} showBall1
     * @property {function} showBall2
+    * @property {function} reset
     */
 
     var events = {
       showBall1: null,
-      showBall2: null
+      showBall2: null,
+      reset: null
     };
 
 
@@ -57,6 +59,7 @@ var Balls = module.exports = function(controller) {
         // Bind events
         events.showBall1 = showBall.bind(cache.$ball1);
         events.showBall2 = showBall.bind(cache.$ball2);
+        events.reset = reset.bind(null, true);
         // Attach events
         attachDetachEvents(true);
         // Reset ball1 position and dropped prop
@@ -73,12 +76,12 @@ var Balls = module.exports = function(controller) {
 
     var attachDetachEvents = function(attach) {
         if (attach) {
-            controller.emitter.on('sections:reset', reset.bind(null, true));
+            controller.emitter.on('sections:reset', events.reset);
             controller.emitter.on('balls:ball1Drop', ball1Drop);
             controller.emitter.on('balls:showBall1', events.showBall1);
             controller.emitter.on('balls:showBall2', events.showBall2);
         } else {
-            controller.emitter.removeListener('sections:reset', reset.bind(null, true));
+            controller.emitter.removeListener('sections:reset', events.reset);
             controller.emitter.removeListener('balls:ball1Drop', ball1Drop);
             controller.emitter.removeListener('balls:showBall1', events.showBall1);
             controller.emitter.removeListener('balls:showBall2', events.showBall2);
