@@ -23153,6 +23153,18 @@ var Balls = module.exports = function(controller) {
       ballDropped: false
     };
 
+    /**
+    * Bound events for add/removal
+    * @namespace events
+    * @property {function} showBall1
+    * @property {function} showBall2
+    */
+
+    var events = {
+      showBall1: null,
+      showBall2: null
+    };
+
 
     /**
      * Initialise the component
@@ -23160,7 +23172,16 @@ var Balls = module.exports = function(controller) {
      */
 
     var init = function() {
+        // Bind events
+        events.showBall1 = showBall.bind(cache.$ball1);
+        events.showBall2 = showBall.bind(cache.$ball2);
+        // Attach events
         attachDetachEvents(true);
+        // Reset ball1 position and dropped prop
+        cache.$ball1.css({
+            'transform': 'none',
+        });
+        props.ballDropped = false;
     };
 
     /**
@@ -23172,22 +23193,23 @@ var Balls = module.exports = function(controller) {
         if (attach) {
             controller.emitter.on('sections:reset', reset.bind(null, true));
             controller.emitter.on('balls:ball1Drop', ball1Drop);
-            controller.emitter.on('balls:showBall1', showBall.bind(cache.$ball1));
-            controller.emitter.on('balls:showBall2', showBall.bind(cache.$ball2));
+            controller.emitter.on('balls:showBall1', events.showBall1);
+            controller.emitter.on('balls:showBall2', events.showBall2);
         } else {
             controller.emitter.removeListener('sections:reset', reset.bind(null, true));
             controller.emitter.removeListener('balls:ball1Drop', ball1Drop);
-            controller.emitter.removeListener('balls:showBall1', showBall.bind(cache.$ball1));
-            controller.emitter.removeListener('balls:showBall2', showBall.bind(cache.$ball2));
+            controller.emitter.removeListener('balls:showBall1', events.showBall1);
+            controller.emitter.removeListener('balls:showBall2', events.showBall2);
         }
     };
 
     /**
      * Drop ball 1 down a screen
      * @function ball1Drop
+     * @param {jQuery} $sectionIntro sectionIntro calling the ball drop
      */
 
-    var ball1Drop = function() {
+    var ball1Drop = function($sectionIntro) {
 
         // Only drop ball once
         if (props.ballDropped) {
@@ -23195,10 +23217,11 @@ var Balls = module.exports = function(controller) {
         }
 
 
-        var $sections = $('.sections .section'),
-            section2Top = $sections.eq(2).offset().top, // first 2 sections height
+        var $nextSection = controller.getNextSection($sectionIntro),
+            $nextNextSection = controller.getNextSection($nextSection),
+            nextNextSectionTop = $nextNextSection.offset().top, // first 2 sections height
             ball1TopPosition = cache.$ball1.offset().top + cache.$ball1.height(),
-            newPosition = section2Top - ball1TopPosition;
+            newPosition = nextNextSectionTop - ball1TopPosition;
 
             cache.$ball1.css({
                 'transform': 'translateY(' + newPosition + 'px) scale(0.9, 1)',
@@ -23208,8 +23231,8 @@ var Balls = module.exports = function(controller) {
     };
 
     /**
-     * Show ball 1
-     * @function showBall1
+     * Show ball
+     * @function showBall
      * @param {object} position
      */
 
@@ -23272,6 +23295,7 @@ var controller = module.exports = function() {
      */
 
     this.emitter = new EventEmitter();
+    this.emitter.setMaxListeners(20);
 
     /**
      * App properties, states and settings
@@ -23623,9 +23647,11 @@ var $ = require('jquery'),
  * @constructor SectionIntro
  * @param {object} controller
  * @param {jQuery} $element section element
+ * @param {number} index which number section is this
+ * @param {boolean} isLastSectionIntro is this last section
  */
 
-var SectionIntro = module.exports = function(controller, $element) {
+var SectionIntro = module.exports = function(controller, $element, index, isLastSectionIntro) {
     'use strict';
 
     /**
@@ -23663,12 +23689,28 @@ var SectionIntro = module.exports = function(controller, $element) {
      */
 
     var init = function() {
-        // On leave: drop ball
-        controller.emitter.on('section:sectionLeave', sectionLeave);
-        // Refresh dimensions on resize
-        controller.emitter.on('window:resize', measureAndShowBalls);
+        if (isLastSectionIntro) {
+            attachDetachEvents(true);
+        }
         // Load the SVG
         loadSVG();
+    };
+
+    /**
+     * @function attachDetachEvents
+     * @param {boolean} attach attach the events?
+     */
+
+    var attachDetachEvents = function(attach) {
+        if (attach) {
+            // On leave: drop ball
+            controller.emitter.on('section:sectionLeave', sectionLeave);
+            // Refresh dimensions on resize
+            controller.emitter.on('window:resize', measureAndShowBalls);
+        } else {
+            controller.emitter.removeListener('section:sectionLeave', sectionLeave);
+            controller.emitter.removeListener('window:resize', measureAndShowBalls);
+        }
     };
 
     /**
@@ -23682,7 +23724,10 @@ var SectionIntro = module.exports = function(controller, $element) {
             // Add SVG
             svgObject.append(loadedSVG);
 
-            measureAndShowBalls();
+            if (isLastSectionIntro) {
+                measureAndShowBalls();
+            }
+
         });
     };
 
@@ -23697,13 +23742,14 @@ var SectionIntro = module.exports = function(controller, $element) {
             return;
         }
 
+
         // Temporarily show balls in background image for measuring
         cache.$logo.removeClass('section__logo--with-svg');
         // Measure balls within SVGs
         var ball1ClientRect = svgObject.select('#ball1').node.getBoundingClientRect(),
             ball2ClientRect = svgObject.select('#ball2').node.getBoundingClientRect(),
-            ball1JQueryOffset = $('#ball1').offset(),
-            ball2JQueryOffset = $('#ball2').offset(),
+            ball1JQueryOffset = $element.find('#ball1').offset(),
+            ball2JQueryOffset = $element.find('#ball2').offset(),
             ball1Position = {
                 top: ball1JQueryOffset.top, // For some reason, this jQuery value is accurate
                                             // in iOS following address bar resize
@@ -23722,7 +23768,6 @@ var SectionIntro = module.exports = function(controller, $element) {
         // Hide background image
         cache.$logo.addClass('section__logo--with-svg');
 
-
         //@TODO promise
         if (!ball1Dropped){
             controller.emitter.emit('balls:showBall1', ball1Position);
@@ -23739,18 +23784,26 @@ var SectionIntro = module.exports = function(controller, $element) {
     var sectionLeave = function($sectionLeave) {
         // When leaving this section, trigger ball1Drop
         if ($sectionLeave.get(0) === $element.get(0)) {
-            controller.emitter.emit('balls:ball1Drop');
+            controller.emitter.emit('balls:ball1Drop', $element);
+            controller.emitter.removeListener('section:sectionLeave', sectionLeave);
             ball1Dropped = true;
         }
     };
 
     /**
-     * Reset all component behaviour, remove handlers
+     * Reset everything
      * @function reset
+     * @param {boolean} reinitialise reinit the component after resetting
      */
 
-    var reset = function() {
+    var reset = function(reinitialise) {
 
+        // Detach events
+        attachDetachEvents(false);
+
+        if (reinitialise) {
+            init();
+        }
     };
 
 
@@ -23852,13 +23905,19 @@ var Sections = module.exports = function(controller, $sections) {
         });
 
         // Init sections: specific
-        var $sectionIntro = $('.section--intro').eq(0),
+        var $sectionIntro = $('.section--intro'),
         	$sectionMakingDigitalHuman = $('.section--making-digital-human').eq(0),
         	$sectionCuriousPlayfulInformative = $('.section--curious-playful-informative').eq(0);
 
+            $sectionIntro.each(function(index, item) {
+                var $section = $(item),
+                    isLastSectionIntro = index === ($sectionIntro.length - 1);
 
-        var sectionIntro = new SectionIntro(controller, $sectionIntro, $sectionIntro.index()),
-        	sectionMakingDigitalHuman = new SectionMakingDigitalHuman(controller, $sectionMakingDigitalHuman, $sectionMakingDigitalHuman.index()),
+                new SectionIntro(controller, $section, $section.index(), isLastSectionIntro);
+            });
+
+
+        var sectionMakingDigitalHuman = new SectionMakingDigitalHuman(controller, $sectionMakingDigitalHuman, $sectionMakingDigitalHuman.index()),
         	sectionCuriousPlayfulInformative = new SectionCuriousPlayfulInformative(controller, $sectionCuriousPlayfulInformative, $sectionCuriousPlayfulInformative.index());
     };
 
