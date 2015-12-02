@@ -22949,7 +22949,7 @@ var ArrowDownButton = module.exports = function(controller) {
             $button.on('click', buttonClick);
             $window.on('scroll', pageScroll); // @TODO debounce
         } else {
-            controller.emitter.removelistener('sections:reset', reset.bind(null, true));
+            controller.emitter.removeListener('sections:reset', reset.bind(null, true));
             $button.off('click', buttonClick);
             $window.off('scroll', pageScroll);
         }
@@ -23160,9 +23160,26 @@ var Balls = module.exports = function(controller) {
      */
 
     var init = function() {
-        controller.emitter.on('balls:ball1Drop', ball1Drop);
-        controller.emitter.on('balls:showBall1', showBall.bind(cache.$ball1));
-        controller.emitter.on('balls:showBall2', showBall.bind(cache.$ball2));
+        attachDetachEvents(true);
+    };
+
+    /**
+     * @function attachDetachEvents
+     * @param {boolean} attach attach the events?
+     */
+
+    var attachDetachEvents = function(attach) {
+        if (attach) {
+            controller.emitter.on('sections:reset', reset.bind(null, true));
+            controller.emitter.on('balls:ball1Drop', ball1Drop);
+            controller.emitter.on('balls:showBall1', showBall.bind(cache.$ball1));
+            controller.emitter.on('balls:showBall2', showBall.bind(cache.$ball2));
+        } else {
+            controller.emitter.removeListener('sections:reset', reset.bind(null, true));
+            controller.emitter.removeListener('balls:ball1Drop', ball1Drop);
+            controller.emitter.removeListener('balls:showBall1', showBall.bind(cache.$ball1));
+            controller.emitter.removeListener('balls:showBall2', showBall.bind(cache.$ball2));
+        }
     };
 
     /**
@@ -23203,6 +23220,22 @@ var Balls = module.exports = function(controller) {
             width: position.width,
             height: position.height
         });
+    };
+
+    /**
+     * Reset everything
+     * @function reset
+     * @param {boolean} reinitialise reinit the component after resetting
+     */
+
+    var reset = function(reinitialise) {
+
+        // Detach events
+        attachDetachEvents(false);
+
+        if (reinitialise) {
+            init();
+        }
     };
 
 
