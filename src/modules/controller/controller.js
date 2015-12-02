@@ -26,6 +26,7 @@ var controller = module.exports = function() {
      */
 
     this.emitter = new EventEmitter();
+    this.emitter.setMaxListeners(20);
 
     /**
      * App properties, states and settings
