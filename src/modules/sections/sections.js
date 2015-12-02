@@ -66,13 +66,19 @@ var Sections = module.exports = function(controller, $sections) {
         });
 
         // Init sections: specific
-        var $sectionIntro = $('.section--intro').eq(0),
+        var $sectionIntro = $('.section--intro'),
         	$sectionMakingDigitalHuman = $('.section--making-digital-human').eq(0),
         	$sectionCuriousPlayfulInformative = $('.section--curious-playful-informative').eq(0);
 
+            $sectionIntro.each(function(index, item) {
+                var $section = $(item),
+                    isLastSectionIntro = index === ($sectionIntro.length - 1);
 
-        var sectionIntro = new SectionIntro(controller, $sectionIntro, $sectionIntro.index()),
-        	sectionMakingDigitalHuman = new SectionMakingDigitalHuman(controller, $sectionMakingDigitalHuman, $sectionMakingDigitalHuman.index()),
+                new SectionIntro(controller, $section, $section.index(), isLastSectionIntro);
+            });
+
+
+        var sectionMakingDigitalHuman = new SectionMakingDigitalHuman(controller, $sectionMakingDigitalHuman, $sectionMakingDigitalHuman.index()),
         	sectionCuriousPlayfulInformative = new SectionCuriousPlayfulInformative(controller, $sectionCuriousPlayfulInformative, $sectionCuriousPlayfulInformative.index());
     };
 

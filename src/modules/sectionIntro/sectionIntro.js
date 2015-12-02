@@ -9,9 +9,11 @@ var $ = require('jquery'),
  * @constructor SectionIntro
  * @param {object} controller
  * @param {jQuery} $element section element
+ * @param {number} index which number section is this
+ * @param {boolean} isLastSectionIntro is this last section
  */
 
-var SectionIntro = module.exports = function(controller, $element) {
+var SectionIntro = module.exports = function(controller, $element, index, isLastSectionIntro) {
     'use strict';
 
     /**
@@ -49,12 +51,28 @@ var SectionIntro = module.exports = function(controller, $element) {
      */
 
     var init = function() {
-        // On leave: drop ball
-        controller.emitter.on('section:sectionLeave', sectionLeave);
-        // Refresh dimensions on resize
-        controller.emitter.on('window:resize', measureAndShowBalls);
+        if (isLastSectionIntro) {
+            attachDetachEvents(true);
+        }
         // Load the SVG
         loadSVG();
+    };
+
+    /**
+     * @function attachDetachEvents
+     * @param {boolean} attach attach the events?
+     */
+
+    var attachDetachEvents = function(attach) {
+        if (attach) {
+            // On leave: drop ball
+            controller.emitter.on('section:sectionLeave', sectionLeave);
+            // Refresh dimensions on resize
+            controller.emitter.on('window:resize', measureAndShowBalls);
+        } else {
+            controller.emitter.removeListener('section:sectionLeave', sectionLeave);
+            controller.emitter.removeListener('window:resize', measureAndShowBalls);
+        }
     };
 
     /**
@@ -68,7 +86,10 @@ var SectionIntro = module.exports = function(controller, $element) {
             // Add SVG
             svgObject.append(loadedSVG);
 
-            measureAndShowBalls();
+            if (isLastSectionIntro) {
+                measureAndShowBalls();
+            }
+
         });
     };
 
@@ -83,13 +104,14 @@ var SectionIntro = module.exports = function(controller, $element) {
             return;
         }
 
+
         // Temporarily show balls in background image for measuring
         cache.$logo.removeClass('section__logo--with-svg');
         // Measure balls within SVGs
         var ball1ClientRect = svgObject.select('#ball1').node.getBoundingClientRect(),
             ball2ClientRect = svgObject.select('#ball2').node.getBoundingClientRect(),
-            ball1JQueryOffset = $('#ball1').offset(),
-            ball2JQueryOffset = $('#ball2').offset(),
+            ball1JQueryOffset = $element.find('#ball1').offset(),
+            ball2JQueryOffset = $element.find('#ball2').offset(),
             ball1Position = {
                 top: ball1JQueryOffset.top, // For some reason, this jQuery value is accurate
                                             // in iOS following address bar resize
@@ -108,7 +130,6 @@ var SectionIntro = module.exports = function(controller, $element) {
         // Hide background image
         cache.$logo.addClass('section__logo--with-svg');
 
-
         //@TODO promise
         if (!ball1Dropped){
             controller.emitter.emit('balls:showBall1', ball1Position);
@@ -125,18 +146,26 @@ var SectionIntro = module.exports = function(controller, $element) {
     var sectionLeave = function($sectionLeave) {
         // When leaving this section, trigger ball1Drop
         if ($sectionLeave.get(0) === $element.get(0)) {
-            controller.emitter.emit('balls:ball1Drop');
+            controller.emitter.emit('balls:ball1Drop', $element);
+            controller.emitter.removeListener('section:sectionLeave', sectionLeave);
             ball1Dropped = true;
         }
     };
 
     /**
-     * Reset all component behaviour, remove handlers
+     * Reset everything
      * @function reset
+     * @param {boolean} reinitialise reinit the component after resetting
      */
 
-    var reset = function() {
+    var reset = function(reinitialise) {
 
+        // Detach events
+        attachDetachEvents(false);
+
+        if (reinitialise) {
+            init();
+        }
     };
 
 
