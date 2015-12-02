@@ -67,7 +67,7 @@ var Sections = module.exports = function(controller, $sections) {
 
         // Init sections: specific
         var $sectionIntro = $('.section--intro'),
-        	$sectionMakingDigitalHuman = $('.section--making-digital-human').eq(0),
+        	$sectionMakingDigitalHuman = $('.section--making-digital-human'),
         	$sectionCuriousPlayfulInformative = $('.section--curious-playful-informative').eq(0);
 
             $sectionIntro.each(function(index, item) {
@@ -77,9 +77,13 @@ var Sections = module.exports = function(controller, $sections) {
                 new SectionIntro(controller, $section, $section.index(), isLastSectionIntro);
             });
 
+            $sectionMakingDigitalHuman.each(function(index, item) {
+                var $section = $(item);
+                new SectionMakingDigitalHuman(controller, $section, $section.index());
+            });
 
-        var sectionMakingDigitalHuman = new SectionMakingDigitalHuman(controller, $sectionMakingDigitalHuman, $sectionMakingDigitalHuman.index()),
-        	sectionCuriousPlayfulInformative = new SectionCuriousPlayfulInformative(controller, $sectionCuriousPlayfulInformative, $sectionCuriousPlayfulInformative.index());
+
+        var sectionCuriousPlayfulInformative = new SectionCuriousPlayfulInformative(controller, $sectionCuriousPlayfulInformative, $sectionCuriousPlayfulInformative.index());
     };
 
 
