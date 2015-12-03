@@ -26,6 +26,17 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
     };
 
     /**
+     * Bound events for add/removal
+     * @namespace events
+     * @property {function} reset
+     */
+
+    var events = {
+        reset: null,
+        refreshDimensions: null
+    };
+
+    /**
      * properties, states and settings
      * @namespace props
      * @property {number} titleHeight
@@ -51,9 +62,11 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
     this.init = function() {
 
         this.refreshDimensions();
-
+        // Bind events
+        events.reset = this.reset.bind(this, true);
+        events.refreshDimensions = this.refreshDimensions.bind(this);
         // Attach events
-        controller.emitter.on('window:resize', this.refreshDimensions.bind(this));
+        this.attachDetachEvents(true);
 
         // pin title to centre via absolute position and translateY
         // can't use scrollMagic pin as uses fixed position and we need to
@@ -65,6 +78,21 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
         }).on('progress', this.pinTitleProgress.bind(null, this.props.titleHeight));
 
         this.scenePinTitle.addTo(controller.props.scrollScenes);
+    };
+
+    /**
+     * @function attachDetachEvents
+     * @param {boolean} attach attach the events?
+     */
+
+    this.attachDetachEvents = function(attach) {
+        if (attach) {
+            controller.emitter.on('sections:reset', events.reset);
+            controller.emitter.on('window:resize', events.refreshDimensions);
+        } else {
+            controller.emitter.removeListener('sections:reset', events.reset);
+            controller.emitter.removeListener('window:resize', events.refreshDimensions);
+        }
     };
 
     /**
@@ -90,6 +118,21 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
 
         if (this.scenePinTitle) {
             this.scenePinTitle.duration($section.height());
+        }
+    };
+
+    /**
+     * Reset everything
+     * @function reset
+     * @param {boolean} reinitialise reinit the component after resetting
+     */
+
+    this.reset = function(reinitialise) {
+        // Detach events
+        this.attachDetachEvents(false);
+
+        if (reinitialise) {
+            this.init();
         }
     };
 
