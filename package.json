@@ -28,9 +28,10 @@
     "pixrem": "^3.0.0"
   },
   "dependencies": {
-    "jquery": "^2.1.4",
     "gsap": "~1.18.0",
-    "snapsvg": "~0.4.0",
-    "raf": "~3.1.0"
+    "jquery": "^2.1.4",
+    "raf": "~3.1.0",
+    "scrollmagic": "^2.0.5",
+    "snapsvg": "~0.4.0"
   }
 }
