@@ -22903,14 +22903,15 @@ var controller = new Controller(),
 	balls = new Balls(controller),
 	sections = new Sections(controller, $('.sections').eq(0));
 
-},{"./../modules/ArrowDownButton/ArrowDownButton":9,"./../modules/balls/balls":10,"./../modules/controller/controller":11,"./../modules/menu/menu":12,"./../modules/sections/sections":17,"jquery":4}],9:[function(require,module,exports){
+},{"./../modules/ArrowDownButton/ArrowDownButton":9,"./../modules/balls/balls":11,"./../modules/controller/controller":12,"./../modules/menu/menu":13,"./../modules/sections/sections":18,"jquery":4}],9:[function(require,module,exports){
 /** @module ArrowDownButton */
 
 /*globals Power2:true, console*/
 
 var $ = require('jquery'),
     TweenLite = require('./../../../node_modules/gsap/src/uncompressed/TweenLite.js'),
-    ScrollToPlugin = require('./../../../node_modules/gsap/src/uncompressed/plugins/ScrollToPlugin.js');
+    ScrollToPlugin = require('./../../../node_modules/gsap/src/uncompressed/plugins/ScrollToPlugin.js'),
+    _base = require('../_base/_base.js');
 
 var options = {
     scrollDownDuration: 0.8
@@ -22938,17 +22939,20 @@ var events = {
 var ArrowDownButton = module.exports = function(controller) {
     'use strict';
 
+    // Extend _base module JS
+    var base = _base.apply(this);
+
     /**
      * @function init
      */
 
-    var init = function() {
+    this.init = function() {
         buttonShow();
         setInitialHash();
         // Bind events
-        events.reset = reset.bind(null, true);
+        events.reset = this.reset.bind(this, true);
         // Attach events
-        attachDetachEvents(true);
+        this.attachDetachEvents(true);
     };
 
     /**
@@ -22956,7 +22960,7 @@ var ArrowDownButton = module.exports = function(controller) {
      * @param {boolean} attach attach the events?
      */
 
-    var attachDetachEvents = function(attach) {
+    this.attachDetachEvents = function(attach) {
         if (attach) {
             controller.emitter.on('sections:reset', events.reset);
             $button.on('click', buttonClick);
@@ -23106,29 +23110,39 @@ var ArrowDownButton = module.exports = function(controller) {
 
     };
 
+    this.init();
+
+};
+
+},{"../_base/_base.js":10,"./../../../node_modules/gsap/src/uncompressed/TweenLite.js":2,"./../../../node_modules/gsap/src/uncompressed/plugins/ScrollToPlugin.js":3,"jquery":4}],10:[function(require,module,exports){
+/** @module _base */
+
+var $ = require('jquery');
+
+/**
+ * @constructor _base
+ */
+
+var _base = module.exports = function() {
+    'use strict';
+
     /**
      * Reset everything
      * @function reset
      * @param {boolean} reinitialise reinit the component after resetting
      */
 
-    var reset = function(reinitialise) {
-
+    this.reset = function(reinitialise) {
         // Detach events
-        attachDetachEvents(false);
+        this.attachDetachEvents(false);
 
         if (reinitialise) {
-            init();
+            this.init();
         }
     };
-
-
-
-    init();
-
 };
 
-},{"./../../../node_modules/gsap/src/uncompressed/TweenLite.js":2,"./../../../node_modules/gsap/src/uncompressed/plugins/ScrollToPlugin.js":3,"jquery":4}],10:[function(require,module,exports){
+},{"jquery":4}],11:[function(require,module,exports){
 /** @module Balls */
 /*globals Power2:true, console*/
 
@@ -23282,7 +23296,7 @@ var Balls = module.exports = function(controller) {
 
 };
 
-},{"jquery":4}],11:[function(require,module,exports){
+},{"jquery":4}],12:[function(require,module,exports){
 /** @module controller */
 
 /**
@@ -23400,7 +23414,7 @@ var controller = module.exports = function() {
     return this;
 };
 
-},{"events":1,"jquery":4,"scrollmagic":5}],12:[function(require,module,exports){
+},{"events":1,"jquery":4,"scrollmagic":5}],13:[function(require,module,exports){
 /** @module Menu */
 
 var $ = require('jquery');
@@ -23418,7 +23432,7 @@ var Menu = module.exports = function(controller) {
 
 };
 
-},{"jquery":4}],13:[function(require,module,exports){
+},{"jquery":4}],14:[function(require,module,exports){
 /** @module Section */
 /*globals Power2:true, console*/
 
@@ -23551,7 +23565,7 @@ var Section = module.exports = function(controller, $section, sectionIndex, sect
 
 };
 
-},{"jquery":4,"scrollmagic":5}],14:[function(require,module,exports){
+},{"jquery":4,"scrollmagic":5}],15:[function(require,module,exports){
 /** @module sectionCuriousPlayfulInformative */
 
 var $ = require('jquery'),
@@ -23693,7 +23707,7 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
     this.init();
 };
 
-},{"jquery":4,"scrollmagic":5}],15:[function(require,module,exports){
+},{"jquery":4,"scrollmagic":5}],16:[function(require,module,exports){
 /** @module Section */
 /*globals Power2:true, console*/
 
@@ -23869,7 +23883,7 @@ var SectionIntro = module.exports = function(controller, $element, index, isLast
 
 };
 
-},{"jquery":4,"scrollmagic":5,"snapsvg":6}],16:[function(require,module,exports){
+},{"jquery":4,"scrollmagic":5,"snapsvg":6}],17:[function(require,module,exports){
 /** @module sectionMakingDigitalHuman */
 
 var $ = require('jquery'),
@@ -23894,7 +23908,7 @@ var sectionMakingDigitalHuman = module.exports = function(controller, $section, 
     });
 };
 
-},{"jquery":4,"scrollmagic":5}],17:[function(require,module,exports){
+},{"jquery":4,"scrollmagic":5}],18:[function(require,module,exports){
 /** @module Sections */
 /*globals console*/
 
@@ -24047,4 +24061,4 @@ var Sections = module.exports = function(controller, $sections) {
 
 };
 
-},{"./../../modules/section/section":13,"./../../modules/sectionCuriousPlayfulInformative/sectionCuriousPlayfulInformative":14,"./../../modules/sectionIntro/sectionIntro":15,"./../../modules/sectionMakingDigitalHuman/sectionMakingDigitalHuman":16,"jquery":4}]},{},[8]);
+},{"./../../modules/section/section":14,"./../../modules/sectionCuriousPlayfulInformative/sectionCuriousPlayfulInformative":15,"./../../modules/sectionIntro/sectionIntro":16,"./../../modules/sectionMakingDigitalHuman/sectionMakingDigitalHuman":17,"jquery":4}]},{},[8]);

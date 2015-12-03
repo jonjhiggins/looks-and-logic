@@ -4,7 +4,8 @@
 
 var $ = require('jquery'),
     TweenLite = require('./../../../node_modules/gsap/src/uncompressed/TweenLite.js'),
-    ScrollToPlugin = require('./../../../node_modules/gsap/src/uncompressed/plugins/ScrollToPlugin.js');
+    ScrollToPlugin = require('./../../../node_modules/gsap/src/uncompressed/plugins/ScrollToPlugin.js'),
+    _base = require('../_base/_base.js');
 
 var options = {
     scrollDownDuration: 0.8
@@ -32,17 +33,20 @@ var events = {
 var ArrowDownButton = module.exports = function(controller) {
     'use strict';
 
+    // Extend _base module JS
+    var base = _base.apply(this);
+
     /**
      * @function init
      */
 
-    var init = function() {
+    this.init = function() {
         buttonShow();
         setInitialHash();
         // Bind events
-        events.reset = reset.bind(null, true);
+        events.reset = this.reset.bind(this, true);
         // Attach events
-        attachDetachEvents(true);
+        this.attachDetachEvents(true);
     };
 
     /**
@@ -50,7 +54,7 @@ var ArrowDownButton = module.exports = function(controller) {
      * @param {boolean} attach attach the events?
      */
 
-    var attachDetachEvents = function(attach) {
+    this.attachDetachEvents = function(attach) {
         if (attach) {
             controller.emitter.on('sections:reset', events.reset);
             $button.on('click', buttonClick);
@@ -200,24 +204,6 @@ var ArrowDownButton = module.exports = function(controller) {
 
     };
 
-    /**
-     * Reset everything
-     * @function reset
-     * @param {boolean} reinitialise reinit the component after resetting
-     */
-
-    var reset = function(reinitialise) {
-
-        // Detach events
-        attachDetachEvents(false);
-
-        if (reinitialise) {
-            init();
-        }
-    };
-
-
-
-    init();
+    this.init();
 
 };
