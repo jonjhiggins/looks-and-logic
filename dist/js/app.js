@@ -23150,7 +23150,8 @@ var _base = module.exports = function() {
  * @constructor Balls
  */
 
-var $ = require('jquery');
+var $ = require('jquery'),
+    _base = require('../_base/_base.js');
 
 /**
  * jQuery elements
@@ -23169,6 +23170,9 @@ var cache = {
 
 var Balls = module.exports = function(controller) {
     'use strict';
+
+    // Extend _base module JS
+    var base = _base.apply(this);
 
     /**
     * Module properties, states and settings
@@ -23200,13 +23204,13 @@ var Balls = module.exports = function(controller) {
      * @function init
      */
 
-    var init = function() {
+    this.init = function() {
         // Bind events
         events.showBall1 = showBall.bind(cache.$ball1);
         events.showBall2 = showBall.bind(cache.$ball2);
-        events.reset = reset.bind(null, true);
+        events.reset = this.reset.bind(this, true);
         // Attach events
-        attachDetachEvents(true);
+        this.attachDetachEvents(true);
         // Reset ball1 position and dropped prop
         cache.$ball1.css({
             'transform': 'none',
@@ -23219,7 +23223,7 @@ var Balls = module.exports = function(controller) {
      * @param {boolean} attach attach the events?
      */
 
-    var attachDetachEvents = function(attach) {
+    this.attachDetachEvents = function(attach) {
         if (attach) {
             controller.emitter.on('sections:reset', events.reset);
             controller.emitter.on('balls:ball1Drop', ball1Drop);
@@ -23275,28 +23279,12 @@ var Balls = module.exports = function(controller) {
         });
     };
 
-    /**
-     * Reset everything
-     * @function reset
-     * @param {boolean} reinitialise reinit the component after resetting
-     */
 
-    var reset = function(reinitialise) {
-
-        // Detach events
-        attachDetachEvents(false);
-
-        if (reinitialise) {
-            init();
-        }
-    };
-
-
-    init();
+    this.init();
 
 };
 
-},{"jquery":4}],12:[function(require,module,exports){
+},{"../_base/_base.js":10,"jquery":4}],12:[function(require,module,exports){
 /** @module controller */
 
 /**
