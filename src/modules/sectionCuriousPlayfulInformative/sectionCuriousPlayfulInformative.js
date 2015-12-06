@@ -76,7 +76,6 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
      */
 
     this.attachDetachEvents = function(attach) {
-
         if (attach) {
             controller.emitter.on('sections:reset', this.events.reset);
             controller.emitter.on('window:resize', this.events.refreshDimensions);

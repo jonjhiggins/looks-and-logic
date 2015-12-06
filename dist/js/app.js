@@ -23335,6 +23335,7 @@ var controller = module.exports = function() {
      */
 
      this.init = function () {
+         this.setEmitterMaxListeners();
          this.refreshDimensions();
 
          // All window resizes through common function
@@ -23342,8 +23343,35 @@ var controller = module.exports = function() {
 
          // Attach events
          this.emitter.on('window:resize', this.refreshDimensions.bind(this));
-         this.emitter.on('sections:reset', this.resetScrollScenes.bind(this));
+         this.emitter.on('sections:reset', this.sectionsReset.bind(this));
 
+     };
+
+     /**
+      * Called when sections are reset
+      * @method setEmitterMaxListeners
+      */
+
+     this.sectionsReset = function() {
+         this.resetScrollScenes();
+         this.setEmitterMaxListeners();
+     };
+
+     /**
+      * Set the event emitters max listeners
+      * Important as the infinite scroll behaviour is prone to memory leaks
+      * @method setEmitterMaxListeners
+      */
+
+     this.setEmitterMaxListeners = function() {
+         var modules = ['controller',
+                        'arrowDownButton',
+                        'balls'],
+            sectionLength = $('.section').length +
+                            $('.section--curious-playful-informative').length,
+            maxListeners = modules.length + sectionLength;
+
+         this.emitter.setMaxListeners(maxListeners);
      };
 
      /**
@@ -23654,7 +23682,6 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
      */
 
     this.attachDetachEvents = function(attach) {
-
         if (attach) {
             controller.emitter.on('sections:reset', this.events.reset);
             controller.emitter.on('window:resize', this.events.refreshDimensions);
