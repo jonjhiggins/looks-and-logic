@@ -15,15 +15,6 @@ var $button = $('#arrowDownButton'),
     $window = $(window),
     $currentSection = $('.section').eq(0); //@TODO change depending on scroll position
 
-/**
- * Bound events for add/removal
- * @namespace events
- * @property {function} reset
- */
-
-var events = {
-    reset: null
-};
 
 /**
  * @constructor ArrowDownButton
@@ -43,8 +34,6 @@ var ArrowDownButton = module.exports = function(controller) {
     this.init = function() {
         buttonShow();
         setInitialHash();
-        // Bind events
-        events.reset = this.reset.bind(this, true);
         // Attach events
         this.attachDetachEvents(true);
     };
@@ -56,11 +45,11 @@ var ArrowDownButton = module.exports = function(controller) {
 
     this.attachDetachEvents = function(attach) {
         if (attach) {
-            controller.emitter.on('sections:reset', events.reset);
+            controller.emitter.on('sections:reset', this.events.reset);
             $button.on('click', buttonClick);
             $window.on('scroll', pageScroll); // @TODO debounce
         } else {
-            controller.emitter.removeListener('sections:reset', events.reset);
+            controller.emitter.removeListener('sections:reset', this.events.reset);
             $button.off('click', buttonClick);
             $window.off('scroll', pageScroll);
         }

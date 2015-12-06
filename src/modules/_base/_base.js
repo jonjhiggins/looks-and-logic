@@ -9,6 +9,17 @@ var $ = require('jquery');
 var _base = module.exports = function() {
     'use strict';
 
+
+    /**
+    * Bound events for add/removal
+    * @namespace events
+    * @property {function} reset
+    */
+
+    this.events = {
+      reset: null
+    };
+
     /**
      * Reset everything
      * @function reset
@@ -18,9 +29,11 @@ var _base = module.exports = function() {
     this.reset = function(reinitialise) {
         // Detach events
         this.attachDetachEvents(false);
-
         if (reinitialise) {
             this.init();
         }
     };
+
+    // Bind events
+    this.events.reset = this.reset.bind(this, true);
 };
