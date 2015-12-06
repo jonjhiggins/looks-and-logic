@@ -23327,6 +23327,7 @@ var controller = module.exports = function() {
         sections: [],
         sectionCuriousPlayfulInformatives: [],
         sectionIntros: [],
+        sectionMakingDigitalHumans: [],
         scrollScenes: new ScrollMagic.Controller(),
         windowHeight: 0
     };
@@ -23371,7 +23372,8 @@ var controller = module.exports = function() {
                         'balls'],
             sectionLength = $('.section').length +
                             $('.section--curious-playful-informative').length +
-                            $('.section--intro').length,
+                            $('.section--intro').length +
+                            $('.section--making-digital-human').length,
             maxListeners = modules.length + sectionLength;
 
          this.emitter.setMaxListeners(maxListeners);
@@ -23940,7 +23942,8 @@ var SectionIntro = module.exports = function(controller, $element, index) {
 /** @module sectionMakingDigitalHuman */
 
 var $ = require('jquery'),
-    ScrollMagic = require('scrollmagic');
+    ScrollMagic = require('scrollmagic'),
+    _base = require('../_base/_base.js');
 
 /**
  * @constructor sectionMakingDigitalHuman
@@ -23950,18 +23953,57 @@ var $ = require('jquery'),
 var sectionMakingDigitalHuman = module.exports = function(controller, $section, index) {
     'use strict';
 
-    // Add pin
-    var sectionObject = controller.props.sections[index],
-        scene = sectionObject.props.scene;
+    // Extend _base module JS
+    var base = _base.apply(this);
 
-    // Set triggerHook to top of component (so it pins there)
-    scene.triggerHook(0);
-    scene.setPin($section.get(0), {
-        pushFollowers: false
-    });
+    /**
+     * Initialise the component
+     * @method init
+     */
+
+    this.init = function() {
+        // Attach events
+        this.attachDetachEvents(true);
+        this.addScenePin();
+    };
+
+    /**
+     * @method attachDetachEvents
+     * @param {boolean} attach attach the events?
+     */
+
+    this.attachDetachEvents = function(attach) {
+        if (attach) {
+            controller.emitter.on('sections:reset', this.events.reset);
+        } else {
+            controller.emitter.removeListener('sections:reset', this.events.reset);
+        }
+    };
+
+    /**
+     * Pin the text via ScrollMagic
+     * @method addScenePin
+     */
+
+    this.addScenePin = function() {
+        // Get scrollmagic scene
+        var sectionObject = controller.props.sections[index],
+            scene = sectionObject.props.scene;
+
+        // Set triggerHook to top of component (so it pins there)
+        scene.triggerHook(0);
+        // Add pin
+        scene.setPin($section.get(0), {
+            pushFollowers: false
+        });
+    };
+
+    this.init();
+
+
 };
 
-},{"jquery":4,"scrollmagic":5}],18:[function(require,module,exports){
+},{"../_base/_base.js":10,"jquery":4,"scrollmagic":5}],18:[function(require,module,exports){
 /** @module Sections */
 /*globals console*/
 
@@ -24027,18 +24069,9 @@ var Sections = module.exports = function(controller, $sections) {
         $('.section').each(initSection.bind(null, sectionsLength));
 
         // Init sections: specific
-        var $sectionIntro = $('.section--intro'),
-        	$sectionMakingDigitalHuman = $('.section--making-digital-human'),
-        	$sectionCuriousPlayfulInformative = $('.section--curious-playful-informative');
-
-            $sectionIntro.each(initSectionIntro);
-
-            $sectionMakingDigitalHuman.each(function(index, item) {
-                var $section = $(item);
-                new SectionMakingDigitalHuman(controller, $section, $section.index());
-            });
-
-            $sectionCuriousPlayfulInformative.each(initSectionCuriousPlayfulInformative);
+        $('.section--intro').each(initSectionIntro);
+        $('.section--making-digital-human').each(initSectionMakingDigitalHuman);
+        $('.section--curious-playful-informative').each(initSectionCuriousPlayfulInformative);
 
 
     };
@@ -24085,6 +24118,21 @@ var Sections = module.exports = function(controller, $sections) {
         if (typeof sectionObject === 'undefined' || !sectionObject) {
             var $section = $(section);
             controller.props.sectionIntros[index] = new SectionIntro(controller, $section, $section.index());
+        }
+    };
+
+    /**
+     * Init a initSectionMakingDigitalHuman section. Only init new sections
+     * @function initSectionMakingDigitalHuman
+     * @param {number} index
+     * @param {element} section
+     */
+
+    var initSectionMakingDigitalHuman = function(index, section) {
+        var sectionObject = controller.props.sectionMakingDigitalHumans[index];
+        if (typeof sectionObject === 'undefined' || !sectionObject) {
+            var $section = $(section);
+            controller.props.sectionMakingDigitalHumans[index] = new SectionMakingDigitalHuman(controller, $section, $section.index());
         }
     };
 

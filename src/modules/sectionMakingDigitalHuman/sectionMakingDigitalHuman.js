@@ -1,7 +1,8 @@
 /** @module sectionMakingDigitalHuman */
 
 var $ = require('jquery'),
-    ScrollMagic = require('scrollmagic');
+    ScrollMagic = require('scrollmagic'),
+    _base = require('../_base/_base.js');
 
 /**
  * @constructor sectionMakingDigitalHuman
@@ -11,13 +12,52 @@ var $ = require('jquery'),
 var sectionMakingDigitalHuman = module.exports = function(controller, $section, index) {
     'use strict';
 
-    // Add pin
-    var sectionObject = controller.props.sections[index],
-        scene = sectionObject.props.scene;
+    // Extend _base module JS
+    var base = _base.apply(this);
 
-    // Set triggerHook to top of component (so it pins there)
-    scene.triggerHook(0);
-    scene.setPin($section.get(0), {
-        pushFollowers: false
-    });
+    /**
+     * Initialise the component
+     * @method init
+     */
+
+    this.init = function() {
+        // Attach events
+        this.attachDetachEvents(true);
+        this.addScenePin();
+    };
+
+    /**
+     * @method attachDetachEvents
+     * @param {boolean} attach attach the events?
+     */
+
+    this.attachDetachEvents = function(attach) {
+        if (attach) {
+            controller.emitter.on('sections:reset', this.events.reset);
+        } else {
+            controller.emitter.removeListener('sections:reset', this.events.reset);
+        }
+    };
+
+    /**
+     * Pin the text via ScrollMagic
+     * @method addScenePin
+     */
+
+    this.addScenePin = function() {
+        // Get scrollmagic scene
+        var sectionObject = controller.props.sections[index],
+            scene = sectionObject.props.scene;
+
+        // Set triggerHook to top of component (so it pins there)
+        scene.triggerHook(0);
+        // Add pin
+        scene.setPin($section.get(0), {
+            pushFollowers: false
+        });
+    };
+
+    this.init();
+
+
 };

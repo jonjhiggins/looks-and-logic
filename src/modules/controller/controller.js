@@ -43,6 +43,7 @@ var controller = module.exports = function() {
         sections: [],
         sectionCuriousPlayfulInformatives: [],
         sectionIntros: [],
+        sectionMakingDigitalHumans: [],
         scrollScenes: new ScrollMagic.Controller(),
         windowHeight: 0
     };
@@ -87,7 +88,8 @@ var controller = module.exports = function() {
                         'balls'],
             sectionLength = $('.section').length +
                             $('.section--curious-playful-informative').length +
-                            $('.section--intro').length,
+                            $('.section--intro').length +
+                            $('.section--making-digital-human').length,
             maxListeners = modules.length + sectionLength;
 
          this.emitter.setMaxListeners(maxListeners);

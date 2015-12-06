@@ -63,18 +63,9 @@ var Sections = module.exports = function(controller, $sections) {
         $('.section').each(initSection.bind(null, sectionsLength));
 
         // Init sections: specific
-        var $sectionIntro = $('.section--intro'),
-        	$sectionMakingDigitalHuman = $('.section--making-digital-human'),
-        	$sectionCuriousPlayfulInformative = $('.section--curious-playful-informative');
-
-            $sectionIntro.each(initSectionIntro);
-
-            $sectionMakingDigitalHuman.each(function(index, item) {
-                var $section = $(item);
-                new SectionMakingDigitalHuman(controller, $section, $section.index());
-            });
-
-            $sectionCuriousPlayfulInformative.each(initSectionCuriousPlayfulInformative);
+        $('.section--intro').each(initSectionIntro);
+        $('.section--making-digital-human').each(initSectionMakingDigitalHuman);
+        $('.section--curious-playful-informative').each(initSectionCuriousPlayfulInformative);
 
 
     };
@@ -121,6 +112,21 @@ var Sections = module.exports = function(controller, $sections) {
         if (typeof sectionObject === 'undefined' || !sectionObject) {
             var $section = $(section);
             controller.props.sectionIntros[index] = new SectionIntro(controller, $section, $section.index());
+        }
+    };
+
+    /**
+     * Init a initSectionMakingDigitalHuman section. Only init new sections
+     * @function initSectionMakingDigitalHuman
+     * @param {number} index
+     * @param {element} section
+     */
+
+    var initSectionMakingDigitalHuman = function(index, section) {
+        var sectionObject = controller.props.sectionMakingDigitalHumans[index];
+        if (typeof sectionObject === 'undefined' || !sectionObject) {
+            var $section = $(section);
+            controller.props.sectionMakingDigitalHumans[index] = new SectionMakingDigitalHuman(controller, $section, $section.index());
         }
     };
 
