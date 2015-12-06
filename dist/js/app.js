@@ -23115,6 +23115,17 @@ var $ = require('jquery');
 var _base = module.exports = function() {
     'use strict';
 
+
+    /**
+    * Bound events for add/removal
+    * @namespace events
+    * @property {function} reset
+    */
+
+    this.events = {
+      reset: null
+    };
+
     /**
      * Reset everything
      * @function reset
@@ -23411,7 +23422,8 @@ var Menu = module.exports = function(controller) {
 /*globals Power2:true, console*/
 
 var $ = require('jquery'),
-    ScrollMagic = require('scrollmagic');
+    ScrollMagic = require('scrollmagic'),
+    _base = require('../_base/_base.js');
 
 /**
  * jQuery elements
@@ -23435,6 +23447,9 @@ var cache = {
 var Section = module.exports = function(controller, $section, sectionIndex, sectionsLength) {
     'use strict';
 
+    // Extend _base module JS
+    var base = _base.apply(this);
+
     /**
      * App properties, states and settings
      * @namespace prop
@@ -23457,6 +23472,7 @@ var Section = module.exports = function(controller, $section, sectionIndex, sect
 
     this.init = function() {
         // Run for each section
+        this.attachDetachEvents(true);
         this.setBackgroundColours();
         this.addScrollScene();
         this.addId();
@@ -23464,6 +23480,19 @@ var Section = module.exports = function(controller, $section, sectionIndex, sect
         // All sections initialised - must remain at end of init function
         if (this.props.isLast) {
             controller.emitter.emit('section:sectionsInited');
+        }
+    };
+
+    /**
+     * @method attachDetachEvents
+     * @param {boolean} attach attach the events?
+     */
+
+    this.attachDetachEvents = function(attach) {
+        if (attach) {
+            controller.emitter.on('sections:reset', this.events.reset);
+        } else {
+            controller.emitter.removeListener('sections:reset', this.events.reset);
         }
     };
 
@@ -23499,6 +23528,10 @@ var Section = module.exports = function(controller, $section, sectionIndex, sect
 
     this.addScrollScene = function() {
 
+        if (this.props.scene) {
+            this.props.scene.destroy(true);
+        }
+
         this.props.scene = new ScrollMagic.Scene({
                 triggerElement: $section.get(0),
                 duration: $section.height() // this is updated on resize in sections.js
@@ -23511,6 +23544,7 @@ var Section = module.exports = function(controller, $section, sectionIndex, sect
                 // for infinite loop effect
                 if (this.props.isLast) {
                     controller.emitter.emit('sections:duplicateSections', $section);
+                    this.props.isLast = false;
                 }
 
             }.bind(this))
@@ -23539,7 +23573,7 @@ var Section = module.exports = function(controller, $section, sectionIndex, sect
 
 };
 
-},{"jquery":4,"scrollmagic":5}],15:[function(require,module,exports){
+},{"../_base/_base.js":10,"jquery":4,"scrollmagic":5}],15:[function(require,module,exports){
 /** @module sectionCuriousPlayfulInformative */
 
 var $ = require('jquery'),
@@ -23946,8 +23980,13 @@ var Sections = module.exports = function(controller, $sections) {
 
         // Init sections: common
 
+
         $('.section').each(function (index, item) {
-        	controller.props.sections[index] = new Section(controller, $(item), index, sectionsLength);
+            var sectionObject = controller.props.sections[index];
+            // Only init new sections
+            if (typeof sectionObject === 'undefined' || !sectionObject) {
+                controller.props.sections[index] = new Section(controller, $(item), index, sectionsLength);
+            }
         });
 
         // Init sections: specific

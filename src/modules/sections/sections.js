@@ -61,8 +61,13 @@ var Sections = module.exports = function(controller, $sections) {
 
         // Init sections: common
 
+
         $('.section').each(function (index, item) {
-        	controller.props.sections[index] = new Section(controller, $(item), index, sectionsLength);
+            var sectionObject = controller.props.sections[index];
+            // Only init new sections
+            if (typeof sectionObject === 'undefined' || !sectionObject) {
+                controller.props.sections[index] = new Section(controller, $(item), index, sectionsLength);
+            }
         });
 
         // Init sections: specific
