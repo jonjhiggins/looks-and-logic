@@ -3,18 +3,21 @@
 
 var $ = require('jquery'),
     ScrollMagic = require('scrollmagic'),
-    snap = require('snapsvg');
+    snap = require('snapsvg'),
+    _base = require('../_base/_base.js');
 
 /**
  * @constructor SectionIntro
  * @param {object} controller
  * @param {jQuery} $element section element
  * @param {number} index which number section is this
- * @param {boolean} isLastSectionIntro is this last section
  */
 
-var SectionIntro = module.exports = function(controller, $element, index, isLastSectionIntro) {
+var SectionIntro = module.exports = function(controller, $element, index) {
     'use strict';
+
+    // Extend _base module JS
+    var base = _base.apply(this);
 
     /**
      * jQuery elements
@@ -31,6 +34,28 @@ var SectionIntro = module.exports = function(controller, $element, index, isLast
     };
 
     /**
+     * properties, states and settings
+     * @namespace props
+     * @property {number} svgLoaded
+     * @property {boolean} ball1Dropped has ball 1 dropped?
+     */
+
+    this.props = {
+        svgLoaded: false,
+        ball1Dropped: false
+    };
+
+    /**
+     * Bound events for add/removal. Inherits reset from _base
+     * @namespace events
+     * @property {function} sectionLeave
+     * @property {function} resize
+     */
+
+    this.events.sectionLeave = null;
+    this.events.resize = null;
+
+    /**
      * logo svgObject created by snap.svg
      * @var {object} svgObject
      */
@@ -38,72 +63,75 @@ var SectionIntro = module.exports = function(controller, $element, index, isLast
     var svgObject = null;
 
     /**
-     * has ball 1 dropped?
-     * @var {boolean} ballDropped
-     */
-
-    var ball1Dropped = false;
-
-    /**
      * Initialise the component
      * Everything here should be undone using the "reset" function
-     * @function init
+     * @method init
      */
 
-    var init = function() {
-        if (isLastSectionIntro) {
-            attachDetachEvents(true);
-        }
+    this.init = function() {
+        // Bind events
+        this.events.sectionLeave = this.sectionLeave.bind(this);
+        this.events.resize = this.measureAndShowBalls.bind(this);
+        // Attach events
+        this.attachDetachEvents(true);
         // Load the SVG
-        loadSVG();
+        this.loadSVG();
     };
 
     /**
-     * @function attachDetachEvents
+     * @method attachDetachEvents
      * @param {boolean} attach attach the events?
      */
 
-    var attachDetachEvents = function(attach) {
+    this.attachDetachEvents = function(attach) {
         if (attach) {
+            controller.emitter.on('sections:reset', this.events.reset);
             // On leave: drop ball
-            controller.emitter.on('section:sectionLeave', sectionLeave);
+            if (!this.props.ball1Dropped) {
+                controller.emitter.on('section:sectionLeave', this.events.sectionLeave);
+            }
             // Refresh dimensions on resize
-            controller.emitter.on('window:resize', measureAndShowBalls);
+            controller.emitter.on('window:resize', this.events.resize);
         } else {
-            controller.emitter.removeListener('section:sectionLeave', sectionLeave);
-            controller.emitter.removeListener('window:resize', measureAndShowBalls);
+            controller.emitter.removeListener('sections:reset', this.events.reset);
+            controller.emitter.removeListener('section:sectionLeave', this.events.sectionLeave);
+            controller.emitter.removeListener('window:resize', this.events.resize);
         }
     };
 
     /**
-     * Reset all component behaviour, remove handlers
-     * @function reset
+     * @function loadSVG
      */
 
-    var loadSVG = function() {
+    this.loadSVG = function() {
+
+        if (this.props.svgLoaded) {
+            return;
+        }
+
         svgObject = snap(cache.$logoSvg.get(0));
         snap.load('../img/logo.svg', function(loadedSVG) {
             // Add SVG
             svgObject.append(loadedSVG);
 
-            if (isLastSectionIntro) {
-                measureAndShowBalls();
+            this.props.svgLoaded = true;
+
+            if (!this.props.ball1Dropped) {
+                this.measureAndShowBalls();
             }
 
-        });
+        }.bind(this));
     };
 
     /**
-     * Reset all component behaviour, remove handlers
-     * @function reset
+     * @method measureAndShowBalls
      */
 
-    var measureAndShowBalls = function() {
+    this.measureAndShowBalls = function() {
         // Only run after snap.svg has done it's stuff
         if (!svgObject) {
             return;
         }
-
 
         // Temporarily show balls in background image for measuring
         cache.$logo.removeClass('section__logo--with-svg');
@@ -131,7 +159,7 @@ var SectionIntro = module.exports = function(controller, $element, index, isLast
         cache.$logo.addClass('section__logo--with-svg');
 
         //@TODO promise
-        if (!ball1Dropped){
+        if (!this.props.ball1Dropped){
             controller.emitter.emit('balls:showBall1', ball1Position);
         }
         controller.emitter.emit('balls:showBall2', ball2Position);
@@ -139,36 +167,20 @@ var SectionIntro = module.exports = function(controller, $element, index, isLast
 
     /**
      * On leaving component: drop ball and stop listening for resizes
-     * @function sectionLeave
+     * @method sectionLeave
      * @param {jquery} $sectionLeave
      */
 
-    var sectionLeave = function($sectionLeave) {
+    this.sectionLeave = function($sectionLeave) {
         // When leaving this section, trigger ball1Drop
         if ($sectionLeave.get(0) === $element.get(0)) {
             controller.emitter.emit('balls:ball1Drop', $element);
-            controller.emitter.removeListener('section:sectionLeave', sectionLeave);
-            ball1Dropped = true;
-        }
-    };
-
-    /**
-     * Reset everything
-     * @function reset
-     * @param {boolean} reinitialise reinit the component after resetting
-     */
-
-    var reset = function(reinitialise) {
-
-        // Detach events
-        attachDetachEvents(false);
-
-        if (reinitialise) {
-            init();
+            controller.emitter.removeListener('section:sectionLeave', this.events.sectionLeave);
+            this.props.ball1Dropped = true;
         }
     };
 
 
-    init();
+    this.init();
 
 };

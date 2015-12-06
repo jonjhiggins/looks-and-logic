@@ -33,6 +33,7 @@ var controller = module.exports = function() {
      * @property {boolean} autoScrolling is app auto-scrolling? Used to differentiate manual scrolling
      * @property {array} sections app's sections
      * @property {array} sectionCuriousPlayfulInformatives app's sectionCuriousPlayfulInformatives
+     * @property {array} sectionIntros app's sectionIntros
      * @property {object} scrollScenes scrollmagic controller
      * @property {number} windowHeight
      */
@@ -41,6 +42,7 @@ var controller = module.exports = function() {
         autoScrolling: false,
         sections: [],
         sectionCuriousPlayfulInformatives: [],
+        sectionIntros: [],
         scrollScenes: new ScrollMagic.Controller(),
         windowHeight: 0
     };
@@ -84,7 +86,8 @@ var controller = module.exports = function() {
                         'arrowDownButton',
                         'balls'],
             sectionLength = $('.section').length +
-                            $('.section--curious-playful-informative').length,
+                            $('.section--curious-playful-informative').length +
+                            $('.section--intro').length,
             maxListeners = modules.length + sectionLength;
 
          this.emitter.setMaxListeners(maxListeners);
