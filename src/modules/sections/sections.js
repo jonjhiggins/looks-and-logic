@@ -60,15 +60,7 @@ var Sections = module.exports = function(controller, $sections) {
         var sectionsLength = $sections.find('.section').length;
 
         // Init sections: common
-
-
-        $('.section').each(function (index, item) {
-            var sectionObject = controller.props.sections[index];
-            // Only init new sections
-            if (typeof sectionObject === 'undefined' || !sectionObject) {
-                controller.props.sections[index] = new Section(controller, $(item), index, sectionsLength);
-            }
-        });
+        $('.section').each(initSection.bind(null, sectionsLength));
 
         // Init sections: specific
         var $sectionIntro = $('.section--intro'),
@@ -86,10 +78,39 @@ var Sections = module.exports = function(controller, $sections) {
                 new SectionMakingDigitalHuman(controller, $section, $section.index());
             });
 
-            $sectionCuriousPlayfulInformative.each(function(index, item) {
-                var $section = $(item);
-                new SectionCuriousPlayfulInformative(controller, $section, $section.index());
-            });
+            $sectionCuriousPlayfulInformative.each(initSectionCuriousPlayfulInformative);
+
+
+    };
+
+    /**
+     * Init a standard section. Only init new sections
+     * @function initSection
+     * @param {number} sectionsLength
+     * @param {number} index
+     * @param {element} section
+     */
+
+    var initSection = function(sectionsLength, index, section) {
+        var sectionObject = controller.props.sections[index];
+        if (typeof sectionObject === 'undefined' || !sectionObject) {
+            controller.props.sections[index] = new Section(controller, $(section), index, sectionsLength);
+        }
+    };
+
+    /**
+     * Init a curiousPlayfulInformative section. Only init new sections
+     * @function initSectionCuriousPlayfulInformative
+     * @param {number} index
+     * @param {element} section
+     */
+
+    var initSectionCuriousPlayfulInformative = function(index, section) {
+        var sectionObject = controller.props.sectionCuriousPlayfulInformatives[index];
+        if (typeof sectionObject === 'undefined' || !sectionObject) {
+            var $section = $(section);
+            controller.props.sectionCuriousPlayfulInformatives[index] = new SectionCuriousPlayfulInformative(controller, $section, $section.index());
+        }
     };
 
 

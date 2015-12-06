@@ -1,7 +1,8 @@
 /** @module sectionCuriousPlayfulInformative */
 
 var $ = require('jquery'),
-    ScrollMagic = require('scrollmagic');
+    ScrollMagic = require('scrollmagic'),
+    _base = require('../_base/_base.js');
 
 /**
  * @constructor sectionCuriousPlayfulInformative
@@ -10,6 +11,9 @@ var $ = require('jquery'),
 
 var sectionCuriousPlayfulInformative = module.exports = function(controller, $section, index) {
     'use strict';
+
+    // Extend _base module JS
+    var base = _base.apply(this);
 
     /**
      * jQuery elements
@@ -26,15 +30,12 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
     };
 
     /**
-     * Bound events for add/removal
+     * Bound events for add/removal. Inherits reset from _base
      * @namespace events
-     * @property {function} reset
+     * @property {function} refreshDimensions
      */
 
-    var events = {
-        reset: null,
-        refreshDimensions: null
-    };
+    this.events.refreshDimensions = null;
 
     /**
      * properties, states and settings
@@ -60,13 +61,41 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
      */
 
     this.init = function() {
-
         this.refreshDimensions();
         // Bind events
-        events.reset = this.reset.bind(this, true);
-        events.refreshDimensions = this.refreshDimensions.bind(this);
+        this.events.refreshDimensions = this.refreshDimensions.bind(this);
         // Attach events
         this.attachDetachEvents(true);
+        // ScrollMagic scene
+        this.setupScene();
+    };
+
+    /**
+     * @function attachDetachEvents
+     * @param {boolean} attach attach the events?
+     */
+
+    this.attachDetachEvents = function(attach) {
+
+        if (attach) {
+            controller.emitter.on('sections:reset', this.events.reset);
+            controller.emitter.on('window:resize', this.events.refreshDimensions);
+        } else {
+            controller.emitter.removeListener('sections:reset', this.events.reset);
+            controller.emitter.removeListener('window:resize', this.events.refreshDimensions);
+        }
+    };
+
+    /**
+     * ScrollMagic scene
+     * @function setupScene
+     */
+
+    this.setupScene = function() {
+
+        if (this.scenePinTitle) {
+            this.scenePinTitle.destroy(true);
+        }
 
         // pin title to centre via absolute position and translateY
         // can't use scrollMagic pin as uses fixed position and we need to
@@ -80,20 +109,7 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
         this.scenePinTitle.addTo(controller.props.scrollScenes);
     };
 
-    /**
-     * @function attachDetachEvents
-     * @param {boolean} attach attach the events?
-     */
 
-    this.attachDetachEvents = function(attach) {
-        if (attach) {
-            controller.emitter.on('sections:reset', events.reset);
-            controller.emitter.on('window:resize', events.refreshDimensions);
-        } else {
-            controller.emitter.removeListener('sections:reset', events.reset);
-            controller.emitter.removeListener('window:resize', events.refreshDimensions);
-        }
-    };
 
     /**
      * Called on each scroll during scenePinTitle
@@ -118,21 +134,6 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
 
         if (this.scenePinTitle) {
             this.scenePinTitle.duration($section.height());
-        }
-    };
-
-    /**
-     * Reset everything
-     * @function reset
-     * @param {boolean} reinitialise reinit the component after resetting
-     */
-
-    this.reset = function(reinitialise) {
-        // Detach events
-        this.attachDetachEvents(false);
-
-        if (reinitialise) {
-            this.init();
         }
     };
 

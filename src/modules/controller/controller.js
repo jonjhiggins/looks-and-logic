@@ -32,6 +32,7 @@ var controller = module.exports = function() {
      * @namespace $prop
      * @property {boolean} autoScrolling is app auto-scrolling? Used to differentiate manual scrolling
      * @property {array} sections app's sections
+     * @property {array} sectionCuriousPlayfulInformatives app's sectionCuriousPlayfulInformatives
      * @property {object} scrollScenes scrollmagic controller
      * @property {number} windowHeight
      */
@@ -39,6 +40,7 @@ var controller = module.exports = function() {
     this.props = {
         autoScrolling: false,
         sections: [],
+        sectionCuriousPlayfulInformatives: [],
         scrollScenes: new ScrollMagic.Controller(),
         windowHeight: 0
     };
