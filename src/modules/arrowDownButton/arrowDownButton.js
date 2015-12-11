@@ -110,7 +110,7 @@ var ArrowDownButton = module.exports = function(controller) {
             sectionTop = $(hash).offset().top;
 
         // Update controller state
-        controller.props.autoScrolling = true;
+        controller.emitter.emit('arrowDownButton:autoScrollingStart');
 
         // Hide button while scrolling - so it doesn't cover content
         $button.addClass('arrowDownButton--is-scrolling');
@@ -137,7 +137,7 @@ var ArrowDownButton = module.exports = function(controller) {
 
         // Update controller state. Seems to need timeout for extra scrolls after scrollComplete event
         window.setTimeout(function() {
-            controller.props.autoScrolling = false;
+            controller.emitter.emit('arrowDownButton:autoScrollingEnd');
         }, 300);
 
         // Show button following being hidden while scrolling

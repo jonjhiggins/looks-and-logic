@@ -64,6 +64,8 @@ var controller = module.exports = function() {
 
          // Attach events
          this.emitter.on('arrowDownButton:off', this.arrowDownButtonOff.bind(this));
+         this.emitter.on('arrowDownButton:autoScrollingStart', this.autoScrolling.bind(this, true));
+         this.emitter.on('arrowDownButton:autoScrollingEnd', this.autoScrolling.bind(this, false));
          this.emitter.on('window:resize', this.refreshDimensions.bind(this));
          this.emitter.on('sections:reset', this.sectionsReset.bind(this));
 
@@ -133,6 +135,20 @@ var controller = module.exports = function() {
     this.resetScrollScenes = function() {
         this.props.scrollScenes.destroy(true);
         this.props.scrollScenes = new ScrollMagic.Controller();
+    };
+
+    /**
+     * Set autoScrolling property when start / end events are called
+     * @method autoScrolling
+     * @param {boolean} start is autoScrolling starting?
+     */
+
+    this.autoScrolling = function(start) {
+        if (start){
+            this.props.autoScrolling = true;
+        } else {
+            this.props.autoScrolling = false;
+        }
     };
 
     /**

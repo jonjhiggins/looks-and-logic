@@ -184,6 +184,7 @@ var Sections = module.exports = function(controller, $sections) {
             // Increase dup count
             this.props.duplicateSectionsCount++;
 
+            // When there's too many sections in DOM, remove some
             if (this.props.duplicateSectionsCount >= this.props.duplicateSectionsLimit) {
                 this.removeSections($lastSection);
             }
@@ -200,6 +201,13 @@ var Sections = module.exports = function(controller, $sections) {
      */
 
     this.removeSections = function($lastSection) {
+
+        // If we're currently scrolling, wait. Then run when finished scrolling
+        if (controller.props.autoScrolling) {
+            controller.emitter.once('arrowDownButton:autoScrollingStart', this.removeSections.bind(this, $lastSection));
+            return;
+        }
+
         var sectionGroupLength = cache.$originalSections.length,
             startIndex = this.props.removedSections,
             countIndex = startIndex,

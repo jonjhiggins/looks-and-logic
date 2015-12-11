@@ -23016,7 +23016,7 @@ var ArrowDownButton = module.exports = function(controller) {
             sectionTop = $(hash).offset().top;
 
         // Update controller state
-        controller.props.autoScrolling = true;
+        controller.emitter.emit('arrowDownButton:autoScrollingStart');
 
         // Hide button while scrolling - so it doesn't cover content
         $button.addClass('arrowDownButton--is-scrolling');
@@ -23043,7 +23043,7 @@ var ArrowDownButton = module.exports = function(controller) {
 
         // Update controller state. Seems to need timeout for extra scrolls after scrollComplete event
         window.setTimeout(function() {
-            controller.props.autoScrolling = false;
+            controller.emitter.emit('arrowDownButton:autoScrollingEnd');
         }, 300);
 
         // Show button following being hidden while scrolling
@@ -23372,6 +23372,8 @@ var controller = module.exports = function() {
 
          // Attach events
          this.emitter.on('arrowDownButton:off', this.arrowDownButtonOff.bind(this));
+         this.emitter.on('arrowDownButton:autoScrollingStart', this.autoScrolling.bind(this, true));
+         this.emitter.on('arrowDownButton:autoScrollingEnd', this.autoScrolling.bind(this, false));
          this.emitter.on('window:resize', this.refreshDimensions.bind(this));
          this.emitter.on('sections:reset', this.sectionsReset.bind(this));
 
@@ -23441,6 +23443,20 @@ var controller = module.exports = function() {
     this.resetScrollScenes = function() {
         this.props.scrollScenes.destroy(true);
         this.props.scrollScenes = new ScrollMagic.Controller();
+    };
+
+    /**
+     * Set autoScrolling property when start / end events are called
+     * @method autoScrolling
+     * @param {boolean} start is autoScrolling starting?
+     */
+
+    this.autoScrolling = function(start) {
+        if (start){
+            this.props.autoScrolling = true;
+        } else {
+            this.props.autoScrolling = false;
+        }
     };
 
     /**
@@ -24253,6 +24269,7 @@ var Sections = module.exports = function(controller, $sections) {
             // Increase dup count
             this.props.duplicateSectionsCount++;
 
+            // When there's too many sections in DOM, remove some
             if (this.props.duplicateSectionsCount >= this.props.duplicateSectionsLimit) {
                 this.removeSections($lastSection);
             }
@@ -24269,6 +24286,13 @@ var Sections = module.exports = function(controller, $sections) {
      */
 
     this.removeSections = function($lastSection) {
+
+        // If we're currently scrolling, wait. Then run when finished scrolling
+        if (controller.props.autoScrolling) {
+            controller.emitter.once('arrowDownButton:autoScrollingStart', this.removeSections.bind(this, $lastSection));
+            return;
+        }
+
         var sectionGroupLength = cache.$originalSections.length,
             startIndex = this.props.removedSections,
             countIndex = startIndex,
