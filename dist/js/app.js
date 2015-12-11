@@ -22924,6 +22924,7 @@ var options = {
 
 var $button = $('#arrowDownButton'),
     $window = $(window),
+    arrowDownInterval,
     $currentSection = $('.section').eq(0); //@TODO change depending on scroll position
 
 
@@ -22942,9 +22943,11 @@ var ArrowDownButton = module.exports = function(controller) {
      * Bound events for add/removal. Inherits reset from _base
      * @namespace events
      * @property {function} sectionsInited
+     * @property {function} buttonClick
      */
 
     this.events.sectionsInited = null;
+    this.events.buttonClick = null;
 
     /**
      * @function init
@@ -22959,6 +22962,7 @@ var ArrowDownButton = module.exports = function(controller) {
 
         // Bind events
         this.events.sectionsInited = this.setInitialHash.bind(this);
+        this.events.buttonClick = this.buttonClick.bind(this);
         // Attach events
         this.attachDetachEvents(true);
         // Everything else
@@ -22974,11 +22978,11 @@ var ArrowDownButton = module.exports = function(controller) {
     this.attachDetachEvents = function(attach) {
         if (attach) {
             controller.emitter.on('sections:reset', this.events.reset);
-            $button.on('click', buttonClick);
+            $button.on('click', this.events.buttonClick);
             $window.on('scroll', pageScroll); // @TODO debounce
         } else {
             controller.emitter.removeListener('sections:reset', this.events.reset);
-            $button.off('click', buttonClick);
+            $button.off('click', this.events.buttonClick);
             $window.off('scroll', pageScroll);
             controller.emitter.removeListener('section:sectionsInited', this.events.sectionsInited); // Added in setInitialHash
         }
@@ -23006,20 +23010,46 @@ var ArrowDownButton = module.exports = function(controller) {
     /**
      * On clicking the arrow button
      * @function buttonClick
+     * @param {event} e event
      */
 
-    var buttonClick = function(e) {
+    this.buttonClick = function(e) {
 
-        e.preventDefault();
+        if (typeof e !== 'undefined') {
+            e.preventDefault();
+        }
 
-        var hash = $(this).prop('hash'),
-            sectionTop = $(hash).offset().top;
+        window.clearInterval(arrowDownInterval);
+
+        // You have to wait until scroll finishes to click again
+        if (controller.props.autoScrolling) {
+            return;
+        }
+
+        var hash = $button.prop('hash'),
+            sectionTop = $(hash).offset().top,
+            showButton,
+            $nextSection;
 
         // Update controller state
-        controller.emitter.emit('arrowDownButton:autoScrollingStart');
+        controller.emitter.emit('window:autoScrollingStart');
 
         // Hide button while scrolling - so it doesn't cover content
         $button.addClass('arrowDownButton--is-scrolling');
+
+        // Update current section and get next section
+        $currentSection = $(hash);
+        $nextSection = controller.getNextSection($currentSection);
+        showButton = $nextSection.length; // Only show button if there's more sections
+
+        if (!showButton) {
+            // Next section isn't ready. Probably being duplicated
+            // run this again in 100ms
+            arrowDownInterval = window.setInterval(this.events.buttonClick, 100);
+        }
+
+        // Update hash
+        updateHash($nextSection);
 
         // Scroll to next section top
         TweenLite.to(window, options.scrollDownDuration, {
@@ -23027,8 +23057,20 @@ var ArrowDownButton = module.exports = function(controller) {
                 y: sectionTop
             },
             ease: Power2.easeOut,
-            onComplete: scrollComplete
+            onComplete: scrollComplete.bind(this, showButton)
         });
+    };
+
+    /**
+     * Update button's hash to next section
+     * @function updateHash
+     */
+
+    var updateHash = function($nextSection) {
+        if ($nextSection.length) {
+            $button.prop('hash', '#' + $nextSection.prop('id'));
+            buttonShow();
+        }
     };
 
     /**
@@ -23036,26 +23078,17 @@ var ArrowDownButton = module.exports = function(controller) {
      * @function scrollComplete
      */
 
-    var scrollComplete = function() {
-
-        var hash,
-            $nextSection;
+    var scrollComplete = function(showButton) {
 
         // Update controller state. Seems to need timeout for extra scrolls after scrollComplete event
         window.setTimeout(function() {
-            controller.emitter.emit('arrowDownButton:autoScrollingEnd');
+            controller.emitter.emit('window:autoScrollingEnd');
         }, 300);
 
         // Show button following being hidden while scrolling
         $button.removeClass('arrowDownButton--is-scrolling');
 
-        // Update button's hash to next section
-        hash = $button.prop('hash');
-        $currentSection = $(hash);
-        $nextSection = controller.getNextSection($currentSection);
-
-        if ($nextSection.length) {
-            $button.prop('hash', '#' + $nextSection.prop('id'));
+        if (showButton) {
             buttonShow();
         }
 
@@ -23372,8 +23405,8 @@ var controller = module.exports = function() {
 
          // Attach events
          this.emitter.on('arrowDownButton:off', this.arrowDownButtonOff.bind(this));
-         this.emitter.on('arrowDownButton:autoScrollingStart', this.autoScrolling.bind(this, true));
-         this.emitter.on('arrowDownButton:autoScrollingEnd', this.autoScrolling.bind(this, false));
+         this.emitter.on('window:autoScrollingStart', this.autoScrolling.bind(this, true));
+         this.emitter.on('window:autoScrollingEnd', this.autoScrolling.bind(this, false));
          this.emitter.on('window:resize', this.refreshDimensions.bind(this));
          this.emitter.on('sections:reset', this.sectionsReset.bind(this));
 
@@ -24261,6 +24294,7 @@ var Sections = module.exports = function(controller, $sections) {
      */
 
     this.duplicateSections = function($lastSection) {
+
         // Only duplicate if there are no sections after current "last" section
         if (!$lastSection.next().length) {
             // Duplicate and append original sections
@@ -24289,7 +24323,7 @@ var Sections = module.exports = function(controller, $sections) {
 
         // If we're currently scrolling, wait. Then run when finished scrolling
         if (controller.props.autoScrolling) {
-            controller.emitter.once('arrowDownButton:autoScrollingStart', this.removeSections.bind(this, $lastSection));
+            controller.emitter.once('window:autoScrollingEnd', this.removeSections.bind(this, $lastSection));
             return;
         }
 
@@ -24298,19 +24332,26 @@ var Sections = module.exports = function(controller, $sections) {
             countIndex = startIndex,
             endIndex = this.props.removedSections + sectionGroupLength;
 
-        while(countIndex < endIndex) {
-            var $thisSection = $sections.find('#section--' + countIndex),
-                thisSectionHeight = $thisSection.height(),
-                windowScrollTop = cache.$window.scrollTop();
-            // Trigger destroy method
-            controller.props.sections[countIndex].destroy();
-            // Remove from DOM
-            $thisSection.remove();
-            // Keep browser scroll in same position following the removal
-            // of this element (which sits above current scroll position)
-            cache.$window.scrollTop(windowScrollTop - thisSectionHeight);
-            countIndex++;
-        }
+        // Begin autoscrolling section (scrolling to keep browser in same place)
+        controller.emitter.emit('window:autoScrollingStart');
+
+            // Remove sections and keep browse scroll in place
+            while(countIndex < endIndex) {
+                var $thisSection = $sections.find('#section--' + countIndex),
+                    thisSectionHeight = $thisSection.height(),
+                    windowScrollTop = cache.$window.scrollTop();
+                // Trigger destroy method
+                controller.props.sections[countIndex].destroy();
+                // Remove from DOM
+                $thisSection.remove();
+                // Keep browser scroll in same position following the removal
+                // of this element (which sits above current scroll position)
+                cache.$window.scrollTop(windowScrollTop - thisSectionHeight);
+                countIndex++;
+            }
+
+        // End autoscrolling section
+        controller.emitter.emit('window:autoScrollingEnd');
 
         this.props.removedSections += sectionGroupLength;
         this.props.duplicateSectionsCount--;

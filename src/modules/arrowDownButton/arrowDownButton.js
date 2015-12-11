@@ -18,6 +18,7 @@ var options = {
 
 var $button = $('#arrowDownButton'),
     $window = $(window),
+    arrowDownInterval,
     $currentSection = $('.section').eq(0); //@TODO change depending on scroll position
 
 
@@ -36,9 +37,11 @@ var ArrowDownButton = module.exports = function(controller) {
      * Bound events for add/removal. Inherits reset from _base
      * @namespace events
      * @property {function} sectionsInited
+     * @property {function} buttonClick
      */
 
     this.events.sectionsInited = null;
+    this.events.buttonClick = null;
 
     /**
      * @function init
@@ -53,6 +56,7 @@ var ArrowDownButton = module.exports = function(controller) {
 
         // Bind events
         this.events.sectionsInited = this.setInitialHash.bind(this);
+        this.events.buttonClick = this.buttonClick.bind(this);
         // Attach events
         this.attachDetachEvents(true);
         // Everything else
@@ -68,11 +72,11 @@ var ArrowDownButton = module.exports = function(controller) {
     this.attachDetachEvents = function(attach) {
         if (attach) {
             controller.emitter.on('sections:reset', this.events.reset);
-            $button.on('click', buttonClick);
+            $button.on('click', this.events.buttonClick);
             $window.on('scroll', pageScroll); // @TODO debounce
         } else {
             controller.emitter.removeListener('sections:reset', this.events.reset);
-            $button.off('click', buttonClick);
+            $button.off('click', this.events.buttonClick);
             $window.off('scroll', pageScroll);
             controller.emitter.removeListener('section:sectionsInited', this.events.sectionsInited); // Added in setInitialHash
         }
@@ -100,20 +104,46 @@ var ArrowDownButton = module.exports = function(controller) {
     /**
      * On clicking the arrow button
      * @function buttonClick
+     * @param {event} e event
      */
 
-    var buttonClick = function(e) {
+    this.buttonClick = function(e) {
 
-        e.preventDefault();
+        if (typeof e !== 'undefined') {
+            e.preventDefault();
+        }
 
-        var hash = $(this).prop('hash'),
-            sectionTop = $(hash).offset().top;
+        window.clearInterval(arrowDownInterval);
+
+        // You have to wait until scroll finishes to click again
+        if (controller.props.autoScrolling) {
+            return;
+        }
+
+        var hash = $button.prop('hash'),
+            sectionTop = $(hash).offset().top,
+            showButton,
+            $nextSection;
 
         // Update controller state
-        controller.emitter.emit('arrowDownButton:autoScrollingStart');
+        controller.emitter.emit('window:autoScrollingStart');
 
         // Hide button while scrolling - so it doesn't cover content
         $button.addClass('arrowDownButton--is-scrolling');
+
+        // Update current section and get next section
+        $currentSection = $(hash);
+        $nextSection = controller.getNextSection($currentSection);
+        showButton = $nextSection.length; // Only show button if there's more sections
+
+        if (!showButton) {
+            // Next section isn't ready. Probably being duplicated
+            // run this again in 100ms
+            arrowDownInterval = window.setInterval(this.events.buttonClick, 100);
+        }
+
+        // Update hash
+        updateHash($nextSection);
 
         // Scroll to next section top
         TweenLite.to(window, options.scrollDownDuration, {
@@ -121,8 +151,20 @@ var ArrowDownButton = module.exports = function(controller) {
                 y: sectionTop
             },
             ease: Power2.easeOut,
-            onComplete: scrollComplete
+            onComplete: scrollComplete.bind(this, showButton)
         });
+    };
+
+    /**
+     * Update button's hash to next section
+     * @function updateHash
+     */
+
+    var updateHash = function($nextSection) {
+        if ($nextSection.length) {
+            $button.prop('hash', '#' + $nextSection.prop('id'));
+            buttonShow();
+        }
     };
 
     /**
@@ -130,26 +172,17 @@ var ArrowDownButton = module.exports = function(controller) {
      * @function scrollComplete
      */
 
-    var scrollComplete = function() {
-
-        var hash,
-            $nextSection;
+    var scrollComplete = function(showButton) {
 
         // Update controller state. Seems to need timeout for extra scrolls after scrollComplete event
         window.setTimeout(function() {
-            controller.emitter.emit('arrowDownButton:autoScrollingEnd');
+            controller.emitter.emit('window:autoScrollingEnd');
         }, 300);
 
         // Show button following being hidden while scrolling
         $button.removeClass('arrowDownButton--is-scrolling');
 
-        // Update button's hash to next section
-        hash = $button.prop('hash');
-        $currentSection = $(hash);
-        $nextSection = controller.getNextSection($currentSection);
-
-        if ($nextSection.length) {
-            $button.prop('hash', '#' + $nextSection.prop('id'));
+        if (showButton) {
             buttonShow();
         }
 
