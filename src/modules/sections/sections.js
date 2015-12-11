@@ -176,6 +176,7 @@ var Sections = module.exports = function(controller, $sections) {
      */
 
     this.duplicateSections = function($lastSection) {
+
         // Only duplicate if there are no sections after current "last" section
         if (!$lastSection.next().length) {
             // Duplicate and append original sections
@@ -204,7 +205,7 @@ var Sections = module.exports = function(controller, $sections) {
 
         // If we're currently scrolling, wait. Then run when finished scrolling
         if (controller.props.autoScrolling) {
-            controller.emitter.once('arrowDownButton:autoScrollingStart', this.removeSections.bind(this, $lastSection));
+            controller.emitter.once('window:autoScrollingEnd', this.removeSections.bind(this, $lastSection));
             return;
         }
 
@@ -213,19 +214,26 @@ var Sections = module.exports = function(controller, $sections) {
             countIndex = startIndex,
             endIndex = this.props.removedSections + sectionGroupLength;
 
-        while(countIndex < endIndex) {
-            var $thisSection = $sections.find('#section--' + countIndex),
-                thisSectionHeight = $thisSection.height(),
-                windowScrollTop = cache.$window.scrollTop();
-            // Trigger destroy method
-            controller.props.sections[countIndex].destroy();
-            // Remove from DOM
-            $thisSection.remove();
-            // Keep browser scroll in same position following the removal
-            // of this element (which sits above current scroll position)
-            cache.$window.scrollTop(windowScrollTop - thisSectionHeight);
-            countIndex++;
-        }
+        // Begin autoscrolling section (scrolling to keep browser in same place)
+        controller.emitter.emit('window:autoScrollingStart');
+
+            // Remove sections and keep browse scroll in place
+            while(countIndex < endIndex) {
+                var $thisSection = $sections.find('#section--' + countIndex),
+                    thisSectionHeight = $thisSection.height(),
+                    windowScrollTop = cache.$window.scrollTop();
+                // Trigger destroy method
+                controller.props.sections[countIndex].destroy();
+                // Remove from DOM
+                $thisSection.remove();
+                // Keep browser scroll in same position following the removal
+                // of this element (which sits above current scroll position)
+                cache.$window.scrollTop(windowScrollTop - thisSectionHeight);
+                countIndex++;
+            }
+
+        // End autoscrolling section
+        controller.emitter.emit('window:autoScrollingEnd');
 
         this.props.removedSections += sectionGroupLength;
         this.props.duplicateSectionsCount--;

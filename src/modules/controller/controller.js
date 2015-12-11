@@ -64,8 +64,8 @@ var controller = module.exports = function() {
 
          // Attach events
          this.emitter.on('arrowDownButton:off', this.arrowDownButtonOff.bind(this));
-         this.emitter.on('arrowDownButton:autoScrollingStart', this.autoScrolling.bind(this, true));
-         this.emitter.on('arrowDownButton:autoScrollingEnd', this.autoScrolling.bind(this, false));
+         this.emitter.on('window:autoScrollingStart', this.autoScrolling.bind(this, true));
+         this.emitter.on('window:autoScrollingEnd', this.autoScrolling.bind(this, false));
          this.emitter.on('window:resize', this.refreshDimensions.bind(this));
          this.emitter.on('sections:reset', this.sectionsReset.bind(this));
 
