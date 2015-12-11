@@ -1,4 +1,9 @@
-/** @module ArrowDownButton */
+/**
+    Provides a button that automatically scrolls a user down a screen
+    at a time. Is hidden as soon as the user free-scrolls (mouse/mousewheel/touch)
+    and is never shown again.
+
+    @module ArrowDownButton */
 
 /*globals Power2:true, console*/
 
@@ -28,14 +33,31 @@ var ArrowDownButton = module.exports = function(controller) {
     var base = _base.apply(this);
 
     /**
+     * Bound events for add/removal. Inherits reset from _base
+     * @namespace events
+     * @property {function} sectionsInited
+     */
+
+    this.events.sectionsInited = null;
+
+    /**
      * @function init
      */
 
     this.init = function() {
-        buttonShow();
-        setInitialHash();
+        // Don't initialise if arrowDownButton has already been hidden.
+        // It only shows once
+        if (!controller.props.arrowDownButton) {
+            return;
+        }
+
+        // Bind events
+        this.events.sectionsInited = this.setInitialHash.bind(this);
         // Attach events
         this.attachDetachEvents(true);
+        // Everything else
+        buttonShow();
+        this.setInitialHash();
     };
 
     /**
@@ -52,6 +74,7 @@ var ArrowDownButton = module.exports = function(controller) {
             controller.emitter.removeListener('sections:reset', this.events.reset);
             $button.off('click', buttonClick);
             $window.off('scroll', pageScroll);
+            controller.emitter.removeListener('section:sectionsInited', this.events.sectionsInited); // Added in setInitialHash
         }
     };
 
@@ -59,18 +82,18 @@ var ArrowDownButton = module.exports = function(controller) {
 
     /**
      * Set hash/href of button to next section
-     * @function setInitialHash
+     * @method setInitialHash
      */
 
-    var setInitialHash = function() {
+    this.setInitialHash = function() {
 
         var $nextSection = controller.getNextSection($currentSection),
             nextSectionId = $nextSection.attr('id');
-
         if (nextSectionId) {
             $button.prop('hash', nextSectionId);
+            controller.emitter.removeListener('section:sectionsInited', this.events.sectionsInited);
         } else {
-            controller.emitter.on('section:sectionsInited', setInitialHash);
+            controller.emitter.on('section:sectionsInited', this.events.sectionsInited);
         }
     };
 
@@ -138,6 +161,7 @@ var ArrowDownButton = module.exports = function(controller) {
 
     var buttonHide = function() {
         $button.addClass('hidden');
+        controller.emitter.emit('arrowDownButton:off');
     };
 
     /**

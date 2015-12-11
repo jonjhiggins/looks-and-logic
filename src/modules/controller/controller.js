@@ -30,6 +30,7 @@ var controller = module.exports = function() {
     /**
      * App properties, states and settings
      * @namespace $prop
+     * @property {boolean} arrowDownButton is arrowDownButton active / visible? It is only shown/hidden once
      * @property {boolean} autoScrolling is app auto-scrolling? Used to differentiate manual scrolling
      * @property {array} sections app's sections
      * @property {array} sectionCuriousPlayfulInformatives app's sectionCuriousPlayfulInformatives
@@ -39,6 +40,7 @@ var controller = module.exports = function() {
      */
 
     this.props = {
+        arrowDownButton: true,
         autoScrolling: false,
         sections: [],
         sectionCuriousPlayfulInformatives: [],
@@ -61,6 +63,7 @@ var controller = module.exports = function() {
          cache.$window.on('resize', this.windowResize.bind(this));
 
          // Attach events
+         this.emitter.on('arrowDownButton:off', this.arrowDownButtonOff.bind(this));
          this.emitter.on('window:resize', this.refreshDimensions.bind(this));
          this.emitter.on('sections:reset', this.sectionsReset.bind(this));
 
@@ -93,6 +96,15 @@ var controller = module.exports = function() {
             maxListeners = modules.length + sectionLength;
 
          this.emitter.setMaxListeners(maxListeners);
+     };
+
+     /**
+      * When arrowDownButton is hidden, permantly hide and don't re-init
+      * @method arrowDownButtonOff
+      */
+
+     this.arrowDownButtonOff = function() {
+         this.props.arrowDownButton = false;
      };
 
      /**
