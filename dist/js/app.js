@@ -23486,17 +23486,28 @@ var Section = module.exports = function(controller, $section, sectionIndex, sect
     var base = _base.apply(this);
 
     /**
+     * Bound events for add/removal. Inherits reset from _base
+     * @namespace events
+     * @property {function} remove
+     */
+
+    this.events.remove = null;
+
+    /**
      * App properties, states and settings
      * @namespace prop
+     * @property {string} id $section element's ID attribute
      * @property {boolean} isLast
      * @property {object} scene scrollMagic scene
      * @property {jquery} $section element exported for use in other modules
      */
 
     this.props = {
+        id: null,
         isLast: sectionIndex === (sectionsLength - 1),
         scene: null,
-        $section: $section
+        $section: $section,
+        index: sectionIndex
     };
 
     /**
@@ -23506,11 +23517,13 @@ var Section = module.exports = function(controller, $section, sectionIndex, sect
      */
 
     this.init = function() {
-        // Run for each section
+        // Bind events
+        this.events.remove = this.destroy.bind(this);
+        // Attach events
         this.attachDetachEvents(true);
         this.setBackgroundColours();
-        this.addScrollScene();
         this.addId();
+        this.addScrollScene();
 
         // All sections initialised - must remain at end of init function
         if (this.props.isLast) {
@@ -23563,6 +23576,7 @@ var Section = module.exports = function(controller, $section, sectionIndex, sect
 
     this.addScrollScene = function() {
 
+        // @TODO fold in to destroy / removeScrollScene
         if (this.props.scene) {
             this.props.scene.destroy(true);
         }
@@ -23574,12 +23588,12 @@ var Section = module.exports = function(controller, $section, sectionIndex, sect
             .on('enter', function() {
                 controller.emitter.emit('section:sectionEnter', $section);
                 $section.attr('data-section-in-view', true);
-
                 // On scrolling into last section, duplicate sections
                 // for infinite loop effect
                 if (this.props.isLast) {
-                    controller.emitter.emit('sections:duplicateSections', $section);
                     this.props.isLast = false;
+                    controller.emitter.emit('sections:duplicateSections', $section);
+
                 }
 
             }.bind(this))
@@ -23598,8 +23612,21 @@ var Section = module.exports = function(controller, $section, sectionIndex, sect
 
      this.addId = function() {
          if (!$section.attr('id')) {
-             $section.attr('id', 'section--' + sectionIndex);
+             var id = 'section--' + sectionIndex;
+             $section.attr('id', id);
+             this.props.id = id;
          }
+     };
+
+     /**
+      * Destroy all
+      * @method destroy
+      */
+
+     this.destroy = function() {
+         // Remove scroll scene
+         this.props.scene.destroy(true);
+         this.attachDetachEvents(false);
      };
 
     this.init();
@@ -24038,21 +24065,48 @@ var Sections = module.exports = function(controller, $sections) {
     'use strict';
 
     /**
-     * Initialise the component
-     * Everything here should be undone using the "reset" function
-     * @function init
+     * properties, states and settings
+     * @namespace props
+     * @property {number} duplicateSectionsCount how many times have we duplicated sections?
+     * @property {number} duplicateSectionsLimit max number of times sections are duped before others are removed
+     * @property {number} removedSections number of sections removed from DOM
      */
 
-    var init = function() {
+    this.props = {
+        duplicateSectionsCount: 0,
+        duplicateSectionsLimit: 3,
+        removedSections: 0
+    };
+
+    /**
+     * Bound events for add/removal.
+     * @namespace events
+     * @property {function} duplicateSections
+     */
+
+    this.events = {
+        duplicateSections: null
+    };
+
+    /**
+     * Initialise the component
+     * Everything here should be undone using the "reset" function
+     * @method init
+     */
+
+    this.init = function() {
 
         // Cache sections for later duplication
         cacheOriginalSections();
 
+        // Bind events
+        this.events.duplicateSections = this.duplicateSections.bind(this);
+
         // Attach events
-        controller.emitter.on('sections:duplicateSections', duplicateSections);
+        controller.emitter.on('sections:duplicateSections', this.events.duplicateSections);
         controller.emitter.on('window:resize', refreshDimensions);
 
-        initSections();
+        this.initSections();
 
     };
 
@@ -24061,17 +24115,18 @@ var Sections = module.exports = function(controller, $sections) {
      * @function initSections
      */
 
-    var initSections = function() {
+    this.initSections = function() {
 
-        var sectionsLength = $sections.find('.section').length;
+        var $section = $sections.find('.section'),
+            sectionsLength = $section.length + this.props.removedSections;
 
         // Init sections: common
-        $('.section').each(initSection.bind(null, sectionsLength));
+        $section.each(initSection.bind(this, sectionsLength));
 
         // Init sections: specific
-        $('.section--intro').each(initSectionIntro);
-        $('.section--making-digital-human').each(initSectionMakingDigitalHuman);
-        $('.section--curious-playful-informative').each(initSectionCuriousPlayfulInformative);
+        // $('.section--intro').each(initSectionIntro);
+        // $('.section--making-digital-human').each(initSectionMakingDigitalHuman);
+        // $('.section--curious-playful-informative').each(initSectionCuriousPlayfulInformative);
 
 
     };
@@ -24085,9 +24140,10 @@ var Sections = module.exports = function(controller, $sections) {
      */
 
     var initSection = function(sectionsLength, index, section) {
-        var sectionObject = controller.props.sections[index];
+        var sectionIndex = index + this.props.removedSections,
+            sectionObject = controller.props.sections[sectionIndex];
         if (typeof sectionObject === 'undefined' || !sectionObject) {
-            controller.props.sections[index] = new Section(controller, $(section), index, sectionsLength);
+            controller.props.sections[sectionIndex] = new Section(controller, $(section), sectionIndex, sectionsLength);
         }
     };
 
@@ -24148,19 +24204,56 @@ var Sections = module.exports = function(controller, $sections) {
 
     /**
      * Duplicate previous sections so that they appear in an infinite loop
-     * @function duplicateSections
+     * @method duplicateSections
+     * @param {jquery} $lastSection last section
      */
 
-    var duplicateSections = function(event, section) {
-        var $section = $(section);
+    this.duplicateSections = function($lastSection) {
         // Only duplicate if there are no sections after current "last" section
-        if (!$section.next().length) {
+        if (!$lastSection.next().length) {
             // Duplicate and append original sections
             $sections.append(cache.$originalSections.clone());
 
+            // Increase dup count
+            this.props.duplicateSectionsCount++;
+
+            if (this.props.duplicateSectionsCount >= this.props.duplicateSectionsLimit) {
+                this.removeSections($lastSection);
+            }
+
             // Reset everything
-            reset();
+            this.reset();
+
         }
+    };
+
+    /**
+     * Remove sections after duplication, so the browser memory isn't overloaded
+     * @method removeSections
+     */
+
+    this.removeSections = function($lastSection) {
+        var sectionGroupLength = cache.$originalSections.length,
+            startIndex = this.props.removedSections,
+            countIndex = startIndex,
+            endIndex = this.props.removedSections + sectionGroupLength;
+
+        while(countIndex < endIndex) {
+            var $thisSection = $sections.find('#section--' + countIndex),
+                thisSectionHeight = $thisSection.height(),
+                windowScrollTop = cache.$window.scrollTop();
+            // Trigger destroy method
+            controller.props.sections[countIndex].destroy();
+            // Remove from DOM
+            $thisSection.remove();
+            // Keep browser scroll in same position following the removal
+            // of this element (which sits above current scroll position)
+            cache.$window.scrollTop(windowScrollTop - thisSectionHeight);
+            countIndex++;
+        }
+
+        this.props.removedSections += sectionGroupLength;
+        this.props.duplicateSectionsCount--;
     };
 
     /**
@@ -24178,19 +24271,19 @@ var Sections = module.exports = function(controller, $sections) {
 
     /**
      * Reset all component behaviour, remove handlers
-     * @function reset
+     * @method reset
      */
 
-    var reset = function() {
+    this.reset = function() {
         controller.emitter.emit('sections:reset');
 
         // Need to reset each section
 
-        initSections();
+        this.initSections();
 
     };
 
-    init();
+    this.init();
 
     return this;
 

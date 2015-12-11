@@ -31,17 +31,28 @@ var Section = module.exports = function(controller, $section, sectionIndex, sect
     var base = _base.apply(this);
 
     /**
+     * Bound events for add/removal. Inherits reset from _base
+     * @namespace events
+     * @property {function} remove
+     */
+
+    this.events.remove = null;
+
+    /**
      * App properties, states and settings
      * @namespace prop
+     * @property {string} id $section element's ID attribute
      * @property {boolean} isLast
      * @property {object} scene scrollMagic scene
      * @property {jquery} $section element exported for use in other modules
      */
 
     this.props = {
+        id: null,
         isLast: sectionIndex === (sectionsLength - 1),
         scene: null,
-        $section: $section
+        $section: $section,
+        index: sectionIndex
     };
 
     /**
@@ -51,11 +62,13 @@ var Section = module.exports = function(controller, $section, sectionIndex, sect
      */
 
     this.init = function() {
-        // Run for each section
+        // Bind events
+        this.events.remove = this.destroy.bind(this);
+        // Attach events
         this.attachDetachEvents(true);
         this.setBackgroundColours();
-        this.addScrollScene();
         this.addId();
+        this.addScrollScene();
 
         // All sections initialised - must remain at end of init function
         if (this.props.isLast) {
@@ -108,6 +121,7 @@ var Section = module.exports = function(controller, $section, sectionIndex, sect
 
     this.addScrollScene = function() {
 
+        // @TODO fold in to destroy / removeScrollScene
         if (this.props.scene) {
             this.props.scene.destroy(true);
         }
@@ -119,12 +133,12 @@ var Section = module.exports = function(controller, $section, sectionIndex, sect
             .on('enter', function() {
                 controller.emitter.emit('section:sectionEnter', $section);
                 $section.attr('data-section-in-view', true);
-
                 // On scrolling into last section, duplicate sections
                 // for infinite loop effect
                 if (this.props.isLast) {
-                    controller.emitter.emit('sections:duplicateSections', $section);
                     this.props.isLast = false;
+                    controller.emitter.emit('sections:duplicateSections', $section);
+
                 }
 
             }.bind(this))
@@ -143,8 +157,21 @@ var Section = module.exports = function(controller, $section, sectionIndex, sect
 
      this.addId = function() {
          if (!$section.attr('id')) {
-             $section.attr('id', 'section--' + sectionIndex);
+             var id = 'section--' + sectionIndex;
+             $section.attr('id', id);
+             this.props.id = id;
          }
+     };
+
+     /**
+      * Destroy all
+      * @method destroy
+      */
+
+     this.destroy = function() {
+         // Remove scroll scene
+         this.props.scene.destroy(true);
+         this.attachDetachEvents(false);
      };
 
     this.init();
