@@ -87,11 +87,18 @@ var Sections = module.exports = function(controller, $sections) {
         var $section = $sections.find('.section'),
             sectionsLength = $section.length + this.props.removedSections;
 
-        // Init sections: common
-        $section.each(initSection.bind(this, sectionsLength));
+        $section.each(function (index, item) {
+            var $thisSection = $(item);
 
-        // Init sections: specific
-        // $('.section--intro').each(initSectionIntro);
+            // Init sections: common
+            this.initSectionModule('section', Section, sectionsLength, index, $thisSection);
+
+            // Init sections: specific
+            if ($thisSection.hasClass('section--intro')) {
+                this.initSectionModule('sectionIntro', SectionIntro, sectionsLength, index, $thisSection);
+            }
+        }.bind(this));
+
         // $('.section--making-digital-human').each(initSectionMakingDigitalHuman);
         // $('.section--curious-playful-informative').each(initSectionCuriousPlayfulInformative);
 
@@ -99,18 +106,26 @@ var Sections = module.exports = function(controller, $sections) {
     };
 
     /**
-     * Init a standard section. Only init new sections
-     * @function initSection
+     * Init a section module (either section, sectionIntro, sectionMakingDigitalHuman.. etc)
+     * Only init new sections
+     *
+     * @method initSectionModule
+     * @param {number} moduleName
+     * @param {function} ModuleConstructor
      * @param {number} sectionsLength
      * @param {number} index
-     * @param {element} section
+     * @param {jquery} $section
      */
 
-    var initSection = function(sectionsLength, index, section) {
+    this.initSectionModule = function(moduleName, ModuleConstructor, sectionsLength, index, $section) {
+
+        moduleName = moduleName + 's';
+
         var sectionIndex = index + this.props.removedSections,
-            sectionObject = controller.props.sections[sectionIndex];
+            sectionObject = controller.props[moduleName][sectionIndex];
+
         if (typeof sectionObject === 'undefined' || !sectionObject) {
-            controller.props.sections[sectionIndex] = new Section(controller, $(section), sectionIndex, sectionsLength);
+            controller.props[moduleName][sectionIndex] = new ModuleConstructor(controller, $section, sectionIndex, sectionsLength);
         }
     };
 
@@ -126,21 +141,6 @@ var Sections = module.exports = function(controller, $sections) {
         if (typeof sectionObject === 'undefined' || !sectionObject) {
             var $section = $(section);
             controller.props.sectionCuriousPlayfulInformatives[index] = new SectionCuriousPlayfulInformative(controller, $section, $section.index());
-        }
-    };
-
-    /**
-     * Init a initSectionIntro section. Only init new sections
-     * @function initSectionIntro
-     * @param {number} index
-     * @param {element} section
-     */
-
-    var initSectionIntro = function(index, section) {
-        var sectionObject = controller.props.sectionIntros[index];
-        if (typeof sectionObject === 'undefined' || !sectionObject) {
-            var $section = $(section);
-            controller.props.sectionIntros[index] = new SectionIntro(controller, $section, $section.index());
         }
     };
 
@@ -217,18 +217,9 @@ var Sections = module.exports = function(controller, $sections) {
         // Begin autoscrolling section (scrolling to keep browser in same place)
         controller.emitter.emit('window:autoScrollingStart');
 
-            // Remove sections and keep browse scroll in place
+            // Remove sections and keep browser scroll in place
             while(countIndex < endIndex) {
-                var $thisSection = $sections.find('#section--' + countIndex),
-                    thisSectionHeight = $thisSection.height(),
-                    windowScrollTop = cache.$window.scrollTop();
-                // Trigger destroy method
-                controller.props.sections[countIndex].destroy();
-                // Remove from DOM
-                $thisSection.remove();
-                // Keep browser scroll in same position following the removal
-                // of this element (which sits above current scroll position)
-                cache.$window.scrollTop(windowScrollTop - thisSectionHeight);
+                removeSection(countIndex);
                 countIndex++;
             }
 
@@ -238,6 +229,30 @@ var Sections = module.exports = function(controller, $sections) {
         this.props.removedSections += sectionGroupLength;
         this.props.duplicateSectionsCount--;
     };
+
+    /**
+     * Remove a single section. Also destroy any associated modules
+     * @function removeSection
+     * @param {number} countIndex
+     */
+
+     var removeSection = function (countIndex) {
+         var $thisSection = $sections.find('#section--' + countIndex),
+             thisSectionHeight = $thisSection.height(),
+             thisSectionAssociatedModule = controller.props.sections[countIndex].props.associatedModule,
+             windowScrollTop = cache.$window.scrollTop(); // Needs to be re-check for each removed section
+         // Trigger destroy method
+         controller.props.sections[countIndex].destroy();
+         // Destroy any associated modules
+         if (thisSectionAssociatedModule) {
+             thisSectionAssociatedModule.destroy();
+         }
+         // Remove from DOM
+         $thisSection.remove();
+         // Keep browser scroll in same position following the removal
+         // of this element (which sits above current scroll position)
+         cache.$window.scrollTop(windowScrollTop - thisSectionHeight);
+     };
 
     /**
      * Refresh dimensions

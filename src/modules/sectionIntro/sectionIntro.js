@@ -74,6 +74,9 @@ var SectionIntro = module.exports = function(controller, $element, index) {
         this.events.resize = this.measureAndShowBalls.bind(this);
         // Attach events
         this.attachDetachEvents(true);
+        // Set associated module.
+        // @TODO avoid accessing other module directly. event instead?
+        controller.props.sections[index].props.associatedModule = this;
         // Load the SVG
         this.loadSVG();
     };
@@ -178,6 +181,15 @@ var SectionIntro = module.exports = function(controller, $element, index) {
             controller.emitter.removeListener('section:sectionLeave', this.events.sectionLeave);
             this.props.ball1Dropped = true;
         }
+    };
+
+    /**
+     * Destroy all
+     * @method destroy
+     */
+
+    this.destroy = function() {
+        this.attachDetachEvents(false);
     };
 
 

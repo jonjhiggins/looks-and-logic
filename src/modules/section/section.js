@@ -41,6 +41,7 @@ var Section = module.exports = function(controller, $section, sectionIndex, sect
     /**
      * App properties, states and settings
      * @namespace prop
+     * @property {object} associatedModule associated module e.g. sectionIntro for destroying etc
      * @property {string} id $section element's ID attribute
      * @property {boolean} isLast
      * @property {object} scene scrollMagic scene
@@ -48,11 +49,12 @@ var Section = module.exports = function(controller, $section, sectionIndex, sect
      */
 
     this.props = {
+        associatedModule: null,
         id: null,
         isLast: sectionIndex === (sectionsLength - 1),
         scene: null,
         $section: $section,
-        index: sectionIndex
+        index: sectionIndex,
     };
 
     /**
