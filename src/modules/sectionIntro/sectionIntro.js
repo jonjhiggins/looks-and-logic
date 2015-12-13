@@ -74,9 +74,11 @@ var SectionIntro = module.exports = function(controller, $element, index) {
         this.events.resize = this.measureAndShowBalls.bind(this);
         // Attach events
         this.attachDetachEvents(true);
+
         // Set associated module.
         // @TODO avoid accessing other module directly. event instead?
         controller.props.sections[index].props.associatedModule = this;
+
         // Load the SVG
         this.loadSVG();
     };

@@ -23941,9 +23941,11 @@ var SectionIntro = module.exports = function(controller, $element, index) {
         this.events.resize = this.measureAndShowBalls.bind(this);
         // Attach events
         this.attachDetachEvents(true);
+
         // Set associated module.
         // @TODO avoid accessing other module directly. event instead?
         controller.props.sections[index].props.associatedModule = this;
+
         // Load the SVG
         this.loadSVG();
     };
@@ -24091,6 +24093,10 @@ var sectionMakingDigitalHuman = module.exports = function(controller, $section, 
         // Attach events
         this.attachDetachEvents(true);
         this.addScenePin();
+
+        // Set associated module.
+        // @TODO avoid accessing other module directly. event instead?
+        controller.props.sections[index].props.associatedModule = this;
     };
 
     /**
@@ -24122,6 +24128,15 @@ var sectionMakingDigitalHuman = module.exports = function(controller, $section, 
         scene.setPin($section.get(0), {
             pushFollowers: false
         });
+    };
+
+    /**
+     * Destroy all
+     * @method destroy
+     */
+
+    this.destroy = function() {
+        this.attachDetachEvents(false);
     };
 
     this.init();
@@ -24228,6 +24243,8 @@ var Sections = module.exports = function(controller, $sections) {
             // Init sections: specific
             if ($thisSection.hasClass('section--intro')) {
                 this.initSectionModule('sectionIntro', SectionIntro, sectionsLength, index, $thisSection);
+            } else if ($thisSection.hasClass('section--making-digital-human')) {
+                this.initSectionModule('sectionMakingDigitalHuman', SectionMakingDigitalHuman, sectionsLength, index, $thisSection);
             }
         }.bind(this));
 

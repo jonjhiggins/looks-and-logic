@@ -24,6 +24,10 @@ var sectionMakingDigitalHuman = module.exports = function(controller, $section, 
         // Attach events
         this.attachDetachEvents(true);
         this.addScenePin();
+
+        // Set associated module.
+        // @TODO avoid accessing other module directly. event instead?
+        controller.props.sections[index].props.associatedModule = this;
     };
 
     /**
@@ -55,6 +59,15 @@ var sectionMakingDigitalHuman = module.exports = function(controller, $section, 
         scene.setPin($section.get(0), {
             pushFollowers: false
         });
+    };
+
+    /**
+     * Destroy all
+     * @method destroy
+     */
+
+    this.destroy = function() {
+        this.attachDetachEvents(false);
     };
 
     this.init();

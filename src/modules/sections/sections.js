@@ -96,6 +96,8 @@ var Sections = module.exports = function(controller, $sections) {
             // Init sections: specific
             if ($thisSection.hasClass('section--intro')) {
                 this.initSectionModule('sectionIntro', SectionIntro, sectionsLength, index, $thisSection);
+            } else if ($thisSection.hasClass('section--making-digital-human')) {
+                this.initSectionModule('sectionMakingDigitalHuman', SectionMakingDigitalHuman, sectionsLength, index, $thisSection);
             }
         }.bind(this));
 
