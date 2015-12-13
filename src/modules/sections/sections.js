@@ -79,7 +79,8 @@ var Sections = module.exports = function(controller, $sections) {
 
     /**
      * Init all common and specific section JS
-     * @function initSections
+     * Make sure index is counted on from previously removed sections
+     * @method initSections
      */
 
     this.initSections = function() {
@@ -87,24 +88,31 @@ var Sections = module.exports = function(controller, $sections) {
         var $section = $sections.find('.section'),
             sectionsLength = $section.length + this.props.removedSections;
 
-        $section.each(function (index, item) {
-            var $thisSection = $(item);
+        $section.each(this.initSection.bind(this, sectionsLength));
+    };
 
-            // Init sections: common
-            this.initSectionModule('section', Section, sectionsLength, index, $thisSection);
+    /**
+     * Init a single section with all common and specific section JS
+     * @function initSection
+     * @param {number} sectionsLength
+     * @param {number} index
+     * @param {element} item
+     */
 
-            // Init sections: specific
-            if ($thisSection.hasClass('section--intro')) {
-                this.initSectionModule('sectionIntro', SectionIntro, sectionsLength, index, $thisSection);
-            } else if ($thisSection.hasClass('section--making-digital-human')) {
-                this.initSectionModule('sectionMakingDigitalHuman', SectionMakingDigitalHuman, sectionsLength, index, $thisSection);
-            }
-        }.bind(this));
+    this.initSection = function(sectionsLength, index, item) {
+        var $section = $(item);
 
-        // $('.section--making-digital-human').each(initSectionMakingDigitalHuman);
-        // $('.section--curious-playful-informative').each(initSectionCuriousPlayfulInformative);
+        // Init sections: common
+        this.initSectionModule('section', Section, sectionsLength, index, $section);
 
-
+        // Init sections: specific
+        if ($section.hasClass('section--intro')) {
+            this.initSectionModule('sectionIntro', SectionIntro, sectionsLength, index, $section);
+        } else if ($section.hasClass('section--making-digital-human')) {
+            this.initSectionModule('sectionMakingDigitalHuman', SectionMakingDigitalHuman, sectionsLength, index, $section);
+        } else if ($section.hasClass('section--curious-playful-informative')) {
+            this.initSectionModule('sectionCuriousPlayfulInformative', SectionCuriousPlayfulInformative, sectionsLength, index, $section);
+        }
     };
 
     /**
@@ -130,37 +138,6 @@ var Sections = module.exports = function(controller, $sections) {
             controller.props[moduleName][sectionIndex] = new ModuleConstructor(controller, $section, sectionIndex, sectionsLength);
         }
     };
-
-    /**
-     * Init a curiousPlayfulInformative section. Only init new sections
-     * @function initSectionCuriousPlayfulInformative
-     * @param {number} index
-     * @param {element} section
-     */
-
-    var initSectionCuriousPlayfulInformative = function(index, section) {
-        var sectionObject = controller.props.sectionCuriousPlayfulInformatives[index];
-        if (typeof sectionObject === 'undefined' || !sectionObject) {
-            var $section = $(section);
-            controller.props.sectionCuriousPlayfulInformatives[index] = new SectionCuriousPlayfulInformative(controller, $section, $section.index());
-        }
-    };
-
-    /**
-     * Init a initSectionMakingDigitalHuman section. Only init new sections
-     * @function initSectionMakingDigitalHuman
-     * @param {number} index
-     * @param {element} section
-     */
-
-    var initSectionMakingDigitalHuman = function(index, section) {
-        var sectionObject = controller.props.sectionMakingDigitalHumans[index];
-        if (typeof sectionObject === 'undefined' || !sectionObject) {
-            var $section = $(section);
-            controller.props.sectionMakingDigitalHumans[index] = new SectionMakingDigitalHuman(controller, $section, $section.index());
-        }
-    };
-
 
     /**
      * Cache sections once for later duplication

@@ -1,4 +1,13 @@
-/** @module Section */
+/**
+    Common properties and methods for all sections.
+
+    Each have an associatedModule (sectionIntro, sectionCuriousPlayfulInformative etc)
+    which provide unique behaviours for that particular module type.
+
+    @module Section
+
+*/
+
 /*globals Power2:true, console*/
 
 var $ = require('jquery'),

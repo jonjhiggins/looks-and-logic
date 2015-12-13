@@ -68,6 +68,10 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
         this.attachDetachEvents(true);
         // ScrollMagic scene
         this.setupScene();
+
+        // Set associated module.
+        // @TODO avoid accessing other module directly. event instead?
+        controller.props.sections[index].props.associatedModule = this;
     };
 
     /**
@@ -134,6 +138,18 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
         if (this.scenePinTitle) {
             this.scenePinTitle.duration($section.height());
         }
+    };
+
+    /**
+     * Destroy all
+     * @method destroy
+     */
+
+    this.destroy = function() {
+        // Remove event listenters
+        this.attachDetachEvents(false);
+        // Remove custom scrollmagic scene
+        this.scenePinTitle.destroy(true);
     };
 
     this.init();
