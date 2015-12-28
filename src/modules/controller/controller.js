@@ -33,7 +33,6 @@ var controller = module.exports = function() {
      * @property {boolean} arrowDownButton is arrowDownButton active / visible? It is only shown/hidden once
      * @property {boolean} autoScrolling is app auto-scrolling? Used to differentiate manual scrolling
      * @property {array} sections app's sections
-     * @property {array} sectionCuriousPlayfulInformatives app's sectionCuriousPlayfulInformatives
      * @property {array} sectionIntros app's sectionIntros
      * @property {object} scrollScenes scrollmagic controller
      * @property {number} windowHeight
@@ -43,7 +42,6 @@ var controller = module.exports = function() {
         arrowDownButton: true,
         autoScrolling: false,
         sections: [],
-        sectionCuriousPlayfulInformatives: [],
         sectionIntros: [],
         sectionMakingDigitalHumans: [],
         scrollScenes: new ScrollMagic.Controller(),

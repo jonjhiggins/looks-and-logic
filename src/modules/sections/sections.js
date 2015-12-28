@@ -4,8 +4,7 @@
 var $ = require('jquery'),
     Section = require('./../../modules/section/section'),
     SectionIntro = require('./../../modules/sectionIntro/sectionIntro'),
-    SectionMakingDigitalHuman = require('./../../modules/sectionMakingDigitalHuman/sectionMakingDigitalHuman'),
-    SectionCuriousPlayfulInformative = require('./../../modules/sectionCuriousPlayfulInformative/sectionCuriousPlayfulInformative');
+    SectionMakingDigitalHuman = require('./../../modules/sectionMakingDigitalHuman/sectionMakingDigitalHuman');
 
 /**
  * jQuery elements
@@ -110,8 +109,6 @@ var Sections = module.exports = function(controller, $sections) {
             this.initSectionModule('sectionIntro', SectionIntro, sectionsLength, index, $section);
         } else if ($section.hasClass('section--making-digital-human')) {
             this.initSectionModule('sectionMakingDigitalHuman', SectionMakingDigitalHuman, sectionsLength, index, $section);
-        } else if ($section.hasClass('section--curious-playful-informative')) {
-            this.initSectionModule('sectionCuriousPlayfulInformative', SectionCuriousPlayfulInformative, sectionsLength, index, $section);
         }
     };
 

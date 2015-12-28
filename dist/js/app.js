@@ -30481,7 +30481,7 @@ var controller = new Controller(),
 	balls = new Balls(controller),
 	sections = new Sections(controller, $('.sections').eq(0));
 
-},{"./../modules/ArrowDownButton/ArrowDownButton":10,"./../modules/balls/balls":12,"./../modules/controller/controller":13,"./../modules/menu/menu":14,"./../modules/sections/sections":19,"jquery":5}],10:[function(require,module,exports){
+},{"./../modules/ArrowDownButton/ArrowDownButton":10,"./../modules/balls/balls":12,"./../modules/controller/controller":13,"./../modules/menu/menu":14,"./../modules/sections/sections":18,"jquery":5}],10:[function(require,module,exports){
 /**
     Provides a button that automatically scrolls a user down a screen
     at a time. Is hidden as soon as the user free-scrolls (mouse/mousewheel/touch)
@@ -31012,7 +31012,6 @@ var controller = module.exports = function() {
      * @property {boolean} arrowDownButton is arrowDownButton active / visible? It is only shown/hidden once
      * @property {boolean} autoScrolling is app auto-scrolling? Used to differentiate manual scrolling
      * @property {array} sections app's sections
-     * @property {array} sectionCuriousPlayfulInformatives app's sectionCuriousPlayfulInformatives
      * @property {array} sectionIntros app's sectionIntros
      * @property {object} scrollScenes scrollmagic controller
      * @property {number} windowHeight
@@ -31022,7 +31021,6 @@ var controller = module.exports = function() {
         arrowDownButton: true,
         autoScrolling: false,
         sections: [],
-        sectionCuriousPlayfulInformatives: [],
         sectionIntros: [],
         sectionMakingDigitalHumans: [],
         scrollScenes: new ScrollMagic.Controller(),
@@ -31179,7 +31177,7 @@ var Menu = module.exports = function(controller) {
 /**
     Common properties and methods for all sections.
 
-    Each have an associatedModule (sectionIntro, sectionCuriousPlayfulInformative etc)
+    Each have an associatedModule (sectionIntro, sectionMakingDigitalHuman etc)
     which provide unique behaviours for that particular module type.
 
     @module Section
@@ -31370,164 +31368,6 @@ var Section = module.exports = function(controller, $section, sectionIndex, sect
 };
 
 },{"../_base/_base.js":11,"jquery":5,"scrollmagic":6}],16:[function(require,module,exports){
-/** @module sectionCuriousPlayfulInformative */
-
-var $ = require('jquery'),
-    ScrollMagic = require('scrollmagic'),
-    _base = require('../_base/_base.js');
-
-/**
- * @constructor sectionCuriousPlayfulInformative
- * @param {object} controller
- */
-
-var sectionCuriousPlayfulInformative = module.exports = function(controller, $section, index) {
-    'use strict';
-
-    // Extend _base module JS
-    var base = _base.apply(this);
-
-    /**
-     * jQuery elements
-     * @namespace cache
-     * @property {jQuery} window
-     * @property {jQuery} $sectionContent
-     * @property {jQuery} $sectionTitle
-     */
-
-    var cache = {
-        $window: $(window),
-        $sectionContent: $section.find('.section__content'),
-        $sectionTitle: $section.find('.section__title')
-    };
-
-    /**
-     * Bound events for add/removal. Inherits reset from _base
-     * @namespace events
-     * @property {function} refreshDimensions
-     */
-
-    this.events.refreshDimensions = null;
-
-    /**
-     * properties, states and settings
-     * @namespace props
-     * @property {number} titleHeight
-     */
-
-    this.props = {
-        titleHeight: 0
-    };
-
-    /**
-     * scrollMagic scene for pinning title
-     * @property {number} scenePinTitle
-     */
-
-    this.scenePinTitle = null;
-
-    /**
-     * Initialise the component
-     * @TODO Everything here should be undone using the "reset" function
-     * @method init
-     */
-
-    this.init = function() {
-        this.refreshDimensions();
-        // Bind events
-        this.events.refreshDimensions = this.refreshDimensions.bind(this);
-        // Attach events
-        this.attachDetachEvents(true);
-        // ScrollMagic scene
-        this.setupScene();
-
-        // Set associated module.
-        // @TODO avoid accessing other module directly. event instead?
-        controller.props.sections[index].props.associatedModule = this;
-    };
-
-    /**
-     * @function attachDetachEvents
-     * @param {boolean} attach attach the events?
-     */
-
-    this.attachDetachEvents = function(attach) {
-        if (attach) {
-            controller.emitter.on('sections:reset', this.events.reset);
-            controller.emitter.on('window:resize', this.events.refreshDimensions);
-        } else {
-            controller.emitter.removeListener('sections:reset', this.events.reset);
-            controller.emitter.removeListener('window:resize', this.events.refreshDimensions);
-        }
-    };
-
-    /**
-     * ScrollMagic scene
-     * @function setupScene
-     */
-
-    this.setupScene = function() {
-
-        if (this.scenePinTitle) {
-            this.scenePinTitle.destroy(true);
-        }
-
-        // pin title to centre via absolute position and translateY
-        // can't use scrollMagic pin as uses fixed position and we need to
-        // use overflow to mask out the title until its reveal on scroll
-        this.scenePinTitle = new ScrollMagic.Scene({
-            triggerElement: $section.get(0),
-            duration: $section.height(), // refreshed on resize in refreshDimensions
-            triggerHook: 1
-        }).on('progress', this.pinTitleProgress.bind(null, this.props.titleHeight));
-
-        this.scenePinTitle.addTo(controller.props.scrollScenes);
-    };
-
-
-
-    /**
-     * Called on each scroll during scenePinTitle
-     * @method pinTitleProgress
-     * @param {object} e event
-     */
-
-    this.pinTitleProgress = function(titleHeight, e) {
-        // translateY the title so it stays fixed in centre of screen
-        var translateAmount = -((controller.props.windowHeight / 2) - (e.progress * controller.props.windowHeight) + (titleHeight / 2));
-        // @TODO look at reducing jiggle in Safari. Could try making title position: fixed when translateAmount > 0
-        cache.$sectionContent.css('transform', 'translateY(' + translateAmount + 'px)');
-    };
-
-    /**
-     * Get and store dimensions
-     * @method refreshDimensions
-     */
-
-    this.refreshDimensions = function() {
-        this.props.titleHeight = cache.$sectionTitle.height();
-
-        if (this.scenePinTitle) {
-            this.scenePinTitle.duration($section.height());
-        }
-    };
-
-    /**
-     * Destroy all
-     * @method destroy
-     */
-
-    this.destroy = function() {
-        // Remove event listenters
-        this.attachDetachEvents(false);
-        // Remove custom scrollmagic scene
-        this.scenePinTitle.destroy(true);
-    };
-
-    this.init();
-};
-
-},{"../_base/_base.js":11,"jquery":5,"scrollmagic":6}],17:[function(require,module,exports){
 /** @module Section */
 /*globals Power2:true, console*/
 
@@ -31729,7 +31569,7 @@ var SectionIntro = module.exports = function(controller, $element, index) {
 
 };
 
-},{"../_base/_base.js":11,"jquery":5,"scrollmagic":6,"snapsvg":7}],18:[function(require,module,exports){
+},{"../_base/_base.js":11,"jquery":5,"scrollmagic":6,"snapsvg":7}],17:[function(require,module,exports){
 /** @module sectionMakingDigitalHuman */
 
 var $ = require('jquery'),
@@ -31866,15 +31706,14 @@ var sectionMakingDigitalHuman = module.exports = function(controller, $section, 
     this.init();
 };
 
-},{"../_base/_base.js":11,"jquery":5,"scrollmagic":6}],19:[function(require,module,exports){
+},{"../_base/_base.js":11,"jquery":5,"scrollmagic":6}],18:[function(require,module,exports){
 /** @module Sections */
 /*globals console*/
 
 var $ = require('jquery'),
     Section = require('./../../modules/section/section'),
     SectionIntro = require('./../../modules/sectionIntro/sectionIntro'),
-    SectionMakingDigitalHuman = require('./../../modules/sectionMakingDigitalHuman/sectionMakingDigitalHuman'),
-    SectionCuriousPlayfulInformative = require('./../../modules/sectionCuriousPlayfulInformative/sectionCuriousPlayfulInformative');
+    SectionMakingDigitalHuman = require('./../../modules/sectionMakingDigitalHuman/sectionMakingDigitalHuman');
 
 /**
  * jQuery elements
@@ -31979,8 +31818,6 @@ var Sections = module.exports = function(controller, $sections) {
             this.initSectionModule('sectionIntro', SectionIntro, sectionsLength, index, $section);
         } else if ($section.hasClass('section--making-digital-human')) {
             this.initSectionModule('sectionMakingDigitalHuman', SectionMakingDigitalHuman, sectionsLength, index, $section);
-        } else if ($section.hasClass('section--curious-playful-informative')) {
-            this.initSectionModule('sectionCuriousPlayfulInformative', SectionCuriousPlayfulInformative, sectionsLength, index, $section);
         }
     };
 
@@ -32135,4 +31972,4 @@ var Sections = module.exports = function(controller, $sections) {
 
 };
 
-},{"./../../modules/section/section":15,"./../../modules/sectionCuriousPlayfulInformative/sectionCuriousPlayfulInformative":16,"./../../modules/sectionIntro/sectionIntro":17,"./../../modules/sectionMakingDigitalHuman/sectionMakingDigitalHuman":18,"jquery":5}]},{},[9]);
+},{"./../../modules/section/section":15,"./../../modules/sectionIntro/sectionIntro":16,"./../../modules/sectionMakingDigitalHuman/sectionMakingDigitalHuman":17,"jquery":5}]},{},[9]);

@@ -1,7 +1,7 @@
 /**
     Common properties and methods for all sections.
 
-    Each have an associatedModule (sectionIntro, sectionCuriousPlayfulInformative etc)
+    Each have an associatedModule (sectionIntro, sectionMakingDigitalHuman etc)
     which provide unique behaviours for that particular module type.
 
     @module Section

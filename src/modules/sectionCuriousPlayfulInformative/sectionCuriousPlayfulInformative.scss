@@ -11,7 +11,6 @@
        overflow: hidden; // Mask out text until it's revealed on scroll down
 
        // Have to position absolutely for the pinning to centre
-       // via translateY on scroll (in JS)
        .section__content {
            position: absolute;
            display: block;
@@ -20,5 +19,21 @@
            height: 100%;
            left: 0;
            top: 0;
+
+           // Mask out section__title using a clip-path
+           clip-path: url(#clipPath--noClip); // For Firefox which only supports clip-path via an SVG
+           clip-path: inset(0 0 0 0); // Safari 9 seems to crop off bottom too early with SVG so
+                                      // use this instead
+           backface-visibility: hidden; // Required by Chrome to clip
+       }
+
+       // Keep title fixed in centre of viewport
+       .section__title {
+           position: fixed;
+           top: 50%;
+           left: 0;
+           width: 100%;
+           margin-top: -0.5em;
+           z-index: -1;
        }
    }
