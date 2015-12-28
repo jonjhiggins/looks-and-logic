@@ -1,17 +1,26 @@
 /*
  * arrowDownButton module
  */
+
+/* ==========================================================================
+    Variables
+   ========================================================================== */
+
+$arrowDownPadding: 12;
+
 /* ==========================================================================
     Outer button
    ========================================================================== */
 .arrowDownButton {
     width: rem(24);
     height: rem(12);
+    padding: rem($arrowDownPadding);
     position: fixed;
-    bottom: rem($paddingContainer / 2);
+    bottom: rem(($paddingContainer / 2) + ($arrowDownPadding));
     left: 50%;
-    margin-left: rem(-12);
+    margin-left: rem(-12 - $arrowDownPadding);
     z-index: 20;
+    box-sizing: content-box;
 }
 
 /* ==========================================================================
@@ -19,14 +28,14 @@
    ========================================================================== */
 
 .arrowDownButton__icon {
-    width: 100%;
-    height: 100%;
+    width: rem(24);
+    height: rem(12);
     background: url(../img/icon--arrow-down.svg) 0 0 no-repeat;
     background-size: 100%;
     display: block;
     position: absolute;
-    top: 0;
-    left: 0;
+    top: rem($arrowDownPadding);
+    left: rem($arrowDownPadding);
     transition: opacity 400ms ease;
 }
 .arrowDownButton__icon--black {
