@@ -1,12 +1,13 @@
 /** @module Balls */
-/*globals Power2:true, console*/
+/*globals Power4:true, console*/
 
 /**
  * @constructor Balls
  */
 
 var $ = require('jquery'),
-    _base = require('../_base/_base.js');
+    _base = require('../_base/_base.js'),
+    TweenMax = require('gsap/src/uncompressed/TweenMax.js');
 
 /**
  * jQuery elements
@@ -33,10 +34,12 @@ var Balls = module.exports = function(controller) {
     * Module properties, states and settings
     * @namespace $prop
     * @property {boolean} ballDropped has ball dropped yet?
+    * @property {object} ball1DropTween TweenMax object for ball 1 dropping
     */
 
     var props = {
-      ballDropped: false
+      ballDropped: false,
+      ball1DropTween: null
     };
 
     /**
@@ -62,9 +65,9 @@ var Balls = module.exports = function(controller) {
         // Attach events
         this.attachDetachEvents(true);
         // Reset ball1 position and dropped prop
-        cache.$ball1.css({
-            'transform': 'none',
-        });
+        if (props.ball1DropTween) {
+            props.ball1DropTween.pause(0).invalidate();
+        }
         props.ballDropped = false;
     };
 
@@ -100,16 +103,22 @@ var Balls = module.exports = function(controller) {
             return;
         }
 
-
+        // Get new Y Position
         var $nextSection = controller.getNextSection($sectionIntro),
             $nextNextSection = controller.getNextSection($nextSection),
             nextNextSectionTop = $nextNextSection.offset().top, // first 2 sections height
             ball1TopPosition = cache.$ball1.offset().top + cache.$ball1.height(),
             newPosition = nextNextSectionTop - ball1TopPosition;
 
-            cache.$ball1.css({
-                'transform': 'translateY(' + newPosition + 'px) scale(0.9, 1)',
-            });
+        // Animate ball dropping.
+        // TweenMax gets inited each time as updateTo doesn't seem to work with
+        // transformY property
+        props.ball1DropTween = TweenMax.to(cache.$ball1, 0.4, {
+            y: newPosition,
+            scaleX: 0.9,
+            ease: Power4.ease
+        });
+
 
         props.ballDropped = true;
     };
