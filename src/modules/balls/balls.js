@@ -35,11 +35,15 @@ var Balls = module.exports = function(controller) {
     * @namespace $prop
     * @property {boolean} ballDropped has ball dropped yet?
     * @property {object} ball1DropTween TweenMax object for ball 1 dropping
+    * @property {jQuery} $ball1DropSectionIntro $sectionIntro that last called ball1Drop
+    * @property {nunber} resizeTimer timeout used to wait for mobile address bar to change size
     */
 
     var props = {
       ballDropped: false,
-      ball1DropTween: null
+      ball1DropTween: null,
+      $ball1DropSectionIntro: null,
+      resizeTimer: null
     };
 
     /**
@@ -51,6 +55,7 @@ var Balls = module.exports = function(controller) {
 
     this.events.showBall1 = null;
     this.events.showBall2 = null;
+    this.events.resize = null;
 
 
     /**
@@ -62,11 +67,17 @@ var Balls = module.exports = function(controller) {
         // Bind events
         this.events.showBall1 = showBall.bind(cache.$ball1);
         this.events.showBall2 = showBall.bind(cache.$ball2);
+        this.events.resize = onResize.bind(this);
         // Attach events
         this.attachDetachEvents(true);
         // Reset ball1 position and dropped prop
         if (props.ball1DropTween) {
-            props.ball1DropTween.pause(0).invalidate();
+            TweenMax.set(cache.$ball1, {clearProps:'all'});
+            props.ball1DropTween.kill();
+        }
+        // Clear resize timeout
+        if (props.resizeTimer) {
+            window.clearTimeout(props.resizeTimer);
         }
         props.ballDropped = false;
     };
@@ -82,11 +93,13 @@ var Balls = module.exports = function(controller) {
             controller.emitter.on('balls:ball1Drop', ball1Drop);
             controller.emitter.on('balls:showBall1', this.events.showBall1);
             controller.emitter.on('balls:showBall2', this.events.showBall2);
+            controller.emitter.on('window:resize', this.events.resize);
         } else {
             controller.emitter.removeListener('sections:reset', this.events.reset);
             controller.emitter.removeListener('balls:ball1Drop', ball1Drop);
             controller.emitter.removeListener('balls:showBall1', this.events.showBall1);
             controller.emitter.removeListener('balls:showBall2', this.events.showBall2);
+            controller.emitter.removeListener('window:resize', this.events.resize);
         }
     };
 
@@ -98,27 +111,24 @@ var Balls = module.exports = function(controller) {
 
     var ball1Drop = function($sectionIntro) {
 
+        props.$ball1DropSectionIntro = $sectionIntro;
+
         // Only drop ball once
         if (props.ballDropped) {
             return;
         }
 
         // Get new Y Position
-        var $nextSection = controller.getNextSection($sectionIntro),
-            $nextNextSection = controller.getNextSection($nextSection),
-            nextNextSectionTop = $nextNextSection.offset().top, // first 2 sections height
-            ball1TopPosition = cache.$ball1.offset().top + cache.$ball1.height(),
-            newPosition = nextNextSectionTop - ball1TopPosition;
+        var newYPos = calculateNewYPos($sectionIntro);
 
         // Animate ball dropping.
         // TweenMax gets inited each time as updateTo doesn't seem to work with
         // transformY property
         props.ball1DropTween = TweenMax.to(cache.$ball1, 0.4, {
-            y: newPosition,
+            y: newYPos,
             scaleX: 0.9,
             ease: Power4.ease
         });
-
 
         props.ballDropped = true;
     };
@@ -136,6 +146,47 @@ var Balls = module.exports = function(controller) {
             width: position.width,
             height: position.height
         });
+    };
+
+    /**
+     * Position ball1 on top of section #3
+     * @function calculateNewYPos
+     * @param {jQuery} $introSection
+     * @returns {number}
+     */
+
+    var calculateNewYPos = function($introSection) {
+        var newYPos = 0,
+            $nextSection = controller.getNextSection($introSection),
+            $nextNextSection = controller.getNextSection($nextSection),
+            nextNextSectionTop = $nextNextSection.offset().top, // first 2 sections height
+            ball1TopPosition = cache.$ball1.offset().top + cache.$ball1.height();
+
+        newYPos = nextNextSectionTop - ball1TopPosition;
+
+        return newYPos;
+    };
+
+    /**
+     * Reposition balls on resize
+     * @function onResize
+     */
+
+    var onResize = function() {
+
+        if (props.ballDropped && props.$ball1DropSectionIntro) {
+            props.resizeTimer = window.setTimeout(function() {
+
+                var newYPos = calculateNewYPos(props.$ball1DropSectionIntro);
+
+                props.ball1DropTween = TweenMax.set(cache.$ball1, {
+                    y: '+=' + newYPos + 'px'
+                });
+
+            }, 100);
+        }
+
+
     };
 
 
