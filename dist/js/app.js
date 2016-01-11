@@ -31897,22 +31897,44 @@ var Sections = module.exports = function(controller, $sections) {
         var sectionGroupLength = cache.$originalSections.length,
             startIndex = this.props.removedSections,
             countIndex = startIndex,
-            endIndex = this.props.removedSections + sectionGroupLength;
+            endIndex = this.props.removedSections + sectionGroupLength,
+            autoScollEndTimeout = null;
 
         // Begin autoscrolling section (scrolling to keep browser in same place)
         controller.emitter.emit('window:autoScrollingStart');
 
-            // Remove sections and keep browser scroll in place
-            while(countIndex < endIndex) {
-                removeSection(countIndex);
-                countIndex++;
-            }
+        // Remove sections and keep browser scroll in place
+        while(countIndex < endIndex) {
+            removeSection(countIndex);
+            countIndex++;
+        }
 
-        // End autoscrolling section
-        controller.emitter.emit('window:autoScrollingEnd');
+        // Fallback incase scroll isn't triggered on removing sections
+        autoScollEndTimeout = window.setTimeout(this.autoScrollingEnd, 500);
+
+        // Scroll is triggered when removed sections cause page to scroll up
+        cache.$window.one('scroller', this.autoScrollingEnd.bind(this, autoScollEndTimeout));
+
+
+
+
 
         this.props.removedSections += sectionGroupLength;
         this.props.duplicateSectionsCount--;
+    };
+
+    /**
+     * Call autoScrollingEnd event
+     * @method autoScrollingEnd
+     * @param {number} autoScollEndInterval timeout object
+     */
+
+    this.autoScrollingEnd = function(autoScollEndInterval) {
+        // End autoscrolling section
+        if (autoScollEndInterval) {
+            window.clearInterval(autoScollEndInterval);
+        }
+        controller.emitter.emit('window:autoScrollingEnd');
     };
 
     /**
