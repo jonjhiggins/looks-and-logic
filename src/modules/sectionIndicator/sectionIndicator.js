@@ -43,7 +43,7 @@ var sectionIndicator = module.exports = function() {
         // Build item
         var $section = $(item),
             $sectionIndicatorItem = $('<li class="sectionIndicator__item"></li>'),
-            $sectionIndicatorLink = $('<a href="#' + $section.attr('id') + '" class="sectionIndicator__link"><span class="sectionIndicator__link-ring"></span><span class="sectionIndicator__link-ring"></span></a>');
+            $sectionIndicatorLink = $('<a href="#' + $section.attr('id') + '" class="sectionIndicator__link"><span class="sectionIndicator__link-ring"></span><span class="sectionIndicator__link-dot"></span></a>');
 
         // Add item to DOM
         cache.$list.append($sectionIndicatorItem.append($sectionIndicatorLink));
