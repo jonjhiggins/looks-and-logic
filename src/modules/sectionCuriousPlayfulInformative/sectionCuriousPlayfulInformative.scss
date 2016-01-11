@@ -11,7 +11,7 @@
        overflow: hidden; // Mask out text until it's revealed on scroll down
 
        // Have to position absolutely for the pinning to centre
-       .section__content {
+       .container {
            position: absolute;
            display: block;
            flex: none;
