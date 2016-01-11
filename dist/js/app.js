@@ -31491,9 +31491,13 @@ var SectionIntro = module.exports = function(controller, $element, index) {
 
             this.props.svgLoaded = true;
 
-            if (!this.props.ball1Dropped) {
-                this.measureAndShowBalls();
+            // If autoscrolling, this may indicate sections are still being removed,
+            // so positions will be wrong. If so, defer until autoscroll complete
+            if (controller.props.autoScrolling) {
+                controller.emitter.once('window:autoScrollingEnd', this.measureAndShowBalls.bind(this));
             }
+
+            this.measureAndShowBalls();
 
         }.bind(this));
     };
@@ -31504,7 +31508,8 @@ var SectionIntro = module.exports = function(controller, $element, index) {
 
     this.measureAndShowBalls = function() {
         // Only run after snap.svg has done it's stuff
-        if (!svgObject) {
+        // also don't run if ball1 has already dropped
+        if (!svgObject || this.props.ball1Dropped) {
             return;
         }
 
