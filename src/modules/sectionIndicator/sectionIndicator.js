@@ -67,7 +67,7 @@ var sectionIndicator = module.exports = function(controller) {
 
         // Build list up from sections in page
         cache.$sections.each(this.buildItem.bind(this));
-        cache.$links = $('#sectionIndicator .sectionIndicator__link');
+        cache.$links = $('.sectionIndicator__link');
 
         // Add waypoints for each component
         this.updateWaypoints();
@@ -122,10 +122,19 @@ var sectionIndicator = module.exports = function(controller) {
         // Build item
         var $section = $(item),
             $sectionIndicatorItem = $('<li class="sectionIndicator__item"></li>'),
-            $sectionIndicatorLink = $('<a href="#' + $section.attr('id') + '" class="sectionIndicator__link"><span class="sectionIndicator__link-ring"></span><span class="sectionIndicator__link-dot"></span></a>');
+            $sectionIndicatorLink = $('<a href="#' + $section.attr('id') + '" class="sectionIndicator__link"><span class="sectionIndicator__link-ring"></span><span class="sectionIndicator__link-dot"></span></a>'),
+            linkOffsetTop;
 
         // Add item to DOM
         cache.$list.append($sectionIndicatorItem.append($sectionIndicatorLink));
+        linkOffsetTop = $sectionIndicatorLink.position().top;
+
+        $('body').append($sectionIndicatorLink);
+        $sectionIndicatorLink.css({
+            position: 'fixed',
+            right: '3rem',
+            top: linkOffsetTop
+        });
         // @TODO click event
         //$componentIndicatorLink.on('click', this._componentIndicatorOnClickLink.bind(this, $componentIndicatorLink));
     };
@@ -254,10 +263,8 @@ var sectionIndicator = module.exports = function(controller) {
     */
 
     this.getLinkFromHref = function(href) {
-        console.log( cache.$links);
         return cache.$links
                 .filter(function() {
-                    console.log($(this).attr('href'), '#' + href);
                     return $(this).attr('href') === '#' + href;
                 });
     };
