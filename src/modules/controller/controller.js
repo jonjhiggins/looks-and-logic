@@ -6,7 +6,8 @@
 
 var $ = require('jquery'),
     ScrollMagic = require('scrollmagic'),
-    EventEmitter = require('events').EventEmitter;
+    EventEmitter = require('events').EventEmitter,
+    _ = require('underscore');
 
 /**
  * jQuery elements
@@ -58,7 +59,7 @@ var controller = module.exports = function() {
          this.refreshDimensions();
 
          // All window resizes through common function
-         cache.$window.on('resize', this.windowResize.bind(this));
+         cache.$window.on('resize', _.debounce(this.windowResize.bind(this)));
 
          // Attach events
          this.emitter.on('arrowDownButton:off', this.arrowDownButtonOff.bind(this));
@@ -113,7 +114,7 @@ var controller = module.exports = function() {
       */
 
      this.windowResize = function() {
-         this.emitter.emit('window:resize');  //@TODO debouce
+         this.emitter.emit('window:resize');
      };
 
      /**
