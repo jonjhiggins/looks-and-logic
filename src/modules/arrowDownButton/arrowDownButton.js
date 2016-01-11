@@ -223,7 +223,7 @@ var ArrowDownButton = module.exports = function(controller) {
 
         // Check if next section is overlapping current section,
         // requiring arrow to take into account that section's background colour
-        if (controller.props.windowHeight === $currentSection.height()) {
+        if (controller.props.windowHeight <= $currentSection.height()) {
             $backgroundSection = $currentSection; // normal
         } else {
             $backgroundSection = controller.getNextSection($currentSection); // overlapping
