@@ -33194,7 +33194,10 @@ var sectionIndicator = module.exports = function(controller) {
         this.attachDetachEvents(true);
 
         // Build list up from sections in page
-        cache.$sections.each(this.buildItem.bind(this));
+        var sectionsLength = cache.$sections.length,
+            indicatorHeight = sectionsLength * (10 + 16),
+            indicatorTop = (controller.props.windowHeight - indicatorHeight) / 2;
+        cache.$sections.each(this.buildItem.bind(this, indicatorTop));
         cache.$links = $('.sectionIndicator__link');
 
         // Add waypoints for each component
@@ -33246,7 +33249,7 @@ var sectionIndicator = module.exports = function(controller) {
      * @property {element} item
      */
 
-    this.buildItem = function(index, item) {
+    this.buildItem = function(indicatorTop, index, item) {
         // Build item
         var $section = $(item),
             $sectionIndicatorItem = $('<li class="sectionIndicator__item"></li>'),
@@ -33261,7 +33264,7 @@ var sectionIndicator = module.exports = function(controller) {
         $sectionIndicatorLink.css({
             position: 'fixed',
             right: '3rem',
-            top: linkOffsetTop
+            top: indicatorTop + (index * 16) + (index * 10)
         });
         // @TODO click event
         //$componentIndicatorLink.on('click', this._componentIndicatorOnClickLink.bind(this, $componentIndicatorLink));
