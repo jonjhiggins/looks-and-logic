@@ -10,7 +10,8 @@
 var $ = require('jquery'),
     TweenLite = require('./../../../node_modules/gsap/src/uncompressed/TweenLite.js'),
     ScrollToPlugin = require('./../../../node_modules/gsap/src/uncompressed/plugins/ScrollToPlugin.js'),
-    _base = require('../_base/_base.js');
+    _base = require('../_base/_base.js'),
+    _ = require('underscore');
 
 var options = {
     scrollDownDuration: 0.8
@@ -38,10 +39,12 @@ var ArrowDownButton = module.exports = function(controller) {
      * @namespace events
      * @property {function} sectionsInited
      * @property {function} buttonClick
+     * @property {function} pageScroll
      */
 
     this.events.sectionsInited = null;
     this.events.buttonClick = null;
+    this.events.pageScroll = null;
 
     /**
      * @function init
@@ -57,6 +60,7 @@ var ArrowDownButton = module.exports = function(controller) {
         // Bind events
         this.events.sectionsInited = this.setInitialHash.bind(this);
         this.events.buttonClick = this.buttonClick.bind(this);
+        this.events.pageScroll = _.throttle(this.pageScroll.bind(this));
         // Attach events
         this.attachDetachEvents(true);
         // Everything else
@@ -73,11 +77,11 @@ var ArrowDownButton = module.exports = function(controller) {
         if (attach) {
             controller.emitter.on('sections:reset', this.events.reset);
             $button.on('click', this.events.buttonClick);
-            $window.on('scroll', pageScroll); // @TODO debounce
+            $window.on('scroll', this.events.pageScroll);
         } else {
             controller.emitter.removeListener('sections:reset', this.events.reset);
             $button.off('click', this.events.buttonClick);
-            $window.off('scroll', pageScroll);
+            $window.off('scroll', this.events.pageScroll);
             controller.emitter.removeListener('section:sectionsInited', this.events.sectionsInited); // Added in setInitialHash
         }
     };
@@ -238,13 +242,15 @@ var ArrowDownButton = module.exports = function(controller) {
 
     /**
      * Hide the arrow when scrolling normally
-     * @function pageScroll
+     * @TODO this could be improved by unattaching this when controller
+     * is autoscrolling, rather than checking on each scroll (when using arrowDownButton)
+     * @method pageScroll
      */
 
-    var pageScroll = function(e) {
+    this.pageScroll = function(e) {
         // Only hide button when user manually scrolls
         if (!controller.props.autoScrolling) {
-            $window.off('scroll', pageScroll);
+            $window.off('scroll', this.events.pageScroll);
             buttonHide();
         }
 
