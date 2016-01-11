@@ -14,7 +14,7 @@ module.exports = function(grunt) {
         watch: {
             scripts: {
                 files: ['Gruntfile.js', 'src/js/**/*.js', 'src/modules/*/*.js'],
-                tasks: ['jshint', 'browserify'],
+                tasks: ['jshint', 'browserify', 'uglify'],
                 options: {
                     spawn: false,
                 },
@@ -152,6 +152,14 @@ module.exports = function(grunt) {
             dist: {
                 src: 'dist/css/*.css'
             }
+        },
+
+        uglify: {
+            dist: {
+                files: {
+                    'dist/js/app.min.js': ['dist/js/app.js']
+                }
+            }
         }
 
     });
@@ -159,6 +167,6 @@ module.exports = function(grunt) {
     require('load-grunt-tasks')(grunt);
 
     // Default task(s).
-    grunt.registerTask('default', ['clean', 'wiredep', 'copy', 'includes', 'browserify', 'sass', 'postcss', 'browserSync', 'watch']);
+    grunt.registerTask('default', ['clean', 'wiredep', 'copy', 'includes', 'browserify', 'uglify', 'sass', 'postcss', 'browserSync', 'watch']);
 
 };
