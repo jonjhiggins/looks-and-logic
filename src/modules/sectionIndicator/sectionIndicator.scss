@@ -9,53 +9,17 @@ $sectionIndicatorLinkMargin: 10px;
 $sectionIndicatorLinkSize: 16px;
 $sectionIndicatorLinkDotSize: 10px;
 $sectionIndicatorLinkRingScale: 0.625;
-.sectionIndicator {
 
-    /* ==========================================================================
-        Layout
-       ========================================================================== */
-    transform: translate(0, -50%);
-    position: fixed;
-    right: rem($paddingContainer);
-    top: 50%;
-    z-index: 5;
-    margin-top: $sectionIndicatorLinkMargin / 2;
-    .sectionIndicator__list {
-        margin: 0;
-        padding: 0;
-        list-style: none;
-    }
-}
 
-/* ==========================================================================
-        Item
-       ========================================================================== */
-.sectionIndicator__item {
-    display: block;
-    font-size: 14px;
-    text-align: center;
-    &:before {
-        content: '';
-        display: inline-block;
-        vertical-align: middle;
-        height: 100%;
-        width: 0;
-    }
-    &:last-child .sectionIndicator__link {
-        padding-bottom: 0;
-    }
-}
 /* ==========================================================================
     Link
    ========================================================================== */
 .sectionIndicator__link {
+    position: fixed;
     box-sizing: content-box;
-    display: inline-block;
-    vertical-align: middle;
-    position: relative;
-    margin-bottom: $sectionIndicatorLinkMargin;
     transform: rotate3d(0,0,0,0);
-    mix-blend-mode:difference;
+    right: rem($paddingContainer);
+    mix-blend-mode: difference;
     &,
     .sectionIndicator__link-dot,
     .sectionIndicator__link-ring {

@@ -23,7 +23,7 @@ var sectionIndicator = module.exports = function(controller) {
 
     var cache = {
         $window: $(window),
-        $list: $('#sectionIndicator > .sectionIndicator__list'),
+        $sectionIndicator: $('#sectionIndicator'),
         $links: null, // created via JS
         $sections: $('.section')
     };
@@ -33,11 +33,15 @@ var sectionIndicator = module.exports = function(controller) {
      * @namespace $prop
      * @property {object} waypoints
      * @property {number} scrollToFitViewportTimeout
+     * @property {number} linkSize height / width of link buttons
+     * @property {number} linkMargin bottom margin of link buttons
      */
 
     var props = {
         waypoints: {},
-        scrollToFitViewportTimeout: null
+        scrollToFitViewportTimeout: null,
+        linkSize: 16,
+        linkMargin: 10
     };
 
     /**
@@ -66,11 +70,7 @@ var sectionIndicator = module.exports = function(controller) {
         this.attachDetachEvents(true);
 
         // Build list up from sections in page
-        var sectionsLength = cache.$sections.length,
-            indicatorHeight = sectionsLength * (10 + 16),
-            indicatorTop = (controller.props.windowHeight - indicatorHeight) / 2;
-        cache.$sections.each(this.buildItem.bind(this, indicatorTop));
-        cache.$links = $('.sectionIndicator__link');
+        this.renderLinks();
 
         // Add waypoints for each component
         this.updateWaypoints();
@@ -115,29 +115,37 @@ var sectionIndicator = module.exports = function(controller) {
     };
 
     /**
+     * Build items in the sectionIndicator from sections in page
+     * @method renderLinks
+     */
+
+    this.renderLinks = function() {
+        var sectionsLength = cache.$sections.length,
+            indicatorHeight = sectionsLength * (props.linkSize + props.linkMargin),
+            indicatorTop = (controller.props.windowHeight - indicatorHeight) / 2;
+
+        cache.$sections.each(this.renderLink.bind(this, indicatorTop));
+        cache.$links = $('.sectionIndicator__link');
+    };
+
+    /**
      * Build each item in the sectionIndicator from sections in page
-     * @method buildItem
+     * To get mix-blend-mode to work, have to position each one fixed, rather than whole list
+     *
+     * @method renderLink
+     * @property {number} indicatorTop top position (offset) of the indicator
      * @property {number} index
      * @property {element} item
      */
 
-    this.buildItem = function(indicatorTop, index, item) {
+    this.renderLink = function(indicatorTop, index, item) {
         // Build item
         var $section = $(item),
-            $sectionIndicatorItem = $('<li class="sectionIndicator__item"></li>'),
             $sectionIndicatorLink = $('<a href="#' + $section.attr('id') + '" class="sectionIndicator__link"><span class="sectionIndicator__link-ring"></span><span class="sectionIndicator__link-dot"></span></a>'),
-            linkOffsetTop;
+            topPos = indicatorTop + (index * (props.linkSize + props.linkMargin));
 
-        // Add item to DOM
-        cache.$list.append($sectionIndicatorItem.append($sectionIndicatorLink));
-        linkOffsetTop = $sectionIndicatorLink.position().top;
-
-        $('body').append($sectionIndicatorLink);
-        $sectionIndicatorLink.css({
-            position: 'fixed',
-            right: '3rem',
-            top: indicatorTop + (index * 16) + (index * 10)
-        });
+        cache.$sectionIndicator.append($sectionIndicatorLink);
+        $sectionIndicatorLink.css('top', topPos);
         // @TODO click event
         //$componentIndicatorLink.on('click', this._componentIndicatorOnClickLink.bind(this, $componentIndicatorLink));
     };
