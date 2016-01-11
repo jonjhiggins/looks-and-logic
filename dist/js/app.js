@@ -30470,7 +30470,8 @@ var $ = require('jquery'),
 	Menu = require('./../modules/menu/menu'),
     ArrowDownButton = require('./../modules/ArrowDownButton/ArrowDownButton'),
 	Balls = require('./../modules/balls/balls'),
-    Sections = require('./../modules/sections/sections');
+    Sections = require('./../modules/sections/sections'),
+	SectionIndicator = require('./../modules/sectionIndicator/sectionIndicator');
 
 window.$ = $;
 
@@ -30479,9 +30480,10 @@ var controller = new Controller(),
     arrowDownButton = new ArrowDownButton(controller),
 	menu = new Menu(controller),
 	balls = new Balls(controller),
-	sections = new Sections(controller, $('.sections').eq(0));
+	sections = new Sections(controller, $('.sections').eq(0)),
+	sectionIndicator = new SectionIndicator(controller);
 
-},{"./../modules/ArrowDownButton/ArrowDownButton":10,"./../modules/balls/balls":12,"./../modules/controller/controller":13,"./../modules/menu/menu":14,"./../modules/sections/sections":18,"jquery":5}],10:[function(require,module,exports){
+},{"./../modules/ArrowDownButton/ArrowDownButton":10,"./../modules/balls/balls":12,"./../modules/controller/controller":13,"./../modules/menu/menu":14,"./../modules/sectionIndicator/sectionIndicator":16,"./../modules/sections/sections":19,"jquery":5}],10:[function(require,module,exports){
 /**
     Provides a button that automatically scrolls a user down a screen
     at a time. Is hidden as soon as the user free-scrolls (mouse/mousewheel/touch)
@@ -31368,6 +31370,63 @@ var Section = module.exports = function(controller, $section, sectionIndex, sect
 };
 
 },{"../_base/_base.js":11,"jquery":5,"scrollmagic":6}],16:[function(require,module,exports){
+/** @module sectionIndicator */
+
+var $ = require('jquery');
+
+/**
+ * @constructor sectionIndicator
+ */
+
+var sectionIndicator = module.exports = function() {
+    'use strict';
+
+    /**
+     * jQuery elements
+     * @namespace cache
+     * @property {jQuery} window
+     */
+
+    var cache = {
+        $window: $(window),
+        $list: $('#sectionIndicator > .sectionIndicator__list'),
+        $sections: $('.section')
+    };
+
+    /**
+     * Initialise the component
+     * Everything here should be undone using the "reset" function
+     * @method init
+     */
+
+    this.init = function() {
+        // Build list up from sections in page
+        cache.$sections.each(this.buildItem);
+    };
+
+    /**
+     * Build each item in the sectionIndicator from sections in page
+     * @method buildItem
+     * @property {number} index
+     * @property {element} item
+     */
+
+    this.buildItem = function(index, item) {
+        // Build item
+        var $section = $(item),
+            $sectionIndicatorItem = $('<li class="sectionIndicator__item"></li>'),
+            $sectionIndicatorLink = $('<a href="#' + $section.attr('id') + '" class="sectionIndicator__link"><span class="sectionIndicator__link-ring"></span><span class="sectionIndicator__link-ring"></span></a>');
+
+        // Add item to DOM
+        cache.$list.append($sectionIndicatorItem.append($sectionIndicatorLink));
+        // @TODO click event
+        //$componentIndicatorLink.on('click', this._componentIndicatorOnClickLink.bind(this, $componentIndicatorLink));
+    };
+
+    this.init();
+};
+
+},{"jquery":5}],17:[function(require,module,exports){
 /** @module Section */
 /*globals Power2:true, console*/
 
@@ -31574,7 +31633,7 @@ var SectionIntro = module.exports = function(controller, $element, index) {
 
 };
 
-},{"../_base/_base.js":11,"jquery":5,"scrollmagic":6,"snapsvg":7}],17:[function(require,module,exports){
+},{"../_base/_base.js":11,"jquery":5,"scrollmagic":6,"snapsvg":7}],18:[function(require,module,exports){
 /** @module sectionMakingDigitalHuman */
 
 var $ = require('jquery'),
@@ -31711,7 +31770,7 @@ var sectionMakingDigitalHuman = module.exports = function(controller, $section, 
     this.init();
 };
 
-},{"../_base/_base.js":11,"jquery":5,"scrollmagic":6}],18:[function(require,module,exports){
+},{"../_base/_base.js":11,"jquery":5,"scrollmagic":6}],19:[function(require,module,exports){
 /** @module Sections */
 /*globals console*/
 
@@ -31999,4 +32058,4 @@ var Sections = module.exports = function(controller, $sections) {
 
 };
 
-},{"./../../modules/section/section":15,"./../../modules/sectionIntro/sectionIntro":16,"./../../modules/sectionMakingDigitalHuman/sectionMakingDigitalHuman":17,"jquery":5}]},{},[9]);
+},{"./../../modules/section/section":15,"./../../modules/sectionIntro/sectionIntro":17,"./../../modules/sectionMakingDigitalHuman/sectionMakingDigitalHuman":18,"jquery":5}]},{},[9]);

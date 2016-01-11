@@ -7,7 +7,8 @@ var $ = require('jquery'),
 	Menu = require('./../modules/menu/menu'),
     ArrowDownButton = require('./../modules/ArrowDownButton/ArrowDownButton'),
 	Balls = require('./../modules/balls/balls'),
-    Sections = require('./../modules/sections/sections');
+    Sections = require('./../modules/sections/sections'),
+	SectionIndicator = require('./../modules/sectionIndicator/sectionIndicator');
 
 window.$ = $;
 
@@ -16,4 +17,5 @@ var controller = new Controller(),
     arrowDownButton = new ArrowDownButton(controller),
 	menu = new Menu(controller),
 	balls = new Balls(controller),
-	sections = new Sections(controller, $('.sections').eq(0));
+	sections = new Sections(controller, $('.sections').eq(0)),
+	sectionIndicator = new SectionIndicator(controller);
