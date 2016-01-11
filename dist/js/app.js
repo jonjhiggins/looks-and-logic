@@ -302,6 +302,99 @@ function isUndefined(arg) {
 }
 
 },{}],2:[function(require,module,exports){
+// shim for using process in browser
+
+var process = module.exports = {};
+var queue = [];
+var draining = false;
+var currentQueue;
+var queueIndex = -1;
+
+function cleanUpNextTick() {
+    draining = false;
+    if (currentQueue.length) {
+        queue = currentQueue.concat(queue);
+    } else {
+        queueIndex = -1;
+    }
+    if (queue.length) {
+        drainQueue();
+    }
+}
+
+function drainQueue() {
+    if (draining) {
+        return;
+    }
+    var timeout = setTimeout(cleanUpNextTick);
+    draining = true;
+
+    var len = queue.length;
+    while(len) {
+        currentQueue = queue;
+        queue = [];
+        while (++queueIndex < len) {
+            if (currentQueue) {
+                currentQueue[queueIndex].run();
+            }
+        }
+        queueIndex = -1;
+        len = queue.length;
+    }
+    currentQueue = null;
+    draining = false;
+    clearTimeout(timeout);
+}
+
+process.nextTick = function (fun) {
+    var args = new Array(arguments.length - 1);
+    if (arguments.length > 1) {
+        for (var i = 1; i < arguments.length; i++) {
+            args[i - 1] = arguments[i];
+        }
+    }
+    queue.push(new Item(fun, args));
+    if (queue.length === 1 && !draining) {
+        setTimeout(drainQueue, 0);
+    }
+};
+
+// v8 likes predictible objects
+function Item(fun, array) {
+    this.fun = fun;
+    this.array = array;
+}
+Item.prototype.run = function () {
+    this.fun.apply(null, this.array);
+};
+process.title = 'browser';
+process.browser = true;
+process.env = {};
+process.argv = [];
+process.version = ''; // empty string to avoid regexp issues
+process.versions = {};
+
+function noop() {}
+
+process.on = noop;
+process.addListener = noop;
+process.once = noop;
+process.off = noop;
+process.removeListener = noop;
+process.removeAllListeners = noop;
+process.emit = noop;
+
+process.binding = function (name) {
+    throw new Error('process.binding is not supported');
+};
+
+process.cwd = function () { return '/' };
+process.chdir = function (dir) {
+    throw new Error('process.chdir is not supported');
+};
+process.umask = function() { return 0; };
+
+},{}],3:[function(require,module,exports){
 (function (global){
 /*!
  * VERSION: 1.18.0
@@ -2189,7 +2282,7 @@ function isUndefined(arg) {
 
 })((typeof(module) !== "undefined" && module.exports && typeof(global) !== "undefined") ? global : this || window, "TweenLite");
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],3:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 (function (global){
 /*!
  * VERSION: 1.18.0
@@ -9767,7 +9860,7 @@ if (_gsScope._gsDefine) { _gsScope._gsQueue.pop()(); } //necessary in case Tween
 module.exports = TweenMax;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 (function (global){
 /*!
  * VERSION: 1.7.5
@@ -9890,7 +9983,7 @@ var _gsScope = (typeof(module) !== "undefined" && module.exports && typeof(globa
 
 }); if (_gsScope._gsDefine) { _gsScope._gsQueue.pop()(); }
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 /*!
  * jQuery JavaScript Library v2.1.4
  * http://jquery.com/
@@ -19102,7 +19195,113 @@ return jQuery;
 
 }));
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
+var now = require('performance-now')
+  , global = typeof window === 'undefined' ? {} : window
+  , vendors = ['moz', 'webkit']
+  , suffix = 'AnimationFrame'
+  , raf = global['request' + suffix]
+  , caf = global['cancel' + suffix] || global['cancelRequest' + suffix]
+
+for(var i = 0; i < vendors.length && !raf; i++) {
+  raf = global[vendors[i] + 'Request' + suffix]
+  caf = global[vendors[i] + 'Cancel' + suffix]
+      || global[vendors[i] + 'CancelRequest' + suffix]
+}
+
+// Some versions of FF have rAF but not cAF
+if(!raf || !caf) {
+  var last = 0
+    , id = 0
+    , queue = []
+    , frameDuration = 1000 / 60
+
+  raf = function(callback) {
+    if(queue.length === 0) {
+      var _now = now()
+        , next = Math.max(0, frameDuration - (_now - last))
+      last = next + _now
+      setTimeout(function() {
+        var cp = queue.slice(0)
+        // Clear queue here to prevent
+        // callbacks from appending listeners
+        // to the current frame's queue
+        queue.length = 0
+        for(var i = 0; i < cp.length; i++) {
+          if(!cp[i].cancelled) {
+            try{
+              cp[i].callback(last)
+            } catch(e) {
+              setTimeout(function() { throw e }, 0)
+            }
+          }
+        }
+      }, Math.round(next))
+    }
+    queue.push({
+      handle: ++id,
+      callback: callback,
+      cancelled: false
+    })
+    return id
+  }
+
+  caf = function(handle) {
+    for(var i = 0; i < queue.length; i++) {
+      if(queue[i].handle === handle) {
+        queue[i].cancelled = true
+      }
+    }
+  }
+}
+
+module.exports = function(fn) {
+  // Wrap in a new function to prevent
+  // `cancel` potentially being assigned
+  // to the native rAF function
+  return raf.call(global, fn)
+}
+module.exports.cancel = function() {
+  caf.apply(global, arguments)
+}
+
+},{"performance-now":8}],8:[function(require,module,exports){
+(function (process){
+// Generated by CoffeeScript 1.7.1
+(function() {
+  var getNanoSeconds, hrtime, loadTime;
+
+  if ((typeof performance !== "undefined" && performance !== null) && performance.now) {
+    module.exports = function() {
+      return performance.now();
+    };
+  } else if ((typeof process !== "undefined" && process !== null) && process.hrtime) {
+    module.exports = function() {
+      return (getNanoSeconds() - loadTime) / 1e6;
+    };
+    hrtime = process.hrtime;
+    getNanoSeconds = function() {
+      var hr;
+      hr = hrtime();
+      return hr[0] * 1e9 + hr[1];
+    };
+    loadTime = getNanoSeconds();
+  } else if (Date.now) {
+    module.exports = function() {
+      return Date.now() - loadTime;
+    };
+    loadTime = Date.now();
+  } else {
+    module.exports = function() {
+      return new Date().getTime() - loadTime;
+    };
+    loadTime = new Date().getTime();
+  }
+
+}).call(this);
+
+}).call(this,require('_process'))
+},{"_process":2}],9:[function(require,module,exports){
 /*!
  * ScrollMagic v2.0.5 (2015-04-29)
  * The javascript library for magical scroll interactions.
@@ -21883,7 +22082,7 @@ return jQuery;
 
 	return ScrollMagic;
 }));
-},{}],7:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 // Snap.svg 0.4.0
 // 
 // Copyright (c) 2013 – 2015 Adobe Systems Incorporated. All rights reserved.
@@ -30055,7 +30254,7 @@ Snap.plugin(function (Snap, Element, Paper, glob, Fragment) {
 
 return Snap;
 }));
-},{"eve":8}],8:[function(require,module,exports){
+},{"eve":11}],11:[function(require,module,exports){
 // Copyright (c) 2013 Adobe Systems Incorporated. All rights reserved.
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -30460,7 +30659,7 @@ return Snap;
     (typeof module != "undefined" && module.exports) ? (module.exports = eve) : (typeof define === "function" && define.amd ? (define("eve", [], function() { return eve; })) : (glob.eve = eve));
 })(this);
 
-},{}],9:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 //     Underscore.js 1.8.3
 //     http://underscorejs.org
 //     (c) 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
@@ -32010,7 +32209,7 @@ return Snap;
   }
 }.call(this));
 
-},{}],10:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 /** @module main */
 
 // Requires
@@ -32033,7 +32232,7 @@ var controller = new Controller(),
 	sections = new Sections(controller, $('.sections').eq(0)),
 	sectionIndicator = new SectionIndicator(controller);
 
-},{"./../modules/ArrowDownButton/ArrowDownButton":11,"./../modules/balls/balls":13,"./../modules/controller/controller":14,"./../modules/menu/menu":15,"./../modules/sectionIndicator/sectionIndicator":17,"./../modules/sections/sections":20,"jquery":5}],11:[function(require,module,exports){
+},{"./../modules/ArrowDownButton/ArrowDownButton":14,"./../modules/balls/balls":16,"./../modules/controller/controller":17,"./../modules/menu/menu":18,"./../modules/sectionIndicator/sectionIndicator":20,"./../modules/sections/sections":23,"jquery":6}],14:[function(require,module,exports){
 /**
     Provides a button that automatically scrolls a user down a screen
     at a time. Is hidden as soon as the user free-scrolls (mouse/mousewheel/touch)
@@ -32296,7 +32495,7 @@ var ArrowDownButton = module.exports = function(controller) {
 
 };
 
-},{"../_base/_base.js":12,"./../../../node_modules/gsap/src/uncompressed/TweenLite.js":2,"./../../../node_modules/gsap/src/uncompressed/plugins/ScrollToPlugin.js":4,"jquery":5,"underscore":9}],12:[function(require,module,exports){
+},{"../_base/_base.js":15,"./../../../node_modules/gsap/src/uncompressed/TweenLite.js":3,"./../../../node_modules/gsap/src/uncompressed/plugins/ScrollToPlugin.js":5,"jquery":6,"underscore":12}],15:[function(require,module,exports){
 /** @module _base */
 
 var $ = require('jquery');
@@ -32337,7 +32536,7 @@ var _base = module.exports = function() {
     this.events.reset = this.reset.bind(this, true);
 };
 
-},{"jquery":5}],13:[function(require,module,exports){
+},{"jquery":6}],16:[function(require,module,exports){
 /** @module Balls */
 /*globals Power4:true, console*/
 
@@ -32534,7 +32733,7 @@ var Balls = module.exports = function(controller) {
 
 };
 
-},{"../_base/_base.js":12,"gsap/src/uncompressed/TweenMax.js":3,"jquery":5}],14:[function(require,module,exports){
+},{"../_base/_base.js":15,"gsap/src/uncompressed/TweenMax.js":4,"jquery":6}],17:[function(require,module,exports){
 /** @module controller */
 
 /**
@@ -32543,7 +32742,8 @@ var Balls = module.exports = function(controller) {
 
 var $ = require('jquery'),
     ScrollMagic = require('scrollmagic'),
-    EventEmitter = require('events').EventEmitter;
+    EventEmitter = require('events').EventEmitter,
+    _ = require('underscore');
 
 /**
  * jQuery elements
@@ -32595,7 +32795,7 @@ var controller = module.exports = function() {
          this.refreshDimensions();
 
          // All window resizes through common function
-         cache.$window.on('resize', this.windowResize.bind(this));
+         cache.$window.on('resize', _.debounce(this.windowResize.bind(this)));
 
          // Attach events
          this.emitter.on('arrowDownButton:off', this.arrowDownButtonOff.bind(this));
@@ -32650,7 +32850,7 @@ var controller = module.exports = function() {
       */
 
      this.windowResize = function() {
-         this.emitter.emit('window:resize');  //@TODO debouce
+         this.emitter.emit('window:resize');
      };
 
      /**
@@ -32713,7 +32913,7 @@ var controller = module.exports = function() {
     return this;
 };
 
-},{"events":1,"jquery":5,"scrollmagic":6}],15:[function(require,module,exports){
+},{"events":1,"jquery":6,"scrollmagic":9,"underscore":12}],18:[function(require,module,exports){
 /** @module Menu */
 
 var $ = require('jquery');
@@ -32731,7 +32931,7 @@ var Menu = module.exports = function(controller) {
 
 };
 
-},{"jquery":5}],16:[function(require,module,exports){
+},{"jquery":6}],19:[function(require,module,exports){
 /**
     Common properties and methods for all sections.
 
@@ -32925,17 +33125,23 @@ var Section = module.exports = function(controller, $section, sectionIndex, sect
 
 };
 
-},{"../_base/_base.js":12,"jquery":5,"scrollmagic":6}],17:[function(require,module,exports){
+},{"../_base/_base.js":15,"jquery":6,"scrollmagic":9}],20:[function(require,module,exports){
 /** @module sectionIndicator */
 
-var $ = require('jquery');
+var $ = require('jquery'),
+    _base = require('../_base/_base.js'),
+    raf = require('raf'),
+    _ = require('underscore');
 
 /**
  * @constructor sectionIndicator
  */
 
-var sectionIndicator = module.exports = function() {
+var sectionIndicator = module.exports = function(controller) {
     'use strict';
+
+    // Extend _base module JS
+    var base = _base.apply(this);
 
     /**
      * jQuery elements
@@ -32946,8 +33152,31 @@ var sectionIndicator = module.exports = function() {
     var cache = {
         $window: $(window),
         $list: $('#sectionIndicator > .sectionIndicator__list'),
+        $links: null, // created via JS
         $sections: $('.section')
     };
+
+    /**
+     * Module properties, states and settings
+     * @namespace $prop
+     * @property {object} waypoints
+     * @property {number} scrollToFitViewportTimeout
+     */
+
+    var props = {
+        waypoints: {},
+        scrollToFitViewportTimeout: null
+    };
+
+    /**
+     * Bound events for add/removal. Inherits reset from _base
+     * @namespace events
+     * @property {function} resize
+     * @property {function} pageScroll
+     */
+
+    this.events.resize = null;
+    this.events.pageScroll = null;
 
     /**
      * Initialise the component
@@ -32956,8 +33185,58 @@ var sectionIndicator = module.exports = function() {
      */
 
     this.init = function() {
+
+        // Bind events
+        this.events.resize = this.resize.bind(this);
+        this.events.pageScroll = _.throttle(this.scrollResize.bind(this));
+
+        // Attach events
+        this.attachDetachEvents(true);
+
         // Build list up from sections in page
-        cache.$sections.each(this.buildItem);
+        cache.$sections.each(this.buildItem.bind(this));
+        cache.$links = $('#sectionIndicator .sectionIndicator__link');
+
+        // Add waypoints for each component
+        this.updateWaypoints();
+
+        /*globals console*/
+    };
+
+    /**
+     * @method attachDetachEvents
+     * @param {boolean} attach attach the events?
+     */
+
+    this.attachDetachEvents = function(attach) {
+        if (attach) {
+            controller.emitter.on('window:resize', this.events.resize);
+            cache.$window.on('scroll', this.events.pageScroll);
+        } else {
+            controller.emitter.removeListener('window:resize', this.events.resize);
+            cache.$window.off('scroll', this.events.pageScroll);
+        }
+    };
+
+    /**
+     * Called on window resize
+     *
+     * @method resize
+     */
+
+    this.resize = function() {
+        this.updateWaypoints();
+        this.scrollResize();
+    };
+
+    /**
+     * Called on scrolling and resizing
+     *
+     * @method scrollResize
+     */
+
+    this.scrollResize = function() {
+        raf(this.indicatorRefresh.bind(this));
     };
 
     /**
@@ -32979,10 +33258,143 @@ var sectionIndicator = module.exports = function() {
         //$componentIndicatorLink.on('click', this._componentIndicatorOnClickLink.bind(this, $componentIndicatorLink));
     };
 
+    /**
+     * Update waypoints that trigger sectionIndicator actions for each section
+     *
+     * @method updateWaypoints
+     */
+
+    this.updateWaypoints = function() {
+        cache.$sections.each(this.updateWaypoint.bind(this));
+    };
+
+    /**
+     * Update waypoints that trigger sectionIndicator actions for each section
+     *
+     * @method updateWaypoint
+     * @param {number} index
+     * @param {element} item
+     */
+
+    this.updateWaypoint = function(index, item) {
+        var $section = $(item),
+            id = $section.attr('id'),
+            top = Math.round($section.offset().top),
+            bottom = Math.round($section.height() + top);
+
+        // Add to waypoints array
+        // @TODO only need top or componentTop
+        props.waypoints[id] = {
+            top: (index === 0) ? 0 : top, // Set first section top to 0 so it's active on page load
+            componentTop: top, // Used for getting section top of first section
+            bottom: bottom
+        };
+    };
+
+    /**
+     * Check waypoints and update nav position
+     *
+     * @method indicatorRefresh
+     */
+
+    this.indicatorRefresh = function() {
+        var scrollTop = cache.$window.scrollTop();
+        var activeWaypoint = this.getActiveWaypoint(scrollTop);
+        this.highlightLink(activeWaypoint);
+    };
+
+    /**
+     * Check waypoints and update nav position
+     *
+     * @method getActiveWaypoint
+     * @param {number} scrollTop
+     * @returns {string} activeWaypoint
+     */
+
+    this.getActiveWaypoint = function(scrollTop) {
+        var activeWaypoint = false,
+            activeWaypoints = [],
+            nearestWaypoint,
+            componentTriggerHook = controller.props.windowHeight;
+
+        // Find components currently in view and add to activeWaypoints array
+        $.each(props.waypoints, function(key) {
+            var waypoint = props.waypoints[key];
+
+            if ((scrollTop >= (waypoint.top - componentTriggerHook)) && (scrollTop <= (waypoint.bottom - 1))) {
+                activeWaypoints.push(key);
+            }
+
+            if (activeWaypoints.length > 1) {
+                return false; // Can only be two waypoints being transitioned in componentIndicator, break out of loop
+            }
+        });
+
+        // Store currently active waypoint
+        activeWaypoint = activeWaypoints[0];
+
+        // Clear any ScollToFitViewport that may have been previously started
+        window.clearTimeout(props.scrollToFitViewportTimeout);
+
+        // If two components are in view (and we are not autoscrolling after clicking a nav dot):
+        // - transition the componentIndicator dot from active to next dot (_componentIndicatorTransitionLinks)
+        // - see if we need to autoscroll to component top to fit in viewport (_componentIndicatorScrollToFitViewport)
+        //
+
+        // @TODO hook up
+        if (this._componentIndicatorTransitionStylingApplied) {
+            this._componentIndicatorRemoveTransitionStyling();
+        }
+
+        // @TODO hook up
+        // if (activeWaypoints.length > 1 && !this._componentIndicatorIsScrolling) {
+        //     nearestWaypoint = this._componentIndicatorTransitionLinks(activeWaypoints, scrollTop);
+        //     this._componentIndicatorScrollToFitViewport(scrollTop, nearestWaypoint);
+        // }
+
+        return activeWaypoint;
+    };
+
+    /**
+     * Highlight a link in list/DOM from a waypoint
+     *
+     * @method highlightLink
+     * @param {string} activeWaypoint
+     */
+
+    this.highlightLink = function(activeWaypoint) {
+        // Remove active styling
+        cache.$links.removeClass('active');
+
+
+        if (activeWaypoint) {
+            // Add active styling
+            this.getLinkFromHref(activeWaypoint).addClass('active');
+        }
+    };
+
+    /**
+    * Get link element from a href string
+    *
+    * @method getLinkFromHref
+    * @param {string} href
+    * @returns {jQuery}
+    */
+
+    this.getLinkFromHref = function(href) {
+        console.log( cache.$links);
+        return cache.$links
+                .filter(function() {
+                    console.log($(this).attr('href'), '#' + href);
+                    return $(this).attr('href') === '#' + href;
+                });
+    };
+
+
     this.init();
 };
 
-},{"jquery":5}],18:[function(require,module,exports){
+},{"../_base/_base.js":15,"jquery":6,"raf":7,"underscore":12}],21:[function(require,module,exports){
 /** @module Section */
 /*globals Power2:true, console*/
 
@@ -33189,7 +33601,7 @@ var SectionIntro = module.exports = function(controller, $element, index) {
 
 };
 
-},{"../_base/_base.js":12,"jquery":5,"scrollmagic":6,"snapsvg":7}],19:[function(require,module,exports){
+},{"../_base/_base.js":15,"jquery":6,"scrollmagic":9,"snapsvg":10}],22:[function(require,module,exports){
 /** @module sectionMakingDigitalHuman */
 
 var $ = require('jquery'),
@@ -33326,7 +33738,7 @@ var sectionMakingDigitalHuman = module.exports = function(controller, $section, 
     this.init();
 };
 
-},{"../_base/_base.js":12,"jquery":5,"scrollmagic":6}],20:[function(require,module,exports){
+},{"../_base/_base.js":15,"jquery":6,"scrollmagic":9}],23:[function(require,module,exports){
 /** @module Sections */
 /*globals console*/
 
@@ -33614,4 +34026,4 @@ var Sections = module.exports = function(controller, $sections) {
 
 };
 
-},{"./../../modules/section/section":16,"./../../modules/sectionIntro/sectionIntro":18,"./../../modules/sectionMakingDigitalHuman/sectionMakingDigitalHuman":19,"jquery":5}]},{},[10]);
+},{"./../../modules/section/section":19,"./../../modules/sectionIntro/sectionIntro":21,"./../../modules/sectionMakingDigitalHuman/sectionMakingDigitalHuman":22,"jquery":6}]},{},[13]);
