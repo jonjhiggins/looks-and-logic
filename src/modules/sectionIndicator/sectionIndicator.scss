@@ -18,14 +18,21 @@
        ========================================================================== */
     transform: translate(0, -50%);
     position: fixed;
-    right: 25px;
+    right: rem($paddingContainer);
     top: 50%;
     z-index: 5;
     margin-top: $sectionIndicatorLinkMargin / 2;
 
+    .sectionIndicator__list {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
     /* ==========================================================================
         Item
        ========================================================================== */
+
     .sectionIndicator__item {
         display: block;
         font-size: 14px;
