@@ -36,7 +36,6 @@ var controller = module.exports = function() {
      * @property {array} sections app's sections
      * @property {array} sectionIntros app's sectionIntros
      * @property {object} scrollScenes scrollmagic controller
-     * @property {string} staticAssetHost used for loading images via JS. differs between aerobatic and localhost
      * @property {number} windowHeight
      */
 
@@ -51,7 +50,6 @@ var controller = module.exports = function() {
         sectionIntros: [],
         sectionMakingDigitalHumans: [],
         scrollScenes: new ScrollMagic.Controller(),
-        staticAssetHost: (typeof __aerobatic__ !== 'undefined') ? __aerobatic__.staticAssetHost : '',
         windowHeight: 0
     };
 
