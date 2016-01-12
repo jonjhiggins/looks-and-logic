@@ -99,6 +99,9 @@ var sectionIndicator = module.exports = function(controller) {
         // Add waypoints for each section
         this.updateWaypoints();
 
+        // Set highlight initial section in indicator
+        this.indicatorRefresh();
+
     };
 
     /**
@@ -260,22 +263,22 @@ var sectionIndicator = module.exports = function(controller) {
 
     this.indicatorRefresh = function() {
         var scrollTop = cache.$window.scrollTop();
-        var activeWaypoint = this.getActiveWaypoint(scrollTop);
-        this.highlightLink(activeWaypoint);
+        var activeWaypoints = this.getActiveWaypoints(scrollTop);
+        this.highlightLink(activeWaypoints[0]); // First item in array is activeWaypoint
+        this.transitionLinksAndScrollToFitViewport(activeWaypoints, scrollTop);
     };
 
     /**
-     * Check waypoints and update nav position
+     * On scroll, check which waypoint is active and indicate in sectionIndicator
      *
-     * @method getActiveWaypoint
+     * @method getActiveWaypoints
      * @param {number} scrollTop
-     * @returns {string} activeWaypoint
+     * @returns {array} activeWaypoints
      */
 
-    this.getActiveWaypoint = function(scrollTop) {
+    this.getActiveWaypoints = function(scrollTop) {
         var activeWaypoint = false,
             activeWaypoints = [],
-            nearestWaypoint,
             sectionTriggerHook = controller.props.windowHeight;
 
         // Find sections currently in view and add to activeWaypoints array
@@ -291,26 +294,7 @@ var sectionIndicator = module.exports = function(controller) {
             }
         });
 
-        // Store currently active waypoint
-        activeWaypoint = activeWaypoints[0];
-
-        // Clear any ScollToFitViewport that may have been previously started
-        window.clearTimeout(props.scrollToFitViewportTimeout);
-
-        // If two sections are in view (and we are not autoscrolling after clicking a nav dot):
-        // - transition the sectionIndicator dot from active to next dot (_sectionIndicatorTransitionLinks)
-        // - see if we need to autoscroll to section top to fit in viewport (_sectionIndicatorScrollToFitViewport)
-
-        if (props.transitionStylingApplied) {
-            this.removeTransitionStyling();
-        }
-
-        if (activeWaypoints.length > 1 && !props.isScrolling) {
-            nearestWaypoint = this.transitionLinks(activeWaypoints, scrollTop);
-            this.scrollToFitViewport(scrollTop, nearestWaypoint);
-        }
-
-        return activeWaypoint;
+        return activeWaypoints;
     };
 
     /**
@@ -328,6 +312,33 @@ var sectionIndicator = module.exports = function(controller) {
         if (activeWaypoint) {
             // Add active styling
             this.getLinkFromHash(activeWaypoint).addClass('active');
+        }
+    };
+
+    /**
+     * If two sections are in view (and we are not autoscrolling after clicking a nav dot):
+     * - transition the sectionIndicator dot from active to next dot (transitionLinks)
+     * - see if we need to autoscroll to section top to fit in viewport (scrollToFitViewport)
+     *
+     * @method transitionLinksAndScrollToFitViewport
+     * @param {array} activeWaypoints
+     * @param {number} scrollTop
+     */
+
+    this.transitionLinksAndScrollToFitViewport = function(activeWaypoints, scrollTop) {
+
+        var nearestWaypoint;
+
+        // Clear any ScollToFitViewport that may have been previously started
+        window.clearTimeout(props.scrollToFitViewportTimeout);
+
+        // Clear any transition styling applied
+        if (props.transitionStylingApplied) {
+            this.removeTransitionStyling();
+        }
+        if (activeWaypoints.length > 1 && !props.isScrolling) {
+            nearestWaypoint = this.transitionLinks(activeWaypoints, scrollTop);
+            this.scrollToFitViewport(scrollTop, nearestWaypoint);
         }
     };
 
@@ -451,6 +462,13 @@ var sectionIndicator = module.exports = function(controller) {
      */
 
     this.duplicateSections = function() {
+
+        // If currently autoscrolling, wait and re-run when finished
+        if (controller.props.autoScrolling) {
+            controller.emitter.once('window:autoScrollingEnd', this.duplicateSections.bind(this));
+            return;
+        }
+
         this.reset();
         this.init();
     };
@@ -465,6 +483,12 @@ var sectionIndicator = module.exports = function(controller) {
 
     this.reset = function() {
         extendReset();
+
+        // Reset props
+        props.waypoints = {};
+        props.isScrolling = false;
+
+        // Clear out $sectionIndicator in DOM
         cache.$sectionIndicator.empty();
         // Set selectors: only want last set of sections
         cache.$sections = $('.section').slice(-props.sectionsLength);
