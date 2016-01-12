@@ -28,7 +28,7 @@ var sectionIndicator = module.exports = function(controller) {
         $window: $(window),
         $sectionIndicator: $('#sectionIndicator'),
         $links: null, // created via JS
-        $sections: $('.section')
+        $sections: $('.section') // updated via JS
     };
 
     /**
@@ -44,6 +44,7 @@ var sectionIndicator = module.exports = function(controller) {
      * @property {number} scrollToFitViewportTriggerHook When section top hits this point in viewport, autoscroll to section top
      * @property {number} linkRingScale $componentIndicatorLinkRingScale in SCSS
      * @property {number} scrollToFitViewportWait how long to wait after last scroll before auto scrolling to fit viewport
+     * @property {number} sectionsLength how long a set of sections is
      */
 
     var props = {
@@ -56,7 +57,8 @@ var sectionIndicator = module.exports = function(controller) {
         transitionStylingApplied: false,
         scrollToFitViewportTriggerHook: 0.3,
         linkRingScale: 0.625,
-        scrollToFitViewportWait: 2000
+        scrollToFitViewportWait: 2000,
+        sectionsLength: $('.section').length
     };
 
     /**
@@ -64,10 +66,12 @@ var sectionIndicator = module.exports = function(controller) {
      * @namespace events
      * @property {function} resize
      * @property {function} pageScroll
+     * @property {function} duplicateSections
      */
 
     this.events.resize = null;
     this.events.pageScroll = null;
+    this.events.duplicateSections = null;
 
     /**
      * Initialise the component
@@ -84,6 +88,7 @@ var sectionIndicator = module.exports = function(controller) {
         // Bind events
         this.events.resize = this.resize.bind(this);
         this.events.pageScroll = _.throttle(this.scrollResize.bind(this));
+        this.events.duplicateSections = this.duplicateSections.bind(this);
 
         // Attach events
         this.attachDetachEvents(true);
@@ -116,9 +121,11 @@ var sectionIndicator = module.exports = function(controller) {
     this.attachDetachEvents = function(attach) {
         if (attach) {
             controller.emitter.on('window:resize', this.events.resize);
+            controller.emitter.on('sections:duplicateSections', this.events.duplicateSections);
             cache.$window.on('scroll', this.events.pageScroll);
         } else {
             controller.emitter.removeListener('window:resize', this.events.resize);
+            controller.emitter.removeListener('sections:duplicateSections', this.events.duplicateSections);
             cache.$window.off('scroll', this.events.pageScroll);
         }
     };
@@ -436,6 +443,34 @@ var sectionIndicator = module.exports = function(controller) {
 
         props.transitionStylingApplied = false;
     };
+
+    /**
+     * Called when sections.js duplicates a set of sections
+     *
+     * @method duplicateSections
+     */
+
+    this.duplicateSections = function() {
+        this.reset();
+        this.init();
+    };
+
+    /**
+     * Reset everything
+     *
+     * @method reset
+     */
+
+    var extendReset = this.reset.bind(this); // extend the reset from _base.js
+
+    this.reset = function() {
+        extendReset();
+        cache.$sectionIndicator.empty();
+        // Set selectors: only want last set of sections
+        cache.$sections = $('.section').slice(-props.sectionsLength);
+    };
+
+
 
 
     this.init();
