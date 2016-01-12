@@ -32778,6 +32778,7 @@ var controller = module.exports = function() {
 
     this.props = {
         arrowDownButton: true,
+        aerobatic: (typeof __aerobatic__ !== 'undefined'),
         autoScrolling: false,
         breakpoints: {
             medium: 740
