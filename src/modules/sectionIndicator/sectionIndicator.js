@@ -1,6 +1,9 @@
 /** @module sectionIndicator */
 
+/*globals Power2:true*/
+
 var $ = require('jquery'),
+    TweenLite = require('./../../../node_modules/gsap/src/uncompressed/TweenLite.js'),
     _base = require('../_base/_base.js'),
     raf = require('raf'),
     _ = require('underscore');
@@ -33,6 +36,8 @@ var sectionIndicator = module.exports = function(controller) {
      * @namespace $prop
      * @property {object} waypoints
      * @property {number} scrollToFitViewportTimeout
+     * @property {number} scrollDuration time auto scrolling on click should take
+     * @property {boolean} isScrolling are we currently auto scrolling
      * @property {number} linkSize height / width of link buttons
      * @property {number} linkMargin bottom margin of link buttons
      */
@@ -40,6 +45,8 @@ var sectionIndicator = module.exports = function(controller) {
     var props = {
         waypoints: {},
         scrollToFitViewportTimeout: null,
+        scrollDuration: 0.8,
+        isScrolling: false,
         linkSize: 16,
         linkMargin: 10
     };
@@ -76,7 +83,7 @@ var sectionIndicator = module.exports = function(controller) {
         // Build list up from sections in page
         this.renderLinks();
 
-        // Add waypoints for each component
+        // Add waypoints for each section
         this.updateWaypoints();
 
     };
@@ -162,8 +169,41 @@ var sectionIndicator = module.exports = function(controller) {
         cache.$sectionIndicator.append($sectionIndicatorLink);
         $sectionIndicatorLink.css('top', topPos);
 
-        // @TODO click event
-        //$componentIndicatorLink.on('click', this._componentIndicatorOnClickLink.bind(this, $componentIndicatorLink));
+        // Add click event
+        $sectionIndicatorLink.on('click', this.indicatorLinkClick.bind(this));
+    };
+
+    /**
+     * On clicking a indicator click
+     *
+     * @method indicatorLinkClick
+     * @param {event} e
+     */
+
+    this.indicatorLinkClick = function(e) {
+
+        var $sectionIndicatorLink = $(e.currentTarget),
+            sectionId = $sectionIndicatorLink.attr('href').replace('#', '');
+
+        e.preventDefault();
+
+        $sectionIndicatorLink.addClass('scrollingTo');
+        cache.$sectionIndicator.addClass('sectionIndicatorScrolling');
+        props.isScrolling = true;
+
+        // Scroll to next section top
+        TweenLite.to(window, props.scrollDuration, {
+            scrollTo: {
+                y: props.waypoints[sectionId].top
+            },
+            ease: Power2.easeOut,
+            onComplete: function() {
+                // @TODO may need extra 50ms delay
+                $sectionIndicatorLink.removeClass('scrollingTo');
+                cache.$sectionIndicator.removeClass('sectionIndicatorScrolling');
+                props.isScrolling = false;
+            }
+        });
     };
 
     /**
@@ -191,10 +231,10 @@ var sectionIndicator = module.exports = function(controller) {
             bottom = Math.round($section.height() + top);
 
         // Add to waypoints array
-        // @TODO only need top or componentTop
+        // @TODO only need top or sectionTop
         props.waypoints[id] = {
             top: (index === 0) ? 0 : top, // Set first section top to 0 so it's active on page load
-            componentTop: top, // Used for getting section top of first section
+            sectionTop: top, // Used for getting section top of first section
             bottom: bottom
         };
     };
@@ -223,18 +263,18 @@ var sectionIndicator = module.exports = function(controller) {
         var activeWaypoint = false,
             activeWaypoints = [],
             nearestWaypoint,
-            componentTriggerHook = controller.props.windowHeight;
+            sectionTriggerHook = controller.props.windowHeight;
 
-        // Find components currently in view and add to activeWaypoints array
+        // Find sections currently in view and add to activeWaypoints array
         $.each(props.waypoints, function(key) {
             var waypoint = props.waypoints[key];
 
-            if ((scrollTop >= (waypoint.top - componentTriggerHook)) && (scrollTop <= (waypoint.bottom - 1))) {
+            if ((scrollTop >= (waypoint.top - sectionTriggerHook)) && (scrollTop <= (waypoint.bottom - 1))) {
                 activeWaypoints.push(key);
             }
 
             if (activeWaypoints.length > 1) {
-                return false; // Can only be two waypoints being transitioned in componentIndicator, break out of loop
+                return false; // Can only be two waypoints being transitioned in sectionIndicator, break out of loop
             }
         });
 
@@ -244,20 +284,20 @@ var sectionIndicator = module.exports = function(controller) {
         // Clear any ScollToFitViewport that may have been previously started
         window.clearTimeout(props.scrollToFitViewportTimeout);
 
-        // If two components are in view (and we are not autoscrolling after clicking a nav dot):
-        // - transition the componentIndicator dot from active to next dot (_componentIndicatorTransitionLinks)
-        // - see if we need to autoscroll to component top to fit in viewport (_componentIndicatorScrollToFitViewport)
+        // If two sections are in view (and we are not autoscrolling after clicking a nav dot):
+        // - transition the sectionIndicator dot from active to next dot (_sectionIndicatorTransitionLinks)
+        // - see if we need to autoscroll to section top to fit in viewport (_sectionIndicatorScrollToFitViewport)
         //
 
         // @TODO hook up
-        if (this._componentIndicatorTransitionStylingApplied) {
-            this._componentIndicatorRemoveTransitionStyling();
+        if (this._sectionIndicatorTransitionStylingApplied) {
+            this._sectionIndicatorRemoveTransitionStyling();
         }
 
         // @TODO hook up
-        // if (activeWaypoints.length > 1 && !this._componentIndicatorIsScrolling) {
-        //     nearestWaypoint = this._componentIndicatorTransitionLinks(activeWaypoints, scrollTop);
-        //     this._componentIndicatorScrollToFitViewport(scrollTop, nearestWaypoint);
+        // if (activeWaypoints.length > 1 && !this._sectionIndicatorIsScrolling) {
+        //     nearestWaypoint = this._sectionIndicatorTransitionLinks(activeWaypoints, scrollTop);
+        //     this._sectionIndicatorScrollToFitViewport(scrollTop, nearestWaypoint);
         // }
 
         return activeWaypoint;
