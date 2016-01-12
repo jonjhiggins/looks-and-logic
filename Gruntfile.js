@@ -184,6 +184,6 @@ module.exports = function(grunt) {
     require('load-grunt-tasks')(grunt);
 
     // Default task(s).
-    grunt.registerTask('default', ['clean', 'wiredep', 'copy', 'includes', 'browserify', 'uglify', 'sass', 'postcss', 'cacheBust', 'browserSync', 'watch']);
+    grunt.registerTask('default', ['clean', 'wiredep', 'copy', 'includes', 'browserify', /*'uglify',*/ 'sass', 'postcss', 'cacheBust', 'browserSync', 'watch']);
 
 };
