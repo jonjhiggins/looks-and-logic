@@ -33274,6 +33274,7 @@ var sectionIndicator = module.exports = function(controller) {
 
         cache.$sectionIndicator.append($sectionIndicatorLink);
         $sectionIndicatorLink.css('top', topPos);
+
         // @TODO click event
         //$componentIndicatorLink.on('click', this._componentIndicatorOnClickLink.bind(this, $componentIndicatorLink));
     };

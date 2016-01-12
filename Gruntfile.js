@@ -14,14 +14,14 @@ module.exports = function(grunt) {
         watch: {
             scripts: {
                 files: ['Gruntfile.js', 'src/js/**/*.js', 'src/modules/*/*.js'],
-                tasks: ['jshint', 'browserify', 'uglify'],
+                tasks: ['jshint', 'browserify', 'uglify', 'cacheBust'],
                 options: {
                     spawn: false,
                 },
             },
             scss: {
                 files: ['src/scss/*.scss', 'src/modules/*/*.scss'],
-                tasks: ['sass', 'postcss'],
+                tasks: ['sass', 'postcss', 'cacheBust'],
                 options: {
                     spawn: false,
                 },
@@ -32,11 +32,11 @@ module.exports = function(grunt) {
             },
             bower: {
                 files: ['/bower_components/*'],
-                tasks: ['wiredep']
+                tasks: ['wiredep', 'cacheBust']
             },
             images: {
                 files: ['src/img/*.{jpg,gif,svg,png}'],
-                tasks: ['copy:images']
+                tasks: ['copy:images', 'cacheBust']
             }
         },
 
@@ -160,6 +160,20 @@ module.exports = function(grunt) {
                     'dist/js/app.min.js': ['dist/js/app.js']
                 }
             }
+        },
+
+        cacheBust: {
+            options: {
+                encoding: 'utf8',
+                algorithm: 'md5',
+                length: 16,
+                deleteOriginals: true
+            },
+            assets: {
+                files: [{
+                    src: ['dist/index.html']
+                }]
+            }
         }
 
     });
@@ -167,6 +181,6 @@ module.exports = function(grunt) {
     require('load-grunt-tasks')(grunt);
 
     // Default task(s).
-    grunt.registerTask('default', ['clean', 'wiredep', 'copy', 'includes', 'browserify', 'uglify', 'sass', 'postcss', 'browserSync', 'watch']);
+    grunt.registerTask('default', ['clean', 'wiredep', 'copy', 'includes', 'browserify', 'uglify', 'sass', 'postcss', 'cacheBust', 'browserSync', 'watch']);
 
 };
