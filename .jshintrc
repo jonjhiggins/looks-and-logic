@@ -1,7 +1,8 @@
 {
     "browserify": true,
     "globals": {
-        "Modernizr": false
+        "Modernizr": false,
+        "__aerobatic__": false
     },
     "undef": true
 }

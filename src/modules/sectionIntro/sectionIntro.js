@@ -80,7 +80,11 @@ var SectionIntro = module.exports = function(controller, $element, index) {
         controller.props.sections[index].props.associatedModule = this;
 
         // Load the SVG
-        this.loadSVG($element.data('svg-url'));
+        // static asset path from https://www.aerobatic.com/docs/configuration#global-client-config-var
+        // local version is hardcoded (blank)
+
+        var svgUrl = controller.props.staticAssetHost + $element.data('svg-url');
+        this.loadSVG(svgUrl);
     };
 
     /**
