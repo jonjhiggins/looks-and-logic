@@ -167,11 +167,13 @@ module.exports = function(grunt) {
                 encoding: 'utf8',
                 algorithm: 'md5',
                 length: 16,
-                deleteOriginals: true
+                deleteOriginals: true,
+                enableUrlFragmentHint: true,
+                removeUrlFragmentHint: true
             },
             assets: {
                 files: [{
-                    src: ['dist/index.html']
+                    src: ['dist/css/styles.css', 'dist/index.html']
                 }]
             }
         }

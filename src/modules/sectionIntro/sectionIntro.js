@@ -80,7 +80,7 @@ var SectionIntro = module.exports = function(controller, $element, index) {
         controller.props.sections[index].props.associatedModule = this;
 
         // Load the SVG
-        this.loadSVG();
+        this.loadSVG($element.data('svg-url'));
     };
 
     /**
@@ -108,14 +108,14 @@ var SectionIntro = module.exports = function(controller, $element, index) {
      * @function loadSVG
      */
 
-    this.loadSVG = function() {
+    this.loadSVG = function(url) {
 
-        if (this.props.svgLoaded) {
+        if (this.props.svgLoaded || !url) {
             return;
         }
 
         svgObject = snap(cache.$logoSvg.get(0));
-        snap.load('../img/logo.svg', function(loadedSVG) {
+        snap.load(url, function(loadedSVG) {
             // Add SVG
             svgObject.append(loadedSVG);
 
