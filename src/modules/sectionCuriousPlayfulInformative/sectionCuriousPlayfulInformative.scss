@@ -6,7 +6,7 @@
    Common
    ========================================================================== */
 
-   .section--curious-playful-informative {
+.section--curious-playful-informative {
 
        overflow: hidden; // Mask out text until it's revealed on scroll down
 
@@ -31,9 +31,21 @@
        .section__title {
            position: fixed;
            top: 50%;
-           left: 0;
-           width: 100%;
+           left: rem($paddingContainer);
+           right: rem($paddingContainer);
            margin-top: -0.5em;
            z-index: -1;
        }
-   }
+
+   /* ==========================================================================
+      Responsive
+      ========================================================================== */
+
+     @media only screen and (min-width: rem($bpMedium)) {
+         .section__title {
+             left: rem($paddingContainerSectionLargeH);
+             right: rem($paddingContainerSectionLargeH);
+         }
+     }
+
+}
