@@ -8,6 +8,7 @@
     ========================================================================== */
 
     $paddingContainer: 48;
+    $paddingContainerSectionLargeH: ($paddingContainer * 2) + $sectionIndicatorLinkSize;
 
 /* ==========================================================================
    Globals
@@ -25,6 +26,10 @@
      padding: rem($paddingContainer);
    }
 
+   .section .container {
+     padding: rem($paddingContainer);
+   }
+
    .container--relative {
      position: relative;
    }
@@ -39,4 +44,16 @@
     left: 0;
     width: 100%;
     z-index: 10;
+  }
+
+
+/* ==========================================================================
+     Responsive
+     ========================================================================== */
+
+  @media only screen and (min-width: rem($bpMedium)) {
+      .section .container {
+          padding-left: rem($paddingContainerSectionLargeH);
+          padding-right: rem($paddingContainerSectionLargeH);
+      }
   }
