@@ -84,6 +84,7 @@ var SectionIntro = module.exports = function(controller, $element, index) {
         // local version is hardcoded (blank)
 
         var svgUrl = controller.props.staticAssetHost + $element.data('svg-url');
+        console.log(svgUrl);
         this.loadSVG(svgUrl);
     };
 
