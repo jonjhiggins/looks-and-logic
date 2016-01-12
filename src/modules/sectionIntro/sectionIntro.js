@@ -106,6 +106,7 @@ var SectionIntro = module.exports = function(controller, $element, index) {
 
     /**
      * @function loadSVG
+     * @param {string} url
      */
 
     this.loadSVG = function(url) {
