@@ -33619,8 +33619,11 @@ var sectionIndicator = module.exports = function(controller) {
         props.waypoints = {};
         props.isScrolling = false;
 
-        // Clear out $sectionIndicator in DOM
-        cache.$sectionIndicator.empty();
+        // Clear out and reset $sectionIndicator in DOM
+        cache.$sectionIndicator
+            .removeClass('sectionIndicatorScrolling')
+            .empty();
+
         // Set selectors: only want last set of sections
         cache.$sections = $('.section').slice(-props.sectionsLength);
     };
