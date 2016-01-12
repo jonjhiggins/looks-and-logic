@@ -40,6 +40,10 @@ var sectionIndicator = module.exports = function(controller) {
      * @property {boolean} isScrolling are we currently auto scrolling
      * @property {number} linkSize height / width of link buttons
      * @property {number} linkMargin bottom margin of link buttons
+     * @property {boolean} transitionStylingApplied has transition styling been applied
+     * @property {number} scrollToFitViewportTriggerHook When section top hits this point in viewport, autoscroll to section top
+     * @property {number} linkRingScale $componentIndicatorLinkRingScale in SCSS
+     * @property {number} scrollToFitViewportWait how long to wait after last scroll before auto scrolling to fit viewport
      */
 
     var props = {
@@ -48,7 +52,11 @@ var sectionIndicator = module.exports = function(controller) {
         scrollDuration: 0.8,
         isScrolling: false,
         linkSize: 16,
-        linkMargin: 10
+        linkMargin: 10,
+        transitionStylingApplied: false,
+        scrollToFitViewportTriggerHook: 0.3,
+        linkRingScale: 0.625,
+        scrollToFitViewportWait: 2000
     };
 
     /**
@@ -231,10 +239,8 @@ var sectionIndicator = module.exports = function(controller) {
             bottom = Math.round($section.height() + top);
 
         // Add to waypoints array
-        // @TODO only need top or sectionTop
         props.waypoints[id] = {
-            top: (index === 0) ? 0 : top, // Set first section top to 0 so it's active on page load
-            sectionTop: top, // Used for getting section top of first section
+            top: top,
             bottom: bottom
         };
     };
@@ -287,18 +293,15 @@ var sectionIndicator = module.exports = function(controller) {
         // If two sections are in view (and we are not autoscrolling after clicking a nav dot):
         // - transition the sectionIndicator dot from active to next dot (_sectionIndicatorTransitionLinks)
         // - see if we need to autoscroll to section top to fit in viewport (_sectionIndicatorScrollToFitViewport)
-        //
 
-        // @TODO hook up
-        if (this._sectionIndicatorTransitionStylingApplied) {
-            this._sectionIndicatorRemoveTransitionStyling();
+        if (props.transitionStylingApplied) {
+            this.removeTransitionStyling();
         }
 
-        // @TODO hook up
-        // if (activeWaypoints.length > 1 && !this._sectionIndicatorIsScrolling) {
-        //     nearestWaypoint = this._sectionIndicatorTransitionLinks(activeWaypoints, scrollTop);
-        //     this._sectionIndicatorScrollToFitViewport(scrollTop, nearestWaypoint);
-        // }
+        if (activeWaypoints.length > 1 && !props.isScrolling) {
+            nearestWaypoint = this.transitionLinks(activeWaypoints, scrollTop);
+            this.scrollToFitViewport(scrollTop, nearestWaypoint);
+        }
 
         return activeWaypoint;
     };
@@ -317,23 +320,121 @@ var sectionIndicator = module.exports = function(controller) {
 
         if (activeWaypoint) {
             // Add active styling
-            this.getLinkFromHref(activeWaypoint).addClass('active');
+            this.getLinkFromHash(activeWaypoint).addClass('active');
         }
     };
 
     /**
-    * Get link element from a href string
+     * Get link element from a href string
+     *
+     * @method getLinkFromHash
+     * @param {string} hash
+     * @returns {jQuery}
+     */
+
+    this.getLinkFromHash = function(hash) {
+        return cache.$links
+            .filter(function() {
+                return $(this).attr('href') === '#' + hash;
+            });
+    };
+
+    /**
+     * Remove all styling applied in transitionLinks
+     *
+     * @method transitionLinks
+     * @param {array} activeWaypoints
+     * @param {number} scrollTop
+     */
+
+    this.transitionLinks = function(activeWaypoints, scrollTop) {
+
+        var activeWaypoint = activeWaypoints[0],
+            $activeLink = this.getLinkFromHash(activeWaypoint),
+            $inactiveLink = this.getLinkFromHash(activeWaypoints[1]),
+            sectionTriggerHook = controller.props.windowHeight,
+            activeWaypointObj = props.waypoints[activeWaypoint],
+            // What percent have we scrolled from active sections's top hitting sectionTriggerHook (100%)
+            // to the top of viewport (0%)
+            activeWaypointPercent = (activeWaypointObj.bottom - scrollTop) / sectionTriggerHook,
+            inactiveWaypointPercent = 1 - activeWaypointPercent,
+            nearestWaypointIndex = (activeWaypointPercent > props.scrollToFitViewportTriggerHook) ? 0 : 1,
+            nearestWaypoint;
+
+        this.setLinkSize($activeLink, activeWaypointPercent);
+        this.setLinkSize($inactiveLink, inactiveWaypointPercent);
+
+        props.transitionStylingApplied = true;
+
+        nearestWaypoint = activeWaypoints[nearestWaypointIndex];
+
+        return nearestWaypoint;
+    };
+
+    /**
+    * When in between components (that are 1 viewport high or less)
+    * auto scroll to component top when component top is past (scrollToFitViewportTriggerHook)%
+    * of viewport height and component bottom is below 100 - (scrollToFitViewportTriggerHook)% of viewport
     *
-    * @method getLinkFromHref
-    * @param {string} href
-    * @returns {jQuery}
+    * @method scrollToFitViewport
+    * @param {number} scrollTop
+    * @param {string} nearestWaypoint
     */
 
-    this.getLinkFromHref = function(href) {
-        return cache.$links
-                .filter(function() {
-                    return $(this).attr('href') === '#' + href;
-                });
+    this.scrollToFitViewport = function(scrollTop, nearestWaypoint) {
+        var waypointTop = props.waypoints[nearestWaypoint].top,
+            scrollToFitViewportTriggerHook = props.scrollToFitViewportTriggerHook * controller.props.windowHeight,
+            scrollNearTop = (scrollTop < (waypointTop + scrollToFitViewportTriggerHook)) && (scrollTop !== waypointTop);
+
+        if (scrollNearTop) {
+
+            props.scrollToFitViewportTimeout = window.setTimeout(
+                function() {
+                    TweenLite.to(window, props.scrollDuration, {
+                        scrollTo: {
+                            y: waypointTop
+                        },
+                        ease: Power2.easeOut,
+                    });
+                },
+                props.scrollToFitViewportWait
+            );
+        }
+    };
+
+    /**
+     * set link's dot and ring size based on a percentage
+     *
+     * @method setLinkSize
+     * @param {jQuery} $link
+     * @param {number} percent
+     */
+
+    this.setLinkSize = function($link, percent) {
+        var ringScaleNew = (percent * (1 - props.linkRingScale)) + props.linkRingScale;
+
+        $link.addClass('noTransition');
+
+        $link.find('.sectionIndicator__link-ring').css({
+            'transform': 'scale(' + ringScaleNew + ') translate3d(0,0,0)', // translate3d stops jagged edges
+        });
+
+        $link.find('.sectionIndicator__link-dot').css('transform', 'scale(' + percent + ')');
+    };
+
+    /**
+     * Remove all styling applied in transitionLinks
+     *
+     * @method removeTransitionStyling
+     */
+
+    this.removeTransitionStyling = function() {
+        cache.$links
+            .removeClass('noTransition')
+            .find('.sectionIndicator__link-ring, .sectionIndicator__link-dot')
+            .css('transform', '');
+
+        props.transitionStylingApplied = false;
     };
 
 
