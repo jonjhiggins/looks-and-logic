@@ -204,7 +204,7 @@ var Sections = module.exports = function(controller, $sections) {
         autoScollEndTimeout = window.setTimeout(this.autoScrollingEnd, 500);
 
         // Scroll is triggered when removed sections cause page to scroll up
-        cache.$window.one('scroller', this.autoScrollingEnd.bind(this, autoScollEndTimeout));
+        cache.$window.one('scroll', this.autoScrollingEnd.bind(this, autoScollEndTimeout));
 
 
 
