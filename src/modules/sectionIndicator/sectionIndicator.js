@@ -62,6 +62,10 @@ var sectionIndicator = module.exports = function(controller) {
 
     this.init = function() {
 
+        if (!this.shouldInit()) {
+            return;
+        }
+
         // Bind events
         this.events.resize = this.resize.bind(this);
         this.events.pageScroll = _.throttle(this.scrollResize.bind(this));
@@ -75,7 +79,18 @@ var sectionIndicator = module.exports = function(controller) {
         // Add waypoints for each component
         this.updateWaypoints();
 
-        /*globals console*/
+    };
+
+    /**
+     * Should module be initialised?
+     * (It's not for use on certain size devices)
+     *
+     * @method attachDetachEvents
+     */
+
+    this.shouldInit = function() {
+        var query = 'screen and (orientation: landscape) and (min-width: ' + controller.props.breakpoints.medium + 'px)';
+        return Modernizr.mq(query);
     };
 
     /**

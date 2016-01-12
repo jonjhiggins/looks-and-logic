@@ -42,6 +42,9 @@ var controller = module.exports = function() {
     this.props = {
         arrowDownButton: true,
         autoScrolling: false,
+        breakpoints: {
+            medium: 740
+        },
         sections: [],
         sectionIntros: [],
         sectionMakingDigitalHumans: [],

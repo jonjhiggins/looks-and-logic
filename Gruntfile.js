@@ -28,7 +28,7 @@ module.exports = function(grunt) {
             },
             html: {
                 files: ['src/*.html', 'src/modules/*/*.html'],
-                tasks: ['includes'],
+                tasks: ['includes', 'cacheBust'],
             },
             bower: {
                 files: ['/bower_components/*'],
@@ -46,6 +46,7 @@ module.exports = function(grunt) {
             },
             options: {
                 watchTask: true,
+                ghostMode: false,
                 server: {
                     baseDir: 'dist',
                     routes: {
