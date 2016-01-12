@@ -18,6 +18,7 @@ $sectionIndicatorLinkRingScale: 0.625;
     transform: rotate3d(0,0,0,0);
     right: rem($paddingContainer);
     mix-blend-mode: difference;
+    z-index: $zIndexSectionMask;
     &,
     .sectionIndicator__link-dot,
     .sectionIndicator__link-ring {
@@ -93,5 +94,37 @@ $sectionIndicatorLinkRingScale: 0.625;
             transition: transform $scrollDuration ease-in;
             transform: scale(1);
         }
+    }
+}
+
+/* ==========================================================================
+    Menu open (shows link text)
+   ========================================================================== */
+
+.sectionIndicator__link:before {
+   content: attr(data-section-title);
+   position: absolute;
+   right: rem($sectionIndicatorLinkSize + 10);
+   white-space: nowrap;
+   text-transform: uppercase;
+   font-size: rem($smallFontSize);
+   color: $colourWhite;
+   opacity: 0;
+   transition: opacity 400ms ease;
+}
+
+.js--menuOpen {
+
+    .sectionIndicator__link {
+        mix-blend-mode: screen;
+    }
+
+    .sectionIndicator__link-dot {
+        mix-blend-mode: mulitply;
+        color: $colourWhite;
+    }
+
+    .sectionIndicator__link:before {
+        opacity: 1;
     }
 }

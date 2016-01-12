@@ -21,6 +21,9 @@
   Sizes
   ========================================================================== */
 
+  // Type
+  $smallFontSize: 12;
+
   // Design: sizes from Mark's PNGs
   $designWidth: 1580;
   $designFontSize: 78;
@@ -36,3 +39,9 @@
 
   // Section Indicator
   $sectionIndicatorLinkSize: 16;
+
+/* ==========================================================================
+    Z-index
+    ========================================================================== */
+
+    $zIndexSectionMask: 10;

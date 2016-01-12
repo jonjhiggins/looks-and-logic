@@ -10,6 +10,37 @@
     $heightMenuButton: 24;
     $heightMenuButtonIconLine: 4;
 
+.menu {
+    position: relative;
+    z-index: $zIndexSectionMask;
+    width: rem($widthMenuButton);
+}
+
+/* ==========================================================================
+   Includes
+   ========================================================================== */
+
+  %menuCloseState {
+      .menu__button__icon {
+      	background-color: rgba(0,0,0,0.0);
+      	transition-delay: 0.2s;
+      }
+
+      .menu__button__icon:before,
+      .menu__button__icon:after {
+      	margin-top: 0;
+      	transition-delay: 0s, 0.2s;
+      }
+
+      .menu__button__icon:before {
+      	transform: rotate(45deg);
+      }
+
+      .menu__button__icon:after {
+      	transform: rotate(-45deg);
+      }
+  }
+
 
 /* ==========================================================================
    Menu button
@@ -18,7 +49,7 @@
 .menu__button {
   width: rem($widthMenuButton);
   height: rem($heightMenuButton);
-	position: relative;
+  position: relative;
   cursor: pointer;
   outline: none;
 }
@@ -53,17 +84,12 @@
 	margin-top: rem((-$heightMenuButton / 2) - (-$heightMenuButtonIconLine / 2));
 }
 
-.menu__button:hover .menu__button__icon {
-	background-color: rgba(0,0,0,0.0);
-	transition-delay: 0.2s;
-}
-
 // Autoprefix off styles only: bug with two many transition-property values
 .menu__button__icon:before,
 .menu__button__icon:after {
   /* autoprefixer: off */
-  -webkit-transition-property: margin, -webkit-transform;
-	transition-property: margin, transform;
+  -webkit-transition-property: margin, -webkit-transform, background-color;
+	transition-property: margin, transform, background-color;
 }
 
 .menu__button__icon:before,
@@ -72,16 +98,21 @@
 	transition-delay: 0.2s, 0s;
 }
 
-.menu__button:hover .menu__button__icon:before,
-.menu__button:hover .menu__button__icon:after {
-	margin-top: 0;
-	transition-delay: 0s, 0.2s;
+.menu__button:hover {
+    @extend  %menuCloseState;
 }
 
-.menu__button:hover .menu__button__icon:before {
-	transform: rotate(45deg);
-}
+/* ==========================================================================
+   Menu open
+   ========================================================================== */
 
-.menu__button:hover .menu__button__icon:after {
-	transform: rotate(-45deg);
+.js--menuOpen {
+    .menu__button {
+        @extend  %menuCloseState;
+    }
+
+    .menu__button__icon:before,
+    .menu__button__icon:after {
+    	background-color: $colourWhite;
+    }
 }

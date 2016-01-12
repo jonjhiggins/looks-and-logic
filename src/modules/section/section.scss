@@ -37,3 +37,30 @@
     margin: 0;
     padding: 0;
 }
+
+/* ==========================================================================
+   Menu mask
+   ========================================================================== */
+
+.sections {
+    position: relative;
+
+    &:before {
+        content: '';
+        top: 0;
+        left: 0;
+        width:100%;
+        height: 100%;
+        position: absolute;
+        background-color: $colourBlack;
+        z-index: 1;
+        opacity: 0;
+        transition: opacity 400ms ease;
+    }
+}
+
+.js--menuOpen .sections {
+    &:before {
+        opacity: 0.75;
+    }
+}
