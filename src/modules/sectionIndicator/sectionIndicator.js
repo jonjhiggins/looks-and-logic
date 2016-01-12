@@ -181,7 +181,9 @@ var sectionIndicator = module.exports = function(controller) {
     this.renderLink = function(indicatorTop, index, item) {
         // Build item
         var $section = $(item),
-            $sectionIndicatorLink = $('<a href="#' + $section.attr('id') + '" class="sectionIndicator__link"><span class="sectionIndicator__link-ring"></span><span class="sectionIndicator__link-dot"></span></a>'),
+            sectionTitle = $section.find('.section__title').text(),
+            $sectionIndicatorLink = $('<a href="#' + $section.attr('id') + '" data-section-title="' + sectionTitle + '" class="sectionIndicator__link">' +
+                                      '<span class="sectionIndicator__link-ring"></span><span class="sectionIndicator__link-dot"></span></a>'),
             topPos = indicatorTop + (index * (props.linkSize + props.linkMargin));
 
         cache.$sectionIndicator.append($sectionIndicatorLink);
