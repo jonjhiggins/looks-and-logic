@@ -33265,6 +33265,9 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
      * @namespace props
      * @property {object} surfaceStyles start/end styles for surface to animate between on scroll
      * @property {boolean} ballCloned have we cloned ball1 and appended to .rotator?
+     * @property {number} sectionHeight
+     * @property {number} sectionTopRotateStart waypoint position (px) at which to start rotation
+     * @property {number} sectionHalfway waypoint position (px) halfway through section
      */
 
     var props = {
@@ -33278,7 +33281,10 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
                 rotate: -90
             }
         },
-        ballCloned: false
+        ballCloned: false,
+        sectionHeight: null,
+        sectionTopRotateStart: null, //
+        sectionHalfway: null
     };
 
     /**
@@ -33390,9 +33396,7 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
      */
 
     this.rotateSurface = function() {
-        var sectionTop = $section.offset().top - (controller.props.windowHeight / 3), // starts 1/3 of window above sectionTop
-            sectionHalfway = sectionTop + ($section.height() / 2), // @TODO move out of scroll
-            progress = Math.min(Math.max((cache.$window.scrollTop() - sectionTop), 0) / (sectionHalfway - sectionTop), 1),
+        var progress = Math.min(Math.max((cache.$window.scrollTop() - props.sectionTopRotateStart), 0) / (props.sectionHalfway - props.sectionTopRotateStart), 1),
             rotate = props.surfaceStyles.end.rotate * progress,
             translate = props.surfaceStyles.start.translate - (props.surfaceStyles.start.translate * progress);
 
@@ -33405,6 +33409,9 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
      */
 
     this.refreshDimensions = function() {
+        props.sectionHeight = $section.height();
+        props.sectionTopRotateStart = $section.offset().top  - (controller.props.windowHeight / 3); // starts 1/3 of window above sectionTop
+        props.sectionHalfway = props.sectionTopRotateStart + (props.sectionHeight / 2);
         if (this.sceneFixTitle) {
             this.sceneFixTitle.duration($section.prev().height());
         }
