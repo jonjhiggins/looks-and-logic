@@ -84,7 +84,12 @@ var SectionIntro = module.exports = function(controller, $element, index) {
         // local version is hardcoded (blank)
 
         var svgUrl = $element.data('svg-url');
-        console.log(svgUrl);
+
+        if (typeof __aerobatic__ !== 'undefined') {
+            console.log(__aerobatic__, controller.props.staticAssetHost, svgUrl);
+        } else {
+            console.log(typeof __aerobatic__, svgUrl);
+        }
         this.loadSVG(svgUrl);
     };
 

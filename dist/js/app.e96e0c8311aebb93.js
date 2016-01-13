@@ -32787,6 +32787,7 @@ var controller = module.exports = function() {
         sectionIntros: [],
         sectionMakingDigitalHumans: [],
         scrollScenes: new ScrollMagic.Controller(),
+        staticAssetHost: (typeof __aerobatic__ !== 'undefined') ? __aerobatic__.staticAssetHost : '',
         windowHeight: 0
     };
 
@@ -33768,8 +33769,13 @@ var SectionIntro = module.exports = function(controller, $element, index) {
         // static asset path from https://www.aerobatic.com/docs/configuration#global-client-config-var
         // local version is hardcoded (blank)
 
-        var svgUrl = controller.props.staticAssetHost + $element.data('svg-url');
-        console.log(svgUrl);
+        var svgUrl = $element.data('svg-url');
+
+        if (typeof __aerobatic__ !== 'undefined') {
+            console.log(__aerobatic__, controller.props.staticAssetHost, svgUrl);
+        } else {
+            console.log(typeof __aerobatic__, svgUrl);
+        }
         this.loadSVG(svgUrl);
     };
 
