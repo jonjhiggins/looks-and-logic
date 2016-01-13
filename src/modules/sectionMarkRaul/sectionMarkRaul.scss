@@ -1,0 +1,40 @@
+/*
+ * sectionMarkRaul module
+ */
+/* ==========================================================================
+   Common
+   ========================================================================== */
+.section--mark-raul {
+
+    &[data-background="white"] {
+        background-image: linear-gradient(90deg, $colourWhite 50%, $colourBlack 50%);
+
+        .name--raul {
+            color: $colourWhite;
+        }
+    }
+
+    &[data-background="black"] {
+        background-image: linear-gradient(90deg, $colourBlack 50%, $colourWhite 50%);
+
+        .name--raul {
+            color: $colourBlack;
+        }
+    }
+
+    /* ==========================================================================
+       names
+       ========================================================================== */
+
+    .section__title {
+        font-size: 0; // Remove whitespace
+    }
+
+    .name {
+        font-size: $sectionTitleFontSize;
+        display: inline-block;
+        margin:0 rem($paddingContainer);
+    }
+
+
+}
