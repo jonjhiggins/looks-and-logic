@@ -33766,10 +33766,7 @@ var SectionIntro = module.exports = function(controller, $element, index) {
         controller.props.sections[index].props.associatedModule = this;
 
         // Load the SVG
-        // static asset path from https://www.aerobatic.com/docs/configuration#global-client-config-var
-        // local version is hardcoded (blank)
-
-        var svgUrl = controller.props.staticAssetPath + $element.data('svg-url');
+        var svgUrl = $element.data('svg-url');
         this.loadSVG(svgUrl);
     };
 
