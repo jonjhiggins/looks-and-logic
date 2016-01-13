@@ -33829,8 +33829,7 @@ var SectionIntro = module.exports = function(controller, $element, index) {
 
     this.measureAndShowBalls = function() {
         // Only run after snap.svg has done it's stuff
-        // also don't run if ball1 has already dropped
-        if (!svgObject || this.props.ball1Dropped) {
+        if (!svgObject) {
             return;
         }
 
