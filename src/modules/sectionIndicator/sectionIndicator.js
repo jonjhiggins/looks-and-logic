@@ -33,7 +33,7 @@ var sectionIndicator = module.exports = function(controller) {
 
     /**
      * Module properties, states and settings
-     * @namespace $prop
+     * @namespace props
      * @property {object} waypoints
      * @property {number} scrollToFitViewportTimeout
      * @property {number} scrollDuration time auto scrolling on click should take

@@ -6,6 +6,7 @@
    ========================================================================== */
 .section--curious-playful-informative {
     overflow: hidden; // Mask out text until it's revealed on scroll down
+    height: 200vh;
 
 // Have to position absolutely for the pinning to centre
     .container {
@@ -13,7 +14,7 @@
         display: block;
         flex: none;
         width: 100%;
-        height: 100%;
+        height: 100vh;
         left: 0;
         top: 0;
 
@@ -38,18 +39,43 @@
     /* ==========================================================================
        Rotating surface
        ========================================================================== */
-    .rotater {
+
+
+    &[data-background="white"] {
+        .rotator__background {
+            background-color: $colourBlack;
+        }
+        .rotator {
+            background-color: $colourWhite;
+        }
+    }
+    &[data-background="black"] {
+        .rotator__background {
+            background-color: $colourWhite;
+        }
+        .rotator {
+            background-color: $colourBlack;
+        }
+    }
+
+    .rotator__background,
+    .rotator {
         position: absolute;
-        height: 100vh;
+        height: 200vh;
+        top: 0;
+    }
+
+    .rotator__background {
+        width: 100vw;
+        left: 0;
+    }
+
+    .rotator {
         width: 200vw;
         left: -100vw;
-        top: 0;
-        display: none;
+
         transform-origin: 75% 0;
         transform: translateX(50vw);
-
-        background-color: purple;
-        opacity: 0.5;
     }
 
     /* ==========================================================================

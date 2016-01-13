@@ -19,11 +19,32 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
     /**
      * jQuery elements
      * @namespace cache
-     * @property {jQuery} window
+     * @property {jQuery} $window
+     * @property {jQuery} $rotator
      */
 
     var cache = {
         $window: $(window),
+        $rotator: $section.find('.rotator')
+    };
+
+    /**
+     * Module properties, states and settings
+     * @namespace props
+     * @property {object} surfaceStyles start/end styles for surface to animate between on scroll
+     */
+
+    var props = {
+        surfaceStyles: {
+            start: {
+                translate: 50,
+                rotate: 0
+            },
+            end: {
+                translate: 0,
+                rotate: -90
+            }
+        },
     };
 
     /**
@@ -72,7 +93,26 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
      */
 
     this.rotateSurface = function() {
-        /*globals console*/console.log(this);
+        var sectionTop = $section.offset().top,
+            sectionHalfway = sectionTop + ($section.height() / 2), // @TODO move out of scroll
+            progress = Math.min(Math.max((cache.$window.scrollTop() - sectionTop), 0) / (sectionHalfway - sectionTop), 1),
+            rotate = props.surfaceStyles.end.rotate * progress,
+            translate = props.surfaceStyles.start.translate - (props.surfaceStyles.start.translate * progress);
+console.log(progress);
+        cache.$rotator.css('transform', 'translateX(' + translate + 'vw)  rotate(' + rotate + 'deg)');
+
+        // if (progress === 1) {
+        //     $ball.addClass('drop');
+        //     $ball.fadeOut(400);
+        // }
+        //
+        // if (progress === 0) {
+        //     $ball.removeClass('drop');
+        //     $ball.show();
+        // }
+
+        /*globals console*/
+        console.log(progress);
     };
 
     this.init();
