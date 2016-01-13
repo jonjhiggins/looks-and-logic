@@ -50,10 +50,12 @@ var Balls = module.exports = function(controller) {
     * Bound events for add/removal. Inherits reset from _base
     * @namespace events
     * @property {function} showBall1
+    * @property {function} cloneBall1
     * @property {function} showBall2
     */
 
     this.events.showBall1 = null;
+    this.events.cloneBall1 = null;
     this.events.showBall2 = null;
     this.events.resize = null;
 
@@ -66,6 +68,7 @@ var Balls = module.exports = function(controller) {
     this.init = function() {
         // Bind events
         this.events.showBall1 = showBall.bind(cache.$ball1);
+        this.events.cloneBall1 = cloneBall.bind(null, 1);
         this.events.showBall2 = showBall.bind(cache.$ball2);
         this.events.resize = onResize.bind(this);
         // Attach events
@@ -92,12 +95,14 @@ var Balls = module.exports = function(controller) {
             controller.emitter.on('sections:reset', this.events.reset);
             controller.emitter.on('balls:ball1Drop', ball1Drop);
             controller.emitter.on('balls:showBall1', this.events.showBall1);
+            controller.emitter.on('balls:cloneBall1', this.events.cloneBall1);
             controller.emitter.on('balls:showBall2', this.events.showBall2);
             controller.emitter.on('window:resize', this.events.resize);
         } else {
             controller.emitter.removeListener('sections:reset', this.events.reset);
             controller.emitter.removeListener('balls:ball1Drop', ball1Drop);
             controller.emitter.removeListener('balls:showBall1', this.events.showBall1);
+            controller.emitter.removeListener('balls:cloneBall1', this.events.cloneBall1);
             controller.emitter.removeListener('balls:showBall2', this.events.showBall2);
             controller.emitter.removeListener('window:resize', this.events.resize);
         }
@@ -149,6 +154,36 @@ var Balls = module.exports = function(controller) {
     };
 
     /**
+     * Append ball to another element
+     * @function cloneBall
+     * @param {number} ballNo
+     * @param {jQuery} $element
+     */
+
+    var cloneBall = function(ballNo, $element) {
+
+        var $ball = cache['$ball' + ballNo],
+            $ballClone = $ball.clone(),
+            id = 'ball--' + ballNo + '-clone';
+
+        // Set ID of cloned ball
+        $ballClone.attr('id', id);
+        cache['$ball' + ballNo + 'Clone'] = $('#' + id);
+
+
+        // Append cloned ball
+        $element.append($ballClone);
+
+        // @TODO this should probably be in sectionCuriousPlayfulInformative
+        TweenMax.set($ballClone, {
+            y: -$ballClone.height(),
+            scaleX: 0.9
+        });
+
+        hideShowBall(1, true);
+    };
+
+    /**
      * Position ball1 on top of section #3
      * @function calculateNewYPos
      * @param {jQuery} $introSection
@@ -187,6 +222,23 @@ var Balls = module.exports = function(controller) {
         }
 
 
+    };
+
+    /**
+     * Hide/show ball
+     * @function hideShowBall
+     * @param {number} ballNo
+     * @param {boolean} hide
+     */
+
+    var hideShowBall = function(ballNo, hide) {
+        var $ball = cache['$ball' + ballNo];
+
+        if (hide) {
+            $ball.addClass('js--hidden');
+        } else {
+            $ball.removeClass('js--hidden');
+        }
     };
 
 

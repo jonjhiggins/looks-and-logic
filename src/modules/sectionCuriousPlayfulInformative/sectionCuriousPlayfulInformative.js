@@ -32,6 +32,7 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
      * Module properties, states and settings
      * @namespace props
      * @property {object} surfaceStyles start/end styles for surface to animate between on scroll
+     * @property {boolean} ballCloned have we cloned ball1 and appended to .rotator?
      */
 
     var props = {
@@ -45,6 +46,7 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
                 rotate: -90
             }
         },
+        ballCloned: false
     };
 
     /**
@@ -117,6 +119,10 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
         this.sceneFixTitle
             .on('enter', function() {
                 $section.addClass('section--title-fixed');
+                if (!props.ballCloned) {
+                    controller.emitter.emit('balls:cloneBall1', cache.$rotator);
+                    props.ballCloned = true;
+                }
             })
             .on('leave', function() {
                 $section.removeClass('section--title-fixed');
@@ -152,26 +158,13 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
      */
 
     this.rotateSurface = function() {
-        var sectionTop = $section.offset().top,
+        var sectionTop = $section.offset().top - (controller.props.windowHeight / 3), // starts 1/3 of window above sectionTop
             sectionHalfway = sectionTop + ($section.height() / 2), // @TODO move out of scroll
             progress = Math.min(Math.max((cache.$window.scrollTop() - sectionTop), 0) / (sectionHalfway - sectionTop), 1),
             rotate = props.surfaceStyles.end.rotate * progress,
             translate = props.surfaceStyles.start.translate - (props.surfaceStyles.start.translate * progress);
 
         cache.$rotator.css('transform', 'translateX(' + translate + 'vw)  rotate(' + rotate + 'deg)');
-
-        // if (progress === 1) {
-        //     $ball.addClass('drop');
-        //     $ball.fadeOut(400);
-        // }
-        //
-        // if (progress === 0) {
-        //     $ball.removeClass('drop');
-        //     $ball.show();
-        // }
-
-        /*globals console*/
-        //console.log(progress);
     };
 
     /**

@@ -1,15 +1,20 @@
 /*
  * sectionCuriousPlayfulInformative module
  */
-/* ==========================================================================
-   Common
-   ========================================================================== */
+
 .section--curious-playful-informative {
-    overflow: hidden; // Mask out text until it's revealed on scroll down
+
+    /* ==========================================================================
+       Variables
+       ========================================================================== */
+
+    $rotatorWidth: 200vw;
+
     height: 200vh;
 
     .container {
         position: relative; // move in front of .rotator
+        overflow: hidden; // Mask out text until it's revealed on scroll down
     }
 
     /* ==========================================================================
@@ -94,10 +99,15 @@
         left: 0;
     }
     .rotator {
-        width: 200vw;
+        width: $rotatorWidth;
         left: -100vw;
         transform-origin: 75% 0;
         transform: translateX(50vw);
+
+        .ball {
+            margin-left: $rotatorWidth / 4;
+            top: 0 !important;
+        }
     }
 
     /* ==========================================================================

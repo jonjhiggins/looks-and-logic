@@ -32589,10 +32589,12 @@ var Balls = module.exports = function(controller) {
     * Bound events for add/removal. Inherits reset from _base
     * @namespace events
     * @property {function} showBall1
+    * @property {function} cloneBall1
     * @property {function} showBall2
     */
 
     this.events.showBall1 = null;
+    this.events.cloneBall1 = null;
     this.events.showBall2 = null;
     this.events.resize = null;
 
@@ -32605,6 +32607,7 @@ var Balls = module.exports = function(controller) {
     this.init = function() {
         // Bind events
         this.events.showBall1 = showBall.bind(cache.$ball1);
+        this.events.cloneBall1 = cloneBall.bind(null, 1);
         this.events.showBall2 = showBall.bind(cache.$ball2);
         this.events.resize = onResize.bind(this);
         // Attach events
@@ -32631,12 +32634,14 @@ var Balls = module.exports = function(controller) {
             controller.emitter.on('sections:reset', this.events.reset);
             controller.emitter.on('balls:ball1Drop', ball1Drop);
             controller.emitter.on('balls:showBall1', this.events.showBall1);
+            controller.emitter.on('balls:cloneBall1', this.events.cloneBall1);
             controller.emitter.on('balls:showBall2', this.events.showBall2);
             controller.emitter.on('window:resize', this.events.resize);
         } else {
             controller.emitter.removeListener('sections:reset', this.events.reset);
             controller.emitter.removeListener('balls:ball1Drop', ball1Drop);
             controller.emitter.removeListener('balls:showBall1', this.events.showBall1);
+            controller.emitter.removeListener('balls:cloneBall1', this.events.cloneBall1);
             controller.emitter.removeListener('balls:showBall2', this.events.showBall2);
             controller.emitter.removeListener('window:resize', this.events.resize);
         }
@@ -32688,6 +32693,36 @@ var Balls = module.exports = function(controller) {
     };
 
     /**
+     * Append ball to another element
+     * @function cloneBall
+     * @param {number} ballNo
+     * @param {jQuery} $element
+     */
+
+    var cloneBall = function(ballNo, $element) {
+
+        var $ball = cache['$ball' + ballNo],
+            $ballClone = $ball.clone(),
+            id = 'ball--' + ballNo + '-clone';
+
+        // Set ID of cloned ball
+        $ballClone.attr('id', id);
+        cache['$ball' + ballNo + 'Clone'] = $('#' + id);
+
+
+        // Append cloned ball
+        $element.append($ballClone);
+
+        // @TODO this should probably be in sectionCuriousPlayfulInformative
+        TweenMax.set($ballClone, {
+            y: -$ballClone.height(),
+            scaleX: 0.9
+        });
+
+        hideShowBall(1, true);
+    };
+
+    /**
      * Position ball1 on top of section #3
      * @function calculateNewYPos
      * @param {jQuery} $introSection
@@ -32726,6 +32761,23 @@ var Balls = module.exports = function(controller) {
         }
 
 
+    };
+
+    /**
+     * Hide/show ball
+     * @function hideShowBall
+     * @param {number} ballNo
+     * @param {boolean} hide
+     */
+
+    var hideShowBall = function(ballNo, hide) {
+        var $ball = cache['$ball' + ballNo];
+
+        if (hide) {
+            $ball.addClass('js--hidden');
+        } else {
+            $ball.removeClass('js--hidden');
+        }
     };
 
 
@@ -33212,6 +33264,7 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
      * Module properties, states and settings
      * @namespace props
      * @property {object} surfaceStyles start/end styles for surface to animate between on scroll
+     * @property {boolean} ballCloned have we cloned ball1 and appended to .rotator?
      */
 
     var props = {
@@ -33225,6 +33278,7 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
                 rotate: -90
             }
         },
+        ballCloned: false
     };
 
     /**
@@ -33297,6 +33351,10 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
         this.sceneFixTitle
             .on('enter', function() {
                 $section.addClass('section--title-fixed');
+                if (!props.ballCloned) {
+                    controller.emitter.emit('balls:cloneBall1', cache.$rotator);
+                    props.ballCloned = true;
+                }
             })
             .on('leave', function() {
                 $section.removeClass('section--title-fixed');
@@ -33332,26 +33390,13 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
      */
 
     this.rotateSurface = function() {
-        var sectionTop = $section.offset().top,
+        var sectionTop = $section.offset().top - (controller.props.windowHeight / 3), // starts 1/3 of window above sectionTop
             sectionHalfway = sectionTop + ($section.height() / 2), // @TODO move out of scroll
             progress = Math.min(Math.max((cache.$window.scrollTop() - sectionTop), 0) / (sectionHalfway - sectionTop), 1),
             rotate = props.surfaceStyles.end.rotate * progress,
             translate = props.surfaceStyles.start.translate - (props.surfaceStyles.start.translate * progress);
 
         cache.$rotator.css('transform', 'translateX(' + translate + 'vw)  rotate(' + rotate + 'deg)');
-
-        // if (progress === 1) {
-        //     $ball.addClass('drop');
-        //     $ball.fadeOut(400);
-        // }
-        //
-        // if (progress === 0) {
-        //     $ball.removeClass('drop');
-        //     $ball.show();
-        // }
-
-        /*globals console*/
-        //console.log(progress);
     };
 
     /**
