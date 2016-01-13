@@ -33271,6 +33271,9 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
 
     /**
      * ScrollMagic scene
+     * On entering section above, title is fixed in center. On leaving section above,
+     * title reverts to normal positioning
+     *
      * @function setupScene
      */
 
@@ -33286,17 +33289,18 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
 
         this.sceneFixTitle = new ScrollMagic.Scene({
             triggerElement: $section.prev().get(0),
-            duration: $section.height() / 2, // refreshed on resize in refreshDimensions
+            duration: $section.prev().height(), // refreshed on resize in refreshDimensions
             triggerHook: 0,
         });
-/*globals console*/
-        this.sceneFixTitle.on('enter', function() {
-            $section.addClass('section--title-fixed');
-        });
 
-        this.sceneFixTitle.on('leave', function() {
-            $section.removeClass('section--title-fixed');
-        });
+        // Fix and unfix title
+        this.sceneFixTitle
+            .on('enter', function() {
+                $section.addClass('section--title-fixed');
+            })
+            .on('leave', function() {
+                $section.removeClass('section--title-fixed');
+            });
 
         // ScrollMagic Safari/Firefox bug
         // https://github.com/janpaepke/ScrollMagic/issues/458
@@ -33357,7 +33361,7 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
 
     this.refreshDimensions = function() {
         if (this.sceneFixTitle) {
-            this.sceneFixTitle.duration($section.height());
+            this.sceneFixTitle.duration($section.prev().height());
         }
     };
 

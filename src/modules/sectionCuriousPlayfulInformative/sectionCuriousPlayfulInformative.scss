@@ -13,6 +13,23 @@
     }
 
     /* ==========================================================================
+       Unfixed position (normal) title
+       ========================================================================== */
+
+    // Container/title to stay in first viewport
+    &:not(.section--title-fixed) {
+        align-items: baseline;
+        justify-content: baseline;
+
+        .container {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    }
+
+    /* ==========================================================================
        Fixed position (clipped) title
        ========================================================================== */
 
