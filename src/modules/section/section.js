@@ -149,7 +149,6 @@ var Section = module.exports = function(controller, $section, sectionIndex, sect
                 if (this.props.isLast) {
                     this.props.isLast = false;
                     controller.emitter.emit('sections:duplicateSections', $section);
-
                 }
 
             }.bind(this))

@@ -48,12 +48,21 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
     };
 
     /**
+     * ScrollMagic scene for fixing the title in position
+     * @property {object} sceneFixTitle
+     */
+
+    this.sceneFixTitle = null;
+
+    /**
      * Bound events for add/removal. Inherits reset from _base
      * @namespace events
      * @property {function} pageScroll
+     * @property {function} refreshDimensions
      */
 
     this.events.pageScroll = null;
+    this.events.refreshDimensions = null;
 
     /**
      * Initialise the component
@@ -62,14 +71,58 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
      */
 
     this.init = function() {
+
+        this.refreshDimensions();
+
         // Bind events
+        this.events.refreshDimensions = this.refreshDimensions.bind(this);
         this.events.pageScroll = _.throttle(this.rotateSurface.bind(this));
+
         // Attach events
         this.attachDetachEvents(true);
+
+        // ScrollMagic scene
+        this.setupScene();
 
         // Set associated module.
         // @TODO avoid accessing other module directly. event instead?
         controller.props.sections[index].props.associatedModule = this;
+    };
+
+    /**
+     * ScrollMagic scene
+     * @function setupScene
+     */
+
+    this.setupScene = function() {
+
+        if (this.sceneFixTitle) {
+            this.sceneFixTitle.destroy(true);
+        }
+
+        // ScrollMagic Safari/Firefox bug
+        // https://github.com/janpaepke/ScrollMagic/issues/458
+        var scrollTop = cache.$window.scrollTop();
+
+        this.sceneFixTitle = new ScrollMagic.Scene({
+            triggerElement: $section.prev().get(0),
+            duration: $section.height() / 2, // refreshed on resize in refreshDimensions
+            triggerHook: 0,
+        });
+/*globals console*/
+        this.sceneFixTitle.on('enter', function() {
+            $section.addClass('section--title-fixed');
+        });
+
+        this.sceneFixTitle.on('leave', function() {
+            $section.removeClass('section--title-fixed');
+        });
+
+        // ScrollMagic Safari/Firefox bug
+        // https://github.com/janpaepke/ScrollMagic/issues/458
+        cache.$window.scrollTop(scrollTop);
+
+        this.sceneFixTitle.addTo(controller.props.scrollScenes);
     };
 
     /**
@@ -80,9 +133,11 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
     this.attachDetachEvents = function(attach) {
         if (attach) {
             controller.emitter.on('sections:reset', this.events.reset);
+            controller.emitter.on('window:resize', this.events.refreshDimensions);
             cache.$window.on('scroll', this.events.pageScroll);
         } else {
             controller.emitter.removeListener('sections:reset', this.events.reset);
+            controller.emitter.removeListener('window:resize', this.events.refreshDimensions);
             cache.$window.off('scroll', this.events.pageScroll);
         }
     };
@@ -98,7 +153,7 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
             progress = Math.min(Math.max((cache.$window.scrollTop() - sectionTop), 0) / (sectionHalfway - sectionTop), 1),
             rotate = props.surfaceStyles.end.rotate * progress,
             translate = props.surfaceStyles.start.translate - (props.surfaceStyles.start.translate * progress);
-console.log(progress);
+
         cache.$rotator.css('transform', 'translateX(' + translate + 'vw)  rotate(' + rotate + 'deg)');
 
         // if (progress === 1) {
@@ -112,8 +167,20 @@ console.log(progress);
         // }
 
         /*globals console*/
-        console.log(progress);
+        //console.log(progress);
     };
+
+    /**
+     * Get and store dimensions
+     * @method refreshDimensions
+     */
+
+    this.refreshDimensions = function() {
+        if (this.sceneFixTitle) {
+            this.sceneFixTitle.duration($section.height());
+        }
+    };
+
 
     /**
      * Destroy all
@@ -122,6 +189,10 @@ console.log(progress);
 
     this.destroy = function() {
         this.attachDetachEvents(false);
+
+        if (this.sceneFixTitle) {
+            this.sceneFixTitle.destroy(true);
+        }
     };
 
     this.init();
