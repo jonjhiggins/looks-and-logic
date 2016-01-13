@@ -170,7 +170,7 @@ module.exports = function(grunt) {
                 encoding: 'utf8',
                 algorithm: 'md5',
                 length: 16,
-                deleteOriginals: true,
+                deleteOriginals: false,
                 enableUrlFragmentHint: true,
                 removeUrlFragmentHint: true
             },
