@@ -32772,7 +32772,7 @@ var controller = module.exports = function() {
      * @property {array} sections app's sections
      * @property {array} sectionIntros app's sectionIntros
      * @property {object} scrollScenes scrollmagic controller
-     * @property {string} staticAssetHost used for loading images via JS. differs between aerobatic and localhost
+     * @property {string} staticAssetPath used for loading images via JS. differs between aerobatic and localhost
      * @property {number} windowHeight
      */
 
@@ -32787,7 +32787,7 @@ var controller = module.exports = function() {
         sectionIntros: [],
         sectionMakingDigitalHumans: [],
         scrollScenes: new ScrollMagic.Controller(),
-        staticAssetHost: (typeof __aerobatic__ !== 'undefined') ? __aerobatic__.staticAssetHost : '',
+        staticAssetPath: (typeof __aerobatic__ !== 'undefined') ? __aerobatic__.staticAssetPath : '',
         windowHeight: 0
     };
 
@@ -33769,7 +33769,7 @@ var SectionIntro = module.exports = function(controller, $element, index) {
         // static asset path from https://www.aerobatic.com/docs/configuration#global-client-config-var
         // local version is hardcoded (blank)
 
-        var svgUrl = controller.props.staticAssetHost + $element.data('svg-url');
+        var svgUrl = controller.props.staticAssetPath + $element.data('svg-url');
         this.loadSVG(svgUrl);
     };
 
