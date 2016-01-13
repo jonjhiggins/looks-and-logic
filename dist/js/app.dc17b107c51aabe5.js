@@ -33296,6 +33296,15 @@ console.log(progress);
         console.log(progress);
     };
 
+    /**
+     * Destroy all
+     * @method destroy
+     */
+
+    this.destroy = function() {
+        this.attachDetachEvents(false);
+    };
+
     this.init();
 };
 

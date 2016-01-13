@@ -34,5 +34,14 @@ var sectionMarkRaul = module.exports = function(controller, $section, index) {
 
     };
 
+    /**
+     * Destroy all
+     * @method destroy
+     */
+
+    this.destroy = function() {
+        //this.attachDetachEvents(false);
+    };
+
     this.init();
 };
