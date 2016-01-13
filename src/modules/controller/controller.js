@@ -35,6 +35,8 @@ var controller = module.exports = function() {
      * @property {boolean} autoScrolling is app auto-scrolling? Used to differentiate manual scrolling
      * @property {array} sections app's sections
      * @property {array} sectionIntros app's sectionIntros
+     * @property {array} sectionMakingDigitalHumans app's sectionMakingDigitalHumans
+     * @property {array} sectionCuriousPlayfulInformative app's sectionCuriousPlayfulInformative
      * @property {object} scrollScenes scrollmagic controller
      * @property {string} staticAssetPath used for loading images via JS. differs between aerobatic and localhost
      * @property {number} windowHeight
@@ -48,8 +50,9 @@ var controller = module.exports = function() {
             medium: 740
         },
         sections: [],
-        sectionIntros: [],
-        sectionMakingDigitalHumans: [],
+        sectionIntros: [], // @TODO still required?
+        sectionMakingDigitalHumans: [],  // @TODO still required?
+        sectionCuriousPlayfulInformatives: [],  // @TODO still required?
         scrollScenes: new ScrollMagic.Controller(),
         staticAssetPath: (typeof __aerobatic__ !== 'undefined') ? __aerobatic__.staticAssetPath : '',
         windowHeight: 0

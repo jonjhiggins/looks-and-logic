@@ -32232,7 +32232,7 @@ var controller = new Controller(),
 	sections = new Sections(controller, $('.sections').eq(0)),
 	sectionIndicator = new SectionIndicator(controller);
 
-},{"./../modules/ArrowDownButton/ArrowDownButton":14,"./../modules/balls/balls":16,"./../modules/controller/controller":17,"./../modules/menu/menu":18,"./../modules/sectionIndicator/sectionIndicator":20,"./../modules/sections/sections":23,"jquery":6}],14:[function(require,module,exports){
+},{"./../modules/ArrowDownButton/ArrowDownButton":14,"./../modules/balls/balls":16,"./../modules/controller/controller":17,"./../modules/menu/menu":18,"./../modules/sectionIndicator/sectionIndicator":21,"./../modules/sections/sections":24,"jquery":6}],14:[function(require,module,exports){
 /**
     Provides a button that automatically scrolls a user down a screen
     at a time. Is hidden as soon as the user free-scrolls (mouse/mousewheel/touch)
@@ -32771,6 +32771,8 @@ var controller = module.exports = function() {
      * @property {boolean} autoScrolling is app auto-scrolling? Used to differentiate manual scrolling
      * @property {array} sections app's sections
      * @property {array} sectionIntros app's sectionIntros
+     * @property {array} sectionMakingDigitalHumans app's sectionMakingDigitalHumans
+     * @property {array} sectionCuriousPlayfulInformative app's sectionCuriousPlayfulInformative
      * @property {object} scrollScenes scrollmagic controller
      * @property {string} staticAssetPath used for loading images via JS. differs between aerobatic and localhost
      * @property {number} windowHeight
@@ -32784,8 +32786,9 @@ var controller = module.exports = function() {
             medium: 740
         },
         sections: [],
-        sectionIntros: [],
-        sectionMakingDigitalHumans: [],
+        sectionIntros: [], // @TODO still required?
+        sectionMakingDigitalHumans: [],  // @TODO still required?
+        sectionCuriousPlayfulInformatives: [],  // @TODO still required?
         scrollScenes: new ScrollMagic.Controller(),
         staticAssetPath: (typeof __aerobatic__ !== 'undefined') ? __aerobatic__.staticAssetPath : '',
         windowHeight: 0
@@ -33176,6 +33179,87 @@ var Section = module.exports = function(controller, $section, sectionIndex, sect
 };
 
 },{"../_base/_base.js":15,"jquery":6,"scrollmagic":9}],20:[function(require,module,exports){
+/** @module sectionCuriousPlayfulInformative */
+
+var $ = require('jquery'),
+    ScrollMagic = require('scrollmagic'),
+    _base = require('../_base/_base.js'),
+    _ = require('underscore');
+
+/**
+ * @constructor sectionCuriousPlayfulInformative
+ * @param {object} controller
+ */
+
+var sectionCuriousPlayfulInformative = module.exports = function(controller, $section, index) {
+    'use strict';
+
+    // Extend _base module JS
+    var base = _base.apply(this);
+
+    /**
+     * jQuery elements
+     * @namespace cache
+     * @property {jQuery} window
+     */
+
+    var cache = {
+        $window: $(window),
+    };
+
+    /**
+     * Bound events for add/removal. Inherits reset from _base
+     * @namespace events
+     * @property {function} pageScroll
+     */
+
+    this.events.pageScroll = null;
+
+    /**
+     * Initialise the component
+     * Everything here should be undone using the "reset" function
+     * @method init
+     */
+
+    this.init = function() {
+        // Bind events
+        this.events.pageScroll = _.throttle(this.rotateSurface.bind(this));
+        // Attach events
+        this.attachDetachEvents(true);
+
+        // Set associated module.
+        // @TODO avoid accessing other module directly. event instead?
+        controller.props.sections[index].props.associatedModule = this;
+    };
+
+    /**
+     * @function attachDetachEvents
+     * @param {boolean} attach attach the events?
+     */
+
+    this.attachDetachEvents = function(attach) {
+        if (attach) {
+            controller.emitter.on('sections:reset', this.events.reset);
+            cache.$window.on('scroll', this.events.pageScroll);
+        } else {
+            controller.emitter.removeListener('sections:reset', this.events.reset);
+            cache.$window.off('scroll', this.events.pageScroll);
+        }
+    };
+
+    /**
+     * On scroll: rotate surface from 0 to 90/-90 degrees depending on mouse position
+     * @method pageScroll
+     */
+
+    this.rotateSurface = function() {
+        /*globals console*/console.log(this);
+    };
+
+    this.init();
+};
+
+},{"../_base/_base.js":15,"jquery":6,"scrollmagic":9,"underscore":12}],21:[function(require,module,exports){
 /** @module sectionIndicator */
 
 /*globals Power2:true*/
@@ -33683,7 +33767,7 @@ var sectionIndicator = module.exports = function(controller) {
     this.init();
 };
 
-},{"../_base/_base.js":15,"./../../../node_modules/gsap/src/uncompressed/TweenLite.js":3,"jquery":6,"raf":7,"underscore":12}],21:[function(require,module,exports){
+},{"../_base/_base.js":15,"./../../../node_modules/gsap/src/uncompressed/TweenLite.js":3,"jquery":6,"raf":7,"underscore":12}],22:[function(require,module,exports){
 /** @module Section */
 /*globals Power2:true, console*/
 
@@ -33891,7 +33975,7 @@ var SectionIntro = module.exports = function(controller, $element, index) {
 
 };
 
-},{"../_base/_base.js":15,"jquery":6,"scrollmagic":9,"snapsvg":10}],22:[function(require,module,exports){
+},{"../_base/_base.js":15,"jquery":6,"scrollmagic":9,"snapsvg":10}],23:[function(require,module,exports){
 /** @module sectionMakingDigitalHuman */
 
 var $ = require('jquery'),
@@ -34028,14 +34112,15 @@ var sectionMakingDigitalHuman = module.exports = function(controller, $section, 
     this.init();
 };
 
-},{"../_base/_base.js":15,"jquery":6,"scrollmagic":9}],23:[function(require,module,exports){
+},{"../_base/_base.js":15,"jquery":6,"scrollmagic":9}],24:[function(require,module,exports){
 /** @module Sections */
 /*globals console*/
 
 var $ = require('jquery'),
     Section = require('./../../modules/section/section'),
     SectionIntro = require('./../../modules/sectionIntro/sectionIntro'),
-    SectionMakingDigitalHuman = require('./../../modules/sectionMakingDigitalHuman/sectionMakingDigitalHuman');
+    SectionMakingDigitalHuman = require('./../../modules/sectionMakingDigitalHuman/sectionMakingDigitalHuman'),
+    SectionCuriousPlayfulInformative = require('./../../modules/sectionCuriousPlayfulInformative/sectionCuriousPlayfulInformative');
 
 /**
  * jQuery elements
@@ -34140,6 +34225,8 @@ var Sections = module.exports = function(controller, $sections) {
             this.initSectionModule('sectionIntro', SectionIntro, sectionsLength, index, $section);
         } else if ($section.hasClass('section--making-digital-human')) {
             this.initSectionModule('sectionMakingDigitalHuman', SectionMakingDigitalHuman, sectionsLength, index, $section);
+        } else if ($section.hasClass('section--curious-playful-informative')) {
+            this.initSectionModule('sectionCuriousPlayfulInformative', SectionCuriousPlayfulInformative, sectionsLength, index, $section);
         }
     };
 
@@ -34316,4 +34403,4 @@ var Sections = module.exports = function(controller, $sections) {
 
 };
 
-},{"./../../modules/section/section":19,"./../../modules/sectionIntro/sectionIntro":21,"./../../modules/sectionMakingDigitalHuman/sectionMakingDigitalHuman":22,"jquery":6}]},{},[13]);
+},{"./../../modules/section/section":19,"./../../modules/sectionCuriousPlayfulInformative/sectionCuriousPlayfulInformative":20,"./../../modules/sectionIntro/sectionIntro":22,"./../../modules/sectionMakingDigitalHuman/sectionMakingDigitalHuman":23,"jquery":6}]},{},[13]);

@@ -1,51 +1,64 @@
 /*
  * sectionCuriousPlayfulInformative module
  */
-
 /* ==========================================================================
    Common
    ========================================================================== */
-
 .section--curious-playful-informative {
+    overflow: hidden; // Mask out text until it's revealed on scroll down
 
-       overflow: hidden; // Mask out text until it's revealed on scroll down
+// Have to position absolutely for the pinning to centre
+    .container {
+        position: absolute;
+        display: block;
+        flex: none;
+        width: 100%;
+        height: 100%;
+        left: 0;
+        top: 0;
 
-       // Have to position absolutely for the pinning to centre
-       .container {
-           position: absolute;
-           display: block;
-           flex: none;
-           width: 100%;
-           height: 100%;
-           left: 0;
-           top: 0;
+        // Mask out section__title using a clip-path
+        clip-path: url(#clipPath--noClip); // For Firefox which only supports clip-path via an SVG
+        clip-path: inset(0 0 0 0); // Safari 9 seems to crop off bottom too early with SVG so
 
-           // Mask out section__title using a clip-path
-           clip-path: url(#clipPath--noClip); // For Firefox which only supports clip-path via an SVG
-           clip-path: inset(0 0 0 0); // Safari 9 seems to crop off bottom too early with SVG so
-                                      // use this instead
-           backface-visibility: hidden; // Required by Chrome to clip
-       }
+// use this instead
+        backface-visibility: hidden; // Required by Chrome to clip
+    }
 
-       // Keep title fixed in centre of viewport
-       .section__title {
-           position: fixed;
-           top: 50%;
-           left: rem($paddingContainer);
-           right: rem($paddingContainer);
-           margin-top: -0.5em;
-           z-index: -1;
-       }
+    // Keep title fixed in centre of viewport
+    .section__title {
+        position: fixed;
+        top: 50%;
+        left: rem($paddingContainer);
+        right: rem($paddingContainer);
+        margin-top: -0.5em;
+        z-index: -1;
+    }
 
-   /* ==========================================================================
+    /* ==========================================================================
+       Rotating surface
+       ========================================================================== */
+    .rotater {
+        position: absolute;
+        height: 100vh;
+        width: 200vw;
+        left: -100vw;
+        top: 0;
+        display: none;
+        transform-origin: 75% 0;
+        transform: translateX(50vw);
+
+        background-color: purple;
+        opacity: 0.5;
+    }
+
+    /* ==========================================================================
       Responsive
       ========================================================================== */
-
-     @media only screen and (min-width: rem($bpMedium)) {
-         .section__title {
-             left: rem($paddingContainerSectionLargeH);
-             right: rem($paddingContainerSectionLargeH);
-         }
-     }
-
+    @media only screen and (min-width: rem($bpMedium)) {
+        .section__title {
+            left: rem($paddingContainerSectionLargeH);
+            right: rem($paddingContainerSectionLargeH);
+        }
+    }
 }
