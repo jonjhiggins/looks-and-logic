@@ -14,14 +14,14 @@ module.exports = function(grunt) {
         watch: {
             scripts: {
                 files: ['Gruntfile.js', 'src/js/**/*.js', 'src/modules/*/*.js'],
-                tasks: ['jshint', 'browserify', 'uglify', 'cacheBust'],
+                tasks: ['jshint', 'clean:js', 'browserify', /*'uglify',*/ 'cacheBust'],
                 options: {
                     spawn: false,
                 },
             },
             scss: {
                 files: ['src/scss/*.scss', 'src/modules/*/*.scss'],
-                tasks: ['sass', 'postcss', 'cacheBust'],
+                tasks: ['clean:css', 'sass', 'postcss', 'cacheBust'],
                 options: {
                     spawn: false,
                 },
@@ -121,6 +121,8 @@ module.exports = function(grunt) {
 
         clean: {
             dist: ['dist'],
+            css: ['dist/css'],
+            js: ['dist/js'],
         },
 
         includes: {
