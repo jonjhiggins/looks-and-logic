@@ -34,8 +34,17 @@
 
     .name {
         font-size: $sectionTitleFontSize;
-        display: inline-block;
-        margin:0 rem($paddingContainer);
+        width: 50%;
+    }
+
+    .name--mark {
+        float: left;
+        padding-right: rem($paddingContainer);
+    }
+
+    .name--raul {
+        float: right;
+        padding-left: rem($paddingContainer);
     }
 
 
