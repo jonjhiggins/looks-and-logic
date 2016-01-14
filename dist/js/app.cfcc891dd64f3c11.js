@@ -33150,7 +33150,7 @@ var rotator = module.exports = function(controller, $section, $rotator) {
       this.events.pageScroll = _.throttle(this.rotateSurface.bind(this));
 
       // Attach events
-      this.attachDetachEvents(true);
+      // this.attachDetachEvents(true); this is called from the section module
   };
 
   /**
@@ -33185,14 +33185,22 @@ var rotator = module.exports = function(controller, $section, $rotator) {
    */
 
   this.rotateSurface = function() {
-      /*globals console*/console.log('hy');
       var progress = Math.min(Math.max((cache.$window.scrollTop() - props.sectionTopRotateStart), 0) / (props.sectionHalfway - props.sectionTopRotateStart), 1),
           rotate = props.surfaceStyles.end.rotate * progress,
           translate = props.surfaceStyles.end.translate * progress,
           unit = controller.props.orientationLandscape ? 'vw' : 'vh'; // At portrait, the rotator needs to be based on viewport height
                                                                       // as the width won't cover the screen.
-/*globals console*/console.log($rotator);
       $rotator.css('transform', 'translateX(' + translate + unit + ')  rotate(' + rotate + 'deg)');
+  };
+
+  /**
+   * Destroy all
+   * @method destroy
+   */
+
+  this.destroy = function() {
+      this.attachDetachEvents(false);
+      props = null;
   };
 
   this.init();
@@ -33468,6 +33476,9 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
 
         this.refreshDimensions();
 
+        // Set up screen rotation on scrollTop
+        props.rotator = new Rotator(controller, $section, cache.$rotator);
+
         // Bind events
         this.events.refreshDimensions = this.refreshDimensions.bind(this);
         this.events.sectionLeave = dropBall.bind(this);
@@ -33477,9 +33488,6 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
 
         // ScrollMagic scene
         this.setupScene();
-
-        // Set up screen rotation on scrollTop
-        props.rotator = new Rotator(controller, $section, cache.$rotator);
 
         // Set associated module.
         // @TODO avoid accessing other module directly. event instead?
@@ -33581,13 +33589,15 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
         if (attach) {
             controller.emitter.on('sections:reset', this.events.reset);
             controller.emitter.on('window:resize', this.events.refreshDimensions);
-            //controller.emitter.on('section:sectionLeave', this.events.sectionLeave); added on entering scene
+            //controller.emitter.on('section:sectionLeave', this.events.sectionLeave); added above on entering scene
             cache.$window.on('scroll', this.events.pageScroll);
+            props.rotator.attachDetachEvents(true);
         } else {
             controller.emitter.removeListener('sections:reset', this.events.reset);
             controller.emitter.removeListener('window:resize', this.events.refreshDimensions);
             controller.emitter.removeListener('section:sectionLeave', this.events.sectionLeave);
             cache.$window.off('scroll', this.events.pageScroll);
+            props.rotator.attachDetachEvents(false);
         }
     };
 
@@ -33612,6 +33622,7 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
 
     this.destroy = function() {
         this.attachDetachEvents(false);
+        props.rotator.destroy();
 
         if (this.sceneFixTitle) {
             this.sceneFixTitle.destroy(true);
