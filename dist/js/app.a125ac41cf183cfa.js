@@ -33481,9 +33481,11 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
     this.rotateSurface = function() {
         var progress = Math.min(Math.max((cache.$window.scrollTop() - props.sectionTopRotateStart), 0) / (props.sectionHalfway - props.sectionTopRotateStart), 1),
             rotate = props.surfaceStyles.end.rotate * progress,
-            translate = props.surfaceStyles.end.translate * progress;
+            translate = props.surfaceStyles.end.translate * progress,
+            unit = controller.props.orientationLandscape ? 'vw' : 'vh'; // At portrait, the rotator needs to be based on viewport height
+                                                                        // as the width won't cover the screen.
 
-        cache.$rotator.css('transform', 'translateX(' + translate + 'vw)  rotate(' + rotate + 'deg)');
+        cache.$rotator.css('transform', 'translateX(' + translate + unit + ')  rotate(' + rotate + 'deg)');
     };
 
     /**

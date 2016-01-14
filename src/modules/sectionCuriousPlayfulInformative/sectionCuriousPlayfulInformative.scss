@@ -93,7 +93,7 @@
     .rotator__background,
     .rotator {
         position: absolute;
-        height: 100%; 
+        height: 100%;
         top: 0;
     }
     .rotator__background {
@@ -124,18 +124,15 @@
         }
     }
 
-    // @media only screen and (orientation: portrait) {
-    //     .rotator__background {
-    //         width: 100vw;
-    //     }
-    //     .rotator {
-    //         width: $rotatorWidthPortrait;
-    //         left: -($rotatorWidthPortrait / 2);
-    //         transform: translateX($rotatorWidthPortrait / 4);
-    //         .ball {
-    //             margin-left: $rotatorWidthPortrait / 4;
-    //             top: 0 !important;
-    //         }
-    //     }
-    // }
+    @media only screen and (orientation: portrait) {
+        // At portrait, the rotator needs to be based on viewport height
+        // as the width won't cover the screen.
+        .rotator {
+            width: $rotatorWidthPortrait;
+            left: calc(-100vh + 50vw);
+            .ball {
+                margin-left: calc(100vh - 50vw); // Opposite of above left calculation
+            }
+        }
+    }
 }
