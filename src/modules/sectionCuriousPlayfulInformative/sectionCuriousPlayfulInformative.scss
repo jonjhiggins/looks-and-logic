@@ -15,6 +15,7 @@
     .container {
         position: relative; // move in front of .rotator
         overflow: hidden; // Mask out text until it's revealed on scroll down
+        z-index: 1; // Move in front of previous section
     }
 
     /* ==========================================================================
