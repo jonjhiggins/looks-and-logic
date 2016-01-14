@@ -32538,7 +32538,7 @@ var _base = module.exports = function() {
 
 },{"jquery":6}],16:[function(require,module,exports){
 /** @module Balls */
-/*globals Power4:true, console*/
+/*globals Power4:true*/
 
 /**
  * @constructor Balls
@@ -33191,8 +33191,8 @@ var Section = module.exports = function(controller, $section, sectionIndex, sect
                 }
 
             }.bind(this))
-            .on('leave', function() {
-                controller.emitter.emit('section:sectionLeave', $section);
+            .on('leave', function(e) {
+                controller.emitter.emit('section:sectionLeave', $section, e);
                 $section.attr('data-section-in-view', '');
             });
 
@@ -33232,10 +33232,13 @@ var Section = module.exports = function(controller, $section, sectionIndex, sect
 },{"../_base/_base.js":15,"jquery":6,"scrollmagic":9}],20:[function(require,module,exports){
 /** @module sectionCuriousPlayfulInformative */
 
+/*globals Power4:true */
+
 var $ = require('jquery'),
     ScrollMagic = require('scrollmagic'),
     _base = require('../_base/_base.js'),
-    _ = require('underscore');
+    _ = require('underscore'),
+    TweenMax = require('gsap/src/uncompressed/TweenMax.js');
 
 /**
  * @constructor sectionCuriousPlayfulInformative
@@ -33265,6 +33268,8 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
      * @namespace props
      * @property {object} surfaceStyles start/end styles for surface to animate between on scroll
      * @property {boolean} ballCloned have we cloned ball1 and appended to .rotator?
+     * @property {boolean} ballDropped have we dropped ball1?
+     * @property {boolean} sectionLeaveEventOn have we added the section leave event?
      * @property {number} sectionHeight
      * @property {number} sectionTopRotateStart waypoint position (px) at which to start rotation
      * @property {number} sectionHalfway waypoint position (px) halfway through section
@@ -33282,6 +33287,8 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
             }
         },
         ballCloned: false,
+        ballDropped: false,
+        sectionLeaveEventOn: false,
         sectionHeight: null,
         sectionTopRotateStart: null, //
         sectionHalfway: null
@@ -33299,10 +33306,12 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
      * @namespace events
      * @property {function} pageScroll
      * @property {function} refreshDimensions
+     * @property {function} sectionLeave
      */
 
     this.events.pageScroll = null;
     this.events.refreshDimensions = null;
+    this.events.sectionLeave = null;
 
     /**
      * Initialise the component
@@ -33317,6 +33326,7 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
         // Bind events
         this.events.refreshDimensions = this.refreshDimensions.bind(this);
         this.events.pageScroll = _.throttle(this.rotateSurface.bind(this));
+        this.events.sectionLeave = dropBall.bind(this);
 
         // Attach events
         this.attachDetachEvents(true);
@@ -33357,11 +33367,18 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
         this.sceneFixTitle
             .on('enter', function() {
                 $section.addClass('section--title-fixed');
+
+                if (!props.sectionLeaveEventOn && !props.ballDropped) {
+                    controller.emitter.on('section:sectionLeave', this.events.sectionLeave);
+                    props.sectionLeaveEventOn = true;
+                }
+
                 if (!props.ballCloned) {
                     controller.emitter.emit('balls:cloneBall1', cache.$rotator);
                     props.ballCloned = true;
                 }
-            })
+
+            }.bind(this))
             .on('leave', function() {
                 $section.removeClass('section--title-fixed');
             });
@@ -33374,6 +33391,37 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
     };
 
     /**
+     * Drop ball out of view when leaving scene
+     *
+     * @function dropBall
+     * @param {jQuery} $sectionLeaving
+     * @param {event} e scrollMagic event
+     */
+
+    var dropBall = function($sectionLeaving, e) {
+        if ($sectionLeaving === $section &&
+            e.scrollDirection === 'FORWARD' &&
+            props.ballCloned &&
+            !props.ballDropped) {
+
+            TweenMax.to($section.find('.ball'), 0.4, {
+                x: '-=' + controller.props.windowHeight * 2, // ball going down, but is rotated 90
+                                                             // so need to use X-axis
+                ease: Power4.easeIn,
+                onComplete: function() {
+                    props.ballDropped = true;
+                }
+            });
+
+            if (props.sectionLeaveEventOn) {
+                controller.emitter.removeListener('section:sectionLeave', this.events.sectionLeave);
+                props.sectionLeaveEventOn = false;
+            }
+
+        }
+    };
+
+    /**
      * @function attachDetachEvents
      * @param {boolean} attach attach the events?
      */
@@ -33382,10 +33430,12 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
         if (attach) {
             controller.emitter.on('sections:reset', this.events.reset);
             controller.emitter.on('window:resize', this.events.refreshDimensions);
+            //controller.emitter.on('section:sectionLeave', this.events.sectionLeave); added on entering scene
             cache.$window.on('scroll', this.events.pageScroll);
         } else {
             controller.emitter.removeListener('sections:reset', this.events.reset);
             controller.emitter.removeListener('window:resize', this.events.refreshDimensions);
+            controller.emitter.removeListener('section:sectionLeave', this.events.sectionLeave);
             cache.$window.off('scroll', this.events.pageScroll);
         }
     };
@@ -33434,7 +33484,7 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
     this.init();
 };
 
-},{"../_base/_base.js":15,"jquery":6,"scrollmagic":9,"underscore":12}],21:[function(require,module,exports){
+},{"../_base/_base.js":15,"gsap/src/uncompressed/TweenMax.js":4,"jquery":6,"scrollmagic":9,"underscore":12}],21:[function(require,module,exports){
 /** @module sectionIndicator */
 
 /*globals Power2:true*/

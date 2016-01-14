@@ -1,5 +1,5 @@
 /** @module Balls */
-/*globals Power4:true, console*/
+/*globals Power4:true*/
 
 /**
  * @constructor Balls

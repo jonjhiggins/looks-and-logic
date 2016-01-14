@@ -28,6 +28,8 @@
 
     .section__title {
         font-size: 0; // Remove whitespace
+        position: relative;
+        z-index: 1; // Move in front of previous section
     }
 
     .name {

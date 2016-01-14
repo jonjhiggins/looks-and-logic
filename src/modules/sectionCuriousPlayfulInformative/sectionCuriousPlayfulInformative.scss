@@ -103,6 +103,7 @@
         left: -100vw;
         transform-origin: 75% 0;
         transform: translateX(50vw);
+        z-index: 1; // Move in front of next section, so ball is still visible over next section
 
         .ball {
             margin-left: $rotatorWidth / 4;
