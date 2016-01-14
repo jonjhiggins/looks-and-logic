@@ -8,6 +8,10 @@
 
     overflow: hidden;
 
+    .container {
+        //mix-blend-mode: difference;
+    }
+
     &[data-background="black"] {
         .name--mark {
             color: $colourBlack;

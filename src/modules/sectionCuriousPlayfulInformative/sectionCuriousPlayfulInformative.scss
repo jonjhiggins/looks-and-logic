@@ -12,6 +12,11 @@
         z-index: 1; // Move in front of previous section
     }
 
+    // Move next section in front after ball dropped
+    &.js--ball-dropped + .section {
+        z-index: 1;
+    }
+
     /* ==========================================================================
        Unfixed position (normal) title
        ========================================================================== */
