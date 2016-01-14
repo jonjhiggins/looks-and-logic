@@ -32608,10 +32608,10 @@ var Balls = module.exports = function(controller) {
 
     this.init = function() {
         // Bind events
-        this.events.showBall1 = showBall.bind(cache.$ball1);
+        this.events.showBall1 = showBall.bind(null, 1);
         this.events.cloneBall1 = cloneBall.bind(null, 1);
         this.events.removeClonedBall1 = removeClonedBall.bind(null, 1);
-        this.events.showBall2 = showBall.bind(cache.$ball2);
+        this.events.showBall2 = showBall.bind(null, 2);
         this.events.resize = onResize.bind(this);
         // Attach events
         this.attachDetachEvents(true);
@@ -32685,16 +32685,21 @@ var Balls = module.exports = function(controller) {
     /**
      * Show ball
      * @function showBall
-     * @param {object} position
+     * @param {number} ballNo
      */
 
-    var showBall = function(position) {
-        this.css({
+    var showBall = function(ballNo, position) {
+
+        var $ball = cache['$ball' + ballNo];
+
+        $ball.css({
             top: position.top,
             left: position.left,
             width: position.width,
             height: position.height
         });
+
+        hideShowBall(ballNo, false);
     };
 
     /**
