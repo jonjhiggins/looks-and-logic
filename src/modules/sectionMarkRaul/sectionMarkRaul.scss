@@ -6,6 +6,8 @@
    ========================================================================== */
 .section--mark-raul {
 
+    overflow: hidden;
+
     &[data-background="black"] {
         .name--mark {
             color: $colourBlack;
