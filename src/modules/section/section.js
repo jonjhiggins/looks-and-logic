@@ -152,8 +152,8 @@ var Section = module.exports = function(controller, $section, sectionIndex, sect
                 }
 
             }.bind(this))
-            .on('leave', function() {
-                controller.emitter.emit('section:sectionLeave', $section);
+            .on('leave', function(e) {
+                controller.emitter.emit('section:sectionLeave', $section, e);
                 $section.attr('data-section-in-view', '');
             });
 
