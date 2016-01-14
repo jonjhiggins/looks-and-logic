@@ -8,7 +8,8 @@
        Variables
        ========================================================================== */
 
-    $rotatorWidth: 200vw;
+    $rotatorWidthLandscape: 200vw;
+    $rotatorWidthPortrait: 200vh;
 
     height: 133.3vh;
 
@@ -92,7 +93,7 @@
     .rotator__background,
     .rotator {
         position: absolute;
-        height: 200vh;
+        height: 100%; 
         top: 0;
     }
     .rotator__background {
@@ -100,14 +101,13 @@
         left: 0;
     }
     .rotator {
-        width: $rotatorWidth;
-        left: -100vw;
+        width: $rotatorWidthLandscape;
+        left: -($rotatorWidthLandscape / 4);
         transform-origin: 75% 0;
-        transform: translateX(50vw);
         z-index: 1; // Move in front of next section, so ball is still visible over next section
 
         .ball {
-            margin-left: $rotatorWidth / 4;
+            margin-left: $rotatorWidthLandscape / 4;
             top: 0 !important;
         }
     }
@@ -123,4 +123,19 @@
             }
         }
     }
+
+    // @media only screen and (orientation: portrait) {
+    //     .rotator__background {
+    //         width: 100vw;
+    //     }
+    //     .rotator {
+    //         width: $rotatorWidthPortrait;
+    //         left: -($rotatorWidthPortrait / 2);
+    //         transform: translateX($rotatorWidthPortrait / 4);
+    //         .ball {
+    //             margin-left: $rotatorWidthPortrait / 4;
+    //             top: 0 !important;
+    //         }
+    //     }
+    // }
 }

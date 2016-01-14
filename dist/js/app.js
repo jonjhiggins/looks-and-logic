@@ -32864,6 +32864,7 @@ var controller = module.exports = function() {
         breakpoints: {
             medium: 740
         },
+        orientationLandscape: true,
         sections: [],
         sectionIntros: [], // @TODO still required?
         sectionMakingDigitalHumans: [],  // @TODO still required?
@@ -32948,6 +32949,7 @@ var controller = module.exports = function() {
 
       this.refreshDimensions = function () {
           this.props.windowHeight = cache.$window.height();
+          this.props.orientationLandscape = Modernizr.mq('screen and (orientation: landscape)');
       };
 
     /**
@@ -33305,11 +33307,11 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
     var props = {
         surfaceStyles: {
             start: {
-                translate: 50,
+                translate: 0,
                 rotate: 0
             },
             end: {
-                translate: 0,
+                translate: -50,
                 rotate: -90
             }
         },
@@ -33479,7 +33481,7 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
     this.rotateSurface = function() {
         var progress = Math.min(Math.max((cache.$window.scrollTop() - props.sectionTopRotateStart), 0) / (props.sectionHalfway - props.sectionTopRotateStart), 1),
             rotate = props.surfaceStyles.end.rotate * progress,
-            translate = props.surfaceStyles.start.translate - (props.surfaceStyles.start.translate * progress);
+            translate = props.surfaceStyles.end.translate * progress;
 
         cache.$rotator.css('transform', 'translateX(' + translate + 'vw)  rotate(' + rotate + 'deg)');
     };

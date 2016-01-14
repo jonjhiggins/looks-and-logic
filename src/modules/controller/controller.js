@@ -49,6 +49,7 @@ var controller = module.exports = function() {
         breakpoints: {
             medium: 740
         },
+        orientationLandscape: true,
         sections: [],
         sectionIntros: [], // @TODO still required?
         sectionMakingDigitalHumans: [],  // @TODO still required?
@@ -133,6 +134,7 @@ var controller = module.exports = function() {
 
       this.refreshDimensions = function () {
           this.props.windowHeight = cache.$window.height();
+          this.props.orientationLandscape = Modernizr.mq('screen and (orientation: landscape)');
       };
 
     /**
