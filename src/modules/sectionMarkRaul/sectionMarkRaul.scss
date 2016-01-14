@@ -6,17 +6,13 @@
    ========================================================================== */
 .section--mark-raul {
 
-    &[data-background="white"] {
-        background-image: linear-gradient(90deg, $colourWhite 50%, $colourBlack 50%);
-
-        .name--raul {
-            color: $colourWhite;
+    &[data-background="black"] {
+        .name--mark {
+            color: $colourBlack;
         }
     }
 
-    &[data-background="black"] {
-        background-image: linear-gradient(90deg, $colourBlack 50%, $colourWhite 50%);
-
+    &[data-background="white"] {
         .name--raul {
             color: $colourBlack;
         }
@@ -45,6 +41,14 @@
     .name--raul {
         float: right;
         padding-left: rem($paddingContainer);
+    }
+
+    /* ==========================================================================
+       Rotator
+       ========================================================================== */
+
+    .rotator {
+        z-index: 0;
     }
 
 

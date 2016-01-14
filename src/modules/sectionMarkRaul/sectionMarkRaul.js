@@ -1,6 +1,7 @@
 /** @module sectionMarkRaul */
 
 var $ = require('jquery'),
+    Rotator = require('../rotator/rotator.js'),
     _base = require('../_base/_base.js');
 
 /**
@@ -17,11 +18,21 @@ var sectionMarkRaul = module.exports = function(controller, $section, index) {
     /**
      * jQuery elements
      * @namespace cache
-     * @property {jQuery} $window
+     * @property {jQuery} $rotator
      */
 
     var cache = {
-        $window: $(window),
+        $rotator: $section.find('.rotator')
+    };
+
+    /**
+     * Module properties, states and settings
+     * @namespace props
+     * @property {object} rotator screen rotation module
+     */
+
+    var props = {
+        rotator: null
     };
 
     /**
@@ -31,7 +42,23 @@ var sectionMarkRaul = module.exports = function(controller, $section, index) {
      */
 
     this.init = function() {
+        // Set up screen rotation on scrollTop
+        props.rotator = new Rotator(controller, $section, cache.$rotator, true);
+        // Attach events
+        this.attachDetachEvents(true);
+    };
 
+    /**
+     * @function attachDetachEvents
+     * @param {boolean} attach attach the events?
+     */
+
+    this.attachDetachEvents = function(attach) {
+        if (attach) {
+            props.rotator.attachDetachEvents(true);
+        } else {
+            props.rotator.attachDetachEvents(false);
+        }
     };
 
     /**
@@ -40,7 +67,8 @@ var sectionMarkRaul = module.exports = function(controller, $section, index) {
      */
 
     this.destroy = function() {
-        //this.attachDetachEvents(false);
+        this.attachDetachEvents(false);
+        props.rotator.destroy();
     };
 
     this.init();

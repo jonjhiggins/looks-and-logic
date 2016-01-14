@@ -32232,7 +32232,7 @@ var controller = new Controller(),
 	sections = new Sections(controller, $('.sections').eq(0)),
 	sectionIndicator = new SectionIndicator(controller);
 
-},{"./../modules/ArrowDownButton/ArrowDownButton":14,"./../modules/balls/balls":16,"./../modules/controller/controller":17,"./../modules/menu/menu":18,"./../modules/sectionIndicator/sectionIndicator":22,"./../modules/sections/sections":25,"jquery":6}],14:[function(require,module,exports){
+},{"./../modules/ArrowDownButton/ArrowDownButton":14,"./../modules/balls/balls":16,"./../modules/controller/controller":17,"./../modules/menu/menu":18,"./../modules/sectionIndicator/sectionIndicator":22,"./../modules/sections/sections":26,"jquery":6}],14:[function(require,module,exports){
 /**
     Provides a button that automatically scrolls a user down a screen
     at a time. Is hidden as soon as the user free-scrolls (mouse/mousewheel/touch)
@@ -32852,6 +32852,7 @@ var controller = module.exports = function() {
      * @property {array} sectionIntros app's sectionIntros
      * @property {array} sectionMakingDigitalHumans app's sectionMakingDigitalHumans
      * @property {array} sectionCuriousPlayfulInformative app's sectionCuriousPlayfulInformative
+     * @property {array} sectionMarkRauls app's sectionMarkRauls
      * @property {object} scrollScenes scrollmagic controller
      * @property {string} staticAssetPath used for loading images via JS. differs between aerobatic and localhost
      * @property {number} windowHeight
@@ -32866,9 +32867,10 @@ var controller = module.exports = function() {
         },
         orientationLandscape: true,
         sections: [],
-        sectionIntros: [], // @TODO still required?
-        sectionMakingDigitalHumans: [],  // @TODO still required?
-        sectionCuriousPlayfulInformatives: [],  // @TODO still required?
+        sectionIntros: [],
+        sectionMakingDigitalHumans: [],
+        sectionCuriousPlayfulInformatives: [],
+        sectionMarkRauls: [],
         scrollScenes: new ScrollMagic.Controller(),
         staticAssetPath: (typeof __aerobatic__ !== 'undefined') ? __aerobatic__.staticAssetPath : '',
         windowHeight: 0
@@ -33081,9 +33083,10 @@ var $ = require('jquery'),
  * @param {object} controller
  * @param {jQuery} $section
  * @param {jQuery} $rotator
+ * @param {boolean} startVertical should we start with rotator vertical
  */
 
-var rotator = module.exports = function(controller, $section, $rotator) {
+var rotator = module.exports = function(controller, $section, $rotator, startVertical) {
   'use strict';
 
   // Extend _base module JS
@@ -33147,7 +33150,14 @@ var rotator = module.exports = function(controller, $section, $rotator) {
 
       // Bind events
       this.events.refreshDimensions = this.refreshDimensions.bind(this);
-      this.events.pageScroll = _.throttle(this.rotateSurface.bind(this));
+
+
+      if (startVertical) {
+          var unit = controller.props.orientationLandscape ? 'vw' : 'vh';
+          $rotator.css('transform', 'translateX(' + props.surfaceStyles.end.translate + unit + ')  rotate(' + props.surfaceStyles.end.rotate + 'deg)');
+      } else {
+          this.events.pageScroll = _.throttle(this.rotateSurface.bind(this));
+      }
 
       // Attach events
       // this.attachDetachEvents(true); this is called from the section module
@@ -33185,6 +33195,7 @@ var rotator = module.exports = function(controller, $section, $rotator) {
    */
 
   this.rotateSurface = function() {
+
       var progress = Math.min(Math.max((cache.$window.scrollTop() - props.sectionTopRotateStart), 0) / (props.sectionHalfway - props.sectionTopRotateStart), 1),
           rotate = props.surfaceStyles.end.rotate * progress,
           translate = props.surfaceStyles.end.translate * progress,
@@ -34486,6 +34497,83 @@ var sectionMakingDigitalHuman = module.exports = function(controller, $section, 
 };
 
 },{"../_base/_base.js":15,"jquery":6,"scrollmagic":9}],25:[function(require,module,exports){
+/** @module sectionMarkRaul */
+
+var $ = require('jquery'),
+    Rotator = require('../rotator/rotator.js'),
+    _base = require('../_base/_base.js');
+
+/**
+ * @constructor sectionMarkRaul
+ * @param {object} controller
+ */
+
+var sectionMarkRaul = module.exports = function(controller, $section, index) {
+    'use strict';
+
+    // Extend _base module JS
+    var base = _base.apply(this);
+
+    /**
+     * jQuery elements
+     * @namespace cache
+     * @property {jQuery} $rotator
+     */
+
+    var cache = {
+        $rotator: $section.find('.rotator')
+    };
+
+    /**
+     * Module properties, states and settings
+     * @namespace props
+     * @property {object} rotator screen rotation module
+     */
+
+    var props = {
+        rotator: null
+    };
+
+    /**
+     * Initialise the component
+     * Everything here should be undone using the "reset" function
+     * @method init
+     */
+
+    this.init = function() {
+        // Set up screen rotation on scrollTop
+        props.rotator = new Rotator(controller, $section, cache.$rotator, true);
+        // Attach events
+        this.attachDetachEvents(true);
+    };
+
+    /**
+     * @function attachDetachEvents
+     * @param {boolean} attach attach the events?
+     */
+
+    this.attachDetachEvents = function(attach) {
+        if (attach) {
+            props.rotator.attachDetachEvents(true);
+        } else {
+            props.rotator.attachDetachEvents(false);
+        }
+    };
+
+    /**
+     * Destroy all
+     * @method destroy
+     */
+
+    this.destroy = function() {
+        this.attachDetachEvents(false);
+        props.rotator.destroy();
+    };
+
+    this.init();
+};
+
+},{"../_base/_base.js":15,"../rotator/rotator.js":19,"jquery":6}],26:[function(require,module,exports){
 /** @module Sections */
 /*globals console*/
 
@@ -34493,7 +34581,8 @@ var $ = require('jquery'),
     Section = require('./../../modules/section/section'),
     SectionIntro = require('./../../modules/sectionIntro/sectionIntro'),
     SectionMakingDigitalHuman = require('./../../modules/sectionMakingDigitalHuman/sectionMakingDigitalHuman'),
-    SectionCuriousPlayfulInformative = require('./../../modules/sectionCuriousPlayfulInformative/sectionCuriousPlayfulInformative');
+    SectionCuriousPlayfulInformative = require('./../../modules/sectionCuriousPlayfulInformative/sectionCuriousPlayfulInformative'),
+    SectionMarkRaul = require('./../../modules/sectionMarkRaul/sectionMarkRaul');
 
 /**
  * jQuery elements
@@ -34600,6 +34689,8 @@ var Sections = module.exports = function(controller, $sections) {
             this.initSectionModule('sectionMakingDigitalHuman', SectionMakingDigitalHuman, sectionsLength, index, $section);
         } else if ($section.hasClass('section--curious-playful-informative')) {
             this.initSectionModule('sectionCuriousPlayfulInformative', SectionCuriousPlayfulInformative, sectionsLength, index, $section);
+        } else if ($section.hasClass('section--mark-raul')) {
+            this.initSectionModule('sectionMarkRaul', SectionMarkRaul, sectionsLength, index, $section);
         }
     };
 
@@ -34776,4 +34867,4 @@ var Sections = module.exports = function(controller, $sections) {
 
 };
 
-},{"./../../modules/section/section":20,"./../../modules/sectionCuriousPlayfulInformative/sectionCuriousPlayfulInformative":21,"./../../modules/sectionIntro/sectionIntro":23,"./../../modules/sectionMakingDigitalHuman/sectionMakingDigitalHuman":24,"jquery":6}]},{},[13]);
+},{"./../../modules/section/section":20,"./../../modules/sectionCuriousPlayfulInformative/sectionCuriousPlayfulInformative":21,"./../../modules/sectionIntro/sectionIntro":23,"./../../modules/sectionMakingDigitalHuman/sectionMakingDigitalHuman":24,"./../../modules/sectionMarkRaul/sectionMarkRaul":25,"jquery":6}]},{},[13]);

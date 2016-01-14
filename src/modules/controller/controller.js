@@ -37,6 +37,7 @@ var controller = module.exports = function() {
      * @property {array} sectionIntros app's sectionIntros
      * @property {array} sectionMakingDigitalHumans app's sectionMakingDigitalHumans
      * @property {array} sectionCuriousPlayfulInformative app's sectionCuriousPlayfulInformative
+     * @property {array} sectionMarkRauls app's sectionMarkRauls
      * @property {object} scrollScenes scrollmagic controller
      * @property {string} staticAssetPath used for loading images via JS. differs between aerobatic and localhost
      * @property {number} windowHeight
@@ -51,9 +52,10 @@ var controller = module.exports = function() {
         },
         orientationLandscape: true,
         sections: [],
-        sectionIntros: [], // @TODO still required?
-        sectionMakingDigitalHumans: [],  // @TODO still required?
-        sectionCuriousPlayfulInformatives: [],  // @TODO still required?
+        sectionIntros: [],
+        sectionMakingDigitalHumans: [],
+        sectionCuriousPlayfulInformatives: [],
+        sectionMarkRauls: [],
         scrollScenes: new ScrollMagic.Controller(),
         staticAssetPath: (typeof __aerobatic__ !== 'undefined') ? __aerobatic__.staticAssetPath : '',
         windowHeight: 0

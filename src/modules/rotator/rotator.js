@@ -13,9 +13,10 @@ var $ = require('jquery'),
  * @param {object} controller
  * @param {jQuery} $section
  * @param {jQuery} $rotator
+ * @param {boolean} startVertical should we start with rotator vertical
  */
 
-var rotator = module.exports = function(controller, $section, $rotator) {
+var rotator = module.exports = function(controller, $section, $rotator, startVertical) {
   'use strict';
 
   // Extend _base module JS
@@ -79,7 +80,14 @@ var rotator = module.exports = function(controller, $section, $rotator) {
 
       // Bind events
       this.events.refreshDimensions = this.refreshDimensions.bind(this);
-      this.events.pageScroll = _.throttle(this.rotateSurface.bind(this));
+
+
+      if (startVertical) {
+          var unit = controller.props.orientationLandscape ? 'vw' : 'vh';
+          $rotator.css('transform', 'translateX(' + props.surfaceStyles.end.translate + unit + ')  rotate(' + props.surfaceStyles.end.rotate + 'deg)');
+      } else {
+          this.events.pageScroll = _.throttle(this.rotateSurface.bind(this));
+      }
 
       // Attach events
       // this.attachDetachEvents(true); this is called from the section module
@@ -117,6 +125,7 @@ var rotator = module.exports = function(controller, $section, $rotator) {
    */
 
   this.rotateSurface = function() {
+
       var progress = Math.min(Math.max((cache.$window.scrollTop() - props.sectionTopRotateStart), 0) / (props.sectionHalfway - props.sectionTopRotateStart), 1),
           rotate = props.surfaceStyles.end.rotate * progress,
           translate = props.surfaceStyles.end.translate * progress,
