@@ -110,7 +110,8 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
     /**
      * ScrollMagic scene
      * On entering section above, title is fixed in center. On leaving section above,
-     * title reverts to normal positioning
+     * title reverts to normal positioning. Also add event for leaving scene to dropBall
+     *
      *
      * @function setupScene
      */
@@ -149,7 +150,7 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
             }.bind(this))
             .on('leave', function() {
                 $section.removeClass('section--title-fixed');
-            });
+            }.bind(this));
 
         // ScrollMagic Safari/Firefox bug
         // https://github.com/janpaepke/ScrollMagic/issues/458
@@ -172,12 +173,15 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
             props.ballCloned &&
             !props.ballDropped) {
 
-            TweenMax.to($section.find('.ball'), 0.4, {
+            var $ball = $section.find('.ball');
+
+            TweenMax.to($ball, 0.4, {
                 x: '-=' + controller.props.windowHeight * 2, // ball going down, but is rotated 90
                                                              // so need to use X-axis
                 ease: Power4.easeIn,
                 onComplete: function() {
                     props.ballDropped = true;
+                    controller.emitter.emit('balls:removeClonedBall1', $ball);
                 }
             });
 

@@ -32590,11 +32590,13 @@ var Balls = module.exports = function(controller) {
     * @namespace events
     * @property {function} showBall1
     * @property {function} cloneBall1
+    * @property {function} removeClonedBall1
     * @property {function} showBall2
     */
 
     this.events.showBall1 = null;
     this.events.cloneBall1 = null;
+    this.events.removeClonedBall1 = null;
     this.events.showBall2 = null;
     this.events.resize = null;
 
@@ -32608,6 +32610,7 @@ var Balls = module.exports = function(controller) {
         // Bind events
         this.events.showBall1 = showBall.bind(cache.$ball1);
         this.events.cloneBall1 = cloneBall.bind(null, 1);
+        this.events.removeClonedBall1 = removeClonedBall.bind(null, 1);
         this.events.showBall2 = showBall.bind(cache.$ball2);
         this.events.resize = onResize.bind(this);
         // Attach events
@@ -32635,6 +32638,7 @@ var Balls = module.exports = function(controller) {
             controller.emitter.on('balls:ball1Drop', ball1Drop);
             controller.emitter.on('balls:showBall1', this.events.showBall1);
             controller.emitter.on('balls:cloneBall1', this.events.cloneBall1);
+            controller.emitter.on('balls:removeClonedBall1', this.events.removeClonedBall1);
             controller.emitter.on('balls:showBall2', this.events.showBall2);
             controller.emitter.on('window:resize', this.events.resize);
         } else {
@@ -32642,6 +32646,7 @@ var Balls = module.exports = function(controller) {
             controller.emitter.removeListener('balls:ball1Drop', ball1Drop);
             controller.emitter.removeListener('balls:showBall1', this.events.showBall1);
             controller.emitter.removeListener('balls:cloneBall1', this.events.cloneBall1);
+            controller.emitter.removeListener('balls:removeClonedBall1', this.events.removeClonedBall1);
             controller.emitter.removeListener('balls:showBall2', this.events.showBall2);
             controller.emitter.removeListener('window:resize', this.events.resize);
         }
@@ -32720,6 +32725,23 @@ var Balls = module.exports = function(controller) {
         });
 
         hideShowBall(1, true);
+    };
+
+    /**
+     * Remove previously cloned ball, tidy up and show normal ball again
+     *
+     * @function removeClonedBall
+     * @param {number} ballNo
+     * @param {jQuery} $ball ball to remove
+     */
+
+    var removeClonedBall = function(ballNo, $ball) {
+
+        $ball.remove();
+        cache['$ball' + ballNo + 'Clone'] = null;
+
+        // @TODO show normal ball1 again - wait until we position it properly
+        // hideShowBall(1, false);
     };
 
     /**
@@ -33342,7 +33364,8 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
     /**
      * ScrollMagic scene
      * On entering section above, title is fixed in center. On leaving section above,
-     * title reverts to normal positioning
+     * title reverts to normal positioning. Also add event for leaving scene to dropBall
+     *
      *
      * @function setupScene
      */
@@ -33381,7 +33404,7 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
             }.bind(this))
             .on('leave', function() {
                 $section.removeClass('section--title-fixed');
-            });
+            }.bind(this));
 
         // ScrollMagic Safari/Firefox bug
         // https://github.com/janpaepke/ScrollMagic/issues/458
@@ -33404,12 +33427,15 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
             props.ballCloned &&
             !props.ballDropped) {
 
-            TweenMax.to($section.find('.ball'), 0.4, {
+            var $ball = $section.find('.ball');
+
+            TweenMax.to($ball, 0.4, {
                 x: '-=' + controller.props.windowHeight * 2, // ball going down, but is rotated 90
                                                              // so need to use X-axis
                 ease: Power4.easeIn,
                 onComplete: function() {
                     props.ballDropped = true;
+                    controller.emitter.emit('balls:removeClonedBall1', $ball);
                 }
             });
 
