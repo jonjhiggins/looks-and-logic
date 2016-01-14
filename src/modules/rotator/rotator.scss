@@ -1,0 +1,68 @@
+/*
+ * rotator module
+ */
+
+    /* ==========================================================================
+       Variables
+       ========================================================================== */
+    $rotatorWidthLandscape: 200vw;
+    $rotatorWidthPortrait: 200vh;
+
+    /* ==========================================================================
+       Rotating surface
+       ========================================================================== */
+
+    .section[data-background="white"] {
+        .rotator__background {
+            background-color: $colourBlack;
+        }
+        .rotator {
+            background-color: $colourWhite;
+        }
+    }
+
+    .section[data-background="black"] {
+        .rotator__background {
+            background-color: $colourWhite;
+        }
+        .rotator {
+            background-color: $colourBlack;
+        }
+    }
+
+    .rotator__background,
+    .rotator {
+        position: absolute;
+        height: 100%;
+        top: 0;
+    }
+    .rotator__background {
+        width: 100vw;
+        left: 0;
+    }
+    .rotator {
+        width: $rotatorWidthLandscape;
+        left: -($rotatorWidthLandscape / 4);
+        transform-origin: 75% 0;
+        z-index: 1; // Move in front of next section, so ball is still visible over next section
+        .ball {
+            margin-left: $rotatorWidthLandscape / 4;
+            top: 0 !important;
+        }
+    }
+
+    /* ==========================================================================
+      Responsive
+      ========================================================================== */
+
+    @media only screen and (orientation: portrait) {
+        // At portrait, the rotator needs to be based on viewport height
+        // as the width won't cover the screen.
+        .rotator {
+            width: $rotatorWidthPortrait;
+            left: calc(-100vh + 50vw);
+            .ball {
+                margin-left: calc(100vh - 50vw); // Opposite of above left calculation
+            }
+        }
+    }

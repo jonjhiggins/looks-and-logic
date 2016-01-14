@@ -32232,7 +32232,7 @@ var controller = new Controller(),
 	sections = new Sections(controller, $('.sections').eq(0)),
 	sectionIndicator = new SectionIndicator(controller);
 
-},{"./../modules/ArrowDownButton/ArrowDownButton":14,"./../modules/balls/balls":16,"./../modules/controller/controller":17,"./../modules/menu/menu":18,"./../modules/sectionIndicator/sectionIndicator":21,"./../modules/sections/sections":24,"jquery":6}],14:[function(require,module,exports){
+},{"./../modules/ArrowDownButton/ArrowDownButton":14,"./../modules/balls/balls":16,"./../modules/controller/controller":17,"./../modules/menu/menu":18,"./../modules/sectionIndicator/sectionIndicator":22,"./../modules/sections/sections":25,"jquery":6}],14:[function(require,module,exports){
 /**
     Provides a button that automatically scrolls a user down a screen
     at a time. Is hidden as soon as the user free-scrolls (mouse/mousewheel/touch)
@@ -33066,6 +33066,139 @@ var Menu = module.exports = function(controller) {
 };
 
 },{"jquery":6}],19:[function(require,module,exports){
+/** Provides screen-rotation effect on scroll
+  *
+  * @module rotator
+  */
+
+var $ = require('jquery'),
+    _base = require('../_base/_base.js'),
+    _ = require('underscore'),
+    TweenMax = require('gsap/src/uncompressed/TweenMax.js');
+
+/**
+ * @constructor rotator
+ * @param {object} controller
+ * @param {jQuery} $section
+ * @param {jQuery} $rotator
+ */
+
+var rotator = module.exports = function(controller, $section, $rotator) {
+  'use strict';
+
+  // Extend _base module JS
+  var base = _base.apply(this);
+
+  /**
+   * jQuery elements
+   * @namespace cache
+   * @property {jQuery} $window
+   * @property {jQuery} $rotator
+   */
+
+  var cache = {
+      $window: $(window)
+  };
+
+  /**
+   * Module properties, states and settings
+   * @namespace props
+   * @property {object} surfaceStyles start/end styles for surface to animate between on scroll
+   * @property {number} sectionHeight
+   * @property {number} sectionTopRotateStart waypoint position (px) at which to start rotation
+   * @property {number} sectionHalfway waypoint position (px) halfway through section
+   */
+
+  var props = {
+      surfaceStyles: {
+          start: {
+              translate: 0,
+              rotate: 0
+          },
+          end: {
+              translate: -50,
+              rotate: -90
+          }
+      },
+      sectionHeight: null,
+      sectionTopRotateStart: null, //
+      sectionHalfway: null
+  };
+
+  /**
+   * Bound events for add/removal. Inherits reset from _base
+   * @namespace events
+   * @property {function} refreshDimensions
+   * @property {function} pageScroll
+   */
+
+  this.events.refreshDimensions = null;
+  this.events.pageScroll = null;
+
+  /**
+   * Initialise the component
+   * Everything here should be undone using the "reset" function
+   * @method init
+   */
+
+  this.init = function() {
+
+      this.refreshDimensions();
+
+      // Bind events
+      this.events.refreshDimensions = this.refreshDimensions.bind(this);
+      this.events.pageScroll = _.throttle(this.rotateSurface.bind(this));
+
+      // Attach events
+      this.attachDetachEvents(true);
+  };
+
+  /**
+   * @function attachDetachEvents
+   * @param {boolean} attach attach the events?
+   */
+
+  this.attachDetachEvents = function(attach) {
+      if (attach) {
+          cache.$window.on('scroll', this.events.pageScroll);
+          controller.emitter.on('window:resize', this.events.refreshDimensions);
+      } else {
+          cache.$window.off('scroll', this.events.pageScroll);
+          controller.emitter.removeListener('window:resize', this.events.refreshDimensions);
+      }
+  };
+
+  /**
+   * Get and store dimensions
+   * @method refreshDimensions
+   */
+
+  this.refreshDimensions = function() {
+      props.sectionHeight = $section.height();
+      props.sectionTopRotateStart = $section.offset().top  - (controller.props.windowHeight / 3); // starts 1/3 of window above sectionTop
+      props.sectionHalfway = props.sectionTopRotateStart + (props.sectionHeight / 2);
+  };
+
+  /**
+   * On scroll: rotate surface from 0 to 90/-90 degrees depending on mouse position
+   * @method pageScroll
+   */
+
+  this.rotateSurface = function() {
+      /*globals console*/console.log('hy');
+      var progress = Math.min(Math.max((cache.$window.scrollTop() - props.sectionTopRotateStart), 0) / (props.sectionHalfway - props.sectionTopRotateStart), 1),
+          rotate = props.surfaceStyles.end.rotate * progress,
+          translate = props.surfaceStyles.end.translate * progress,
+          unit = controller.props.orientationLandscape ? 'vw' : 'vh'; // At portrait, the rotator needs to be based on viewport height
+                                                                      // as the width won't cover the screen.
+/*globals console*/console.log($rotator);
+      $rotator.css('transform', 'translateX(' + translate + unit + ')  rotate(' + rotate + 'deg)');
+  };
+
+  this.init();
+};
+
+},{"../_base/_base.js":15,"gsap/src/uncompressed/TweenMax.js":4,"jquery":6,"underscore":12}],20:[function(require,module,exports){
 /**
     Common properties and methods for all sections.
 
@@ -33258,7 +33391,7 @@ var Section = module.exports = function(controller, $section, sectionIndex, sect
 
 };
 
-},{"../_base/_base.js":15,"jquery":6,"scrollmagic":9}],20:[function(require,module,exports){
+},{"../_base/_base.js":15,"jquery":6,"scrollmagic":9}],21:[function(require,module,exports){
 /** @module sectionCuriousPlayfulInformative */
 
 /*globals Power4:true */
@@ -33266,7 +33399,7 @@ var Section = module.exports = function(controller, $section, sectionIndex, sect
 var $ = require('jquery'),
     ScrollMagic = require('scrollmagic'),
     _base = require('../_base/_base.js'),
-    _ = require('underscore'),
+    Rotator = require('../rotator/rotator.js'),
     TweenMax = require('gsap/src/uncompressed/TweenMax.js');
 
 /**
@@ -33295,32 +33428,17 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
     /**
      * Module properties, states and settings
      * @namespace props
-     * @property {object} surfaceStyles start/end styles for surface to animate between on scroll
      * @property {boolean} ballCloned have we cloned ball1 and appended to .rotator?
      * @property {boolean} ballDropped have we dropped ball1?
      * @property {boolean} sectionLeaveEventOn have we added the section leave event?
-     * @property {number} sectionHeight
-     * @property {number} sectionTopRotateStart waypoint position (px) at which to start rotation
-     * @property {number} sectionHalfway waypoint position (px) halfway through section
+     * @property {object} rotator screen rotation module
      */
 
     var props = {
-        surfaceStyles: {
-            start: {
-                translate: 0,
-                rotate: 0
-            },
-            end: {
-                translate: -50,
-                rotate: -90
-            }
-        },
         ballCloned: false,
         ballDropped: false,
         sectionLeaveEventOn: false,
-        sectionHeight: null,
-        sectionTopRotateStart: null, //
-        sectionHalfway: null
+        rotator: null
     };
 
     /**
@@ -33333,12 +33451,10 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
     /**
      * Bound events for add/removal. Inherits reset from _base
      * @namespace events
-     * @property {function} pageScroll
      * @property {function} refreshDimensions
      * @property {function} sectionLeave
      */
 
-    this.events.pageScroll = null;
     this.events.refreshDimensions = null;
     this.events.sectionLeave = null;
 
@@ -33354,7 +33470,6 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
 
         // Bind events
         this.events.refreshDimensions = this.refreshDimensions.bind(this);
-        this.events.pageScroll = _.throttle(this.rotateSurface.bind(this));
         this.events.sectionLeave = dropBall.bind(this);
 
         // Attach events
@@ -33362,6 +33477,9 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
 
         // ScrollMagic scene
         this.setupScene();
+
+        // Set up screen rotation on scrollTop
+        props.rotator = new Rotator(controller, $section, cache.$rotator);
 
         // Set associated module.
         // @TODO avoid accessing other module directly. event instead?
@@ -33473,20 +33591,7 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
         }
     };
 
-    /**
-     * On scroll: rotate surface from 0 to 90/-90 degrees depending on mouse position
-     * @method pageScroll
-     */
 
-    this.rotateSurface = function() {
-        var progress = Math.min(Math.max((cache.$window.scrollTop() - props.sectionTopRotateStart), 0) / (props.sectionHalfway - props.sectionTopRotateStart), 1),
-            rotate = props.surfaceStyles.end.rotate * progress,
-            translate = props.surfaceStyles.end.translate * progress,
-            unit = controller.props.orientationLandscape ? 'vw' : 'vh'; // At portrait, the rotator needs to be based on viewport height
-                                                                        // as the width won't cover the screen.
-
-        cache.$rotator.css('transform', 'translateX(' + translate + unit + ')  rotate(' + rotate + 'deg)');
-    };
 
     /**
      * Get and store dimensions
@@ -33494,9 +33599,6 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
      */
 
     this.refreshDimensions = function() {
-        props.sectionHeight = $section.height();
-        props.sectionTopRotateStart = $section.offset().top  - (controller.props.windowHeight / 3); // starts 1/3 of window above sectionTop
-        props.sectionHalfway = props.sectionTopRotateStart + (props.sectionHeight / 2);
         if (this.sceneFixTitle) {
             this.sceneFixTitle.duration($section.prev().height());
         }
@@ -33519,7 +33621,7 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
     this.init();
 };
 
-},{"../_base/_base.js":15,"gsap/src/uncompressed/TweenMax.js":4,"jquery":6,"scrollmagic":9,"underscore":12}],21:[function(require,module,exports){
+},{"../_base/_base.js":15,"../rotator/rotator.js":19,"gsap/src/uncompressed/TweenMax.js":4,"jquery":6,"scrollmagic":9}],22:[function(require,module,exports){
 /** @module sectionIndicator */
 
 /*globals Power2:true*/
@@ -34027,7 +34129,7 @@ var sectionIndicator = module.exports = function(controller) {
     this.init();
 };
 
-},{"../_base/_base.js":15,"./../../../node_modules/gsap/src/uncompressed/TweenLite.js":3,"jquery":6,"raf":7,"underscore":12}],22:[function(require,module,exports){
+},{"../_base/_base.js":15,"./../../../node_modules/gsap/src/uncompressed/TweenLite.js":3,"jquery":6,"raf":7,"underscore":12}],23:[function(require,module,exports){
 /** @module Section */
 /*globals Power2:true, console*/
 
@@ -34235,7 +34337,7 @@ var SectionIntro = module.exports = function(controller, $element, index) {
 
 };
 
-},{"../_base/_base.js":15,"jquery":6,"scrollmagic":9,"snapsvg":10}],23:[function(require,module,exports){
+},{"../_base/_base.js":15,"jquery":6,"scrollmagic":9,"snapsvg":10}],24:[function(require,module,exports){
 /** @module sectionMakingDigitalHuman */
 
 var $ = require('jquery'),
@@ -34372,7 +34474,7 @@ var sectionMakingDigitalHuman = module.exports = function(controller, $section, 
     this.init();
 };
 
-},{"../_base/_base.js":15,"jquery":6,"scrollmagic":9}],24:[function(require,module,exports){
+},{"../_base/_base.js":15,"jquery":6,"scrollmagic":9}],25:[function(require,module,exports){
 /** @module Sections */
 /*globals console*/
 
@@ -34663,4 +34765,4 @@ var Sections = module.exports = function(controller, $sections) {
 
 };
 
-},{"./../../modules/section/section":19,"./../../modules/sectionCuriousPlayfulInformative/sectionCuriousPlayfulInformative":20,"./../../modules/sectionIntro/sectionIntro":22,"./../../modules/sectionMakingDigitalHuman/sectionMakingDigitalHuman":23,"jquery":6}]},{},[13]);
+},{"./../../modules/section/section":20,"./../../modules/sectionCuriousPlayfulInformative/sectionCuriousPlayfulInformative":21,"./../../modules/sectionIntro/sectionIntro":23,"./../../modules/sectionMakingDigitalHuman/sectionMakingDigitalHuman":24,"jquery":6}]},{},[13]);
