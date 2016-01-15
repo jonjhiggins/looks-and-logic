@@ -137,6 +137,12 @@ var rotator = module.exports = function(controller, $section, $rotator, options)
 
     this.rotateSurface = function() {
 
+        // Sometimes throttled event is delayed until after module has been destroyed
+        // Can't see a way of cancelling underscore's throttled event (lo-dash does seem to have that option)
+        if (!props) {
+            return;
+        }
+
         var progress = Math.min(Math.max((cache.$window.scrollTop() - props.sectionTopRotateStart), 0) / (props.sectionHalfway - props.sectionTopRotateStart), 1),
             rotate,
             translate;
@@ -150,8 +156,6 @@ var rotator = module.exports = function(controller, $section, $rotator, options)
             rotate = props.surfaceStyles.start.rotate - (props.surfaceStyles.start.rotate * progress);
             translate = props.surfaceStyles.start.translate - (props.surfaceStyles.start.translate * progress);
         }
-
-
 
         $rotator.css('transform', 'translateX(' + translate + props.viewportUnit + ')  rotate(' + rotate + 'deg)');
     };
