@@ -29,6 +29,7 @@ var sectionMarkRaul = module.exports = function(controller, $section, index) {
      * Module properties, states and settings
      * @namespace props
      * @property {object} rotator screen rotation module
+     * @property {object} rotatorOptions options for screen rotation module
      */
 
     var props = {
@@ -36,6 +37,17 @@ var sectionMarkRaul = module.exports = function(controller, $section, index) {
         rotatorOptions: {
             startVertical: true,
             moveSectionTopRotateStart: 0,
+            rotateClockwise: false,
+            surfaceStyles: {
+                start: {
+                    translate: -50, // starts vertical
+                    rotate: -90
+                },
+                end: {
+                    translate: 0,
+                    rotate: 0
+                }
+            }
         }
     };
 

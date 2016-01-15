@@ -49,6 +49,11 @@
             margin-left: $rotatorWidthLandscape / 4;
             top: 0 !important;
         }
+
+        // Clockwise rotation
+        &.js--clockwise {
+            transform-origin: 25% 0;
+        }
     }
 
     /* ==========================================================================

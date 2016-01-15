@@ -36,7 +36,7 @@ var rotator = module.exports = function(controller, $section, $rotator, options)
      * Module properties, states and settings
      * @namespace props
      * @property {number} moveSectionTopRotateStart float to specify how many viewports up or down to start rotation
-     * @property {object} surfaceStyles start/end styles for surface to animate between on scroll
+     * @property {boolean} rotateClockwise which way to rotate?
      * @property {object} surfaceStyles start/end styles for surface to animate between on scroll
      * @property {number} sectionHeight
      * @property {number} sectionTopRotateStart waypoint position (px) at which to start rotation
@@ -47,16 +47,8 @@ var rotator = module.exports = function(controller, $section, $rotator, options)
 
     var props = {
         moveSectionTopRotateStart: options.moveSectionTopRotateStart,
-        surfaceStyles: {
-            start: {
-                translate: 0,
-                rotate: 0
-            },
-            end: {
-                translate: -50,
-                rotate: -90
-            }
-        },
+        rotateClockwise: options.rotateClockwise,
+        surfaceStyles: options.surfaceStyles,
         sectionHeight: null,
         sectionTopRotateStart: null, //
         sectionHalfway: null,
@@ -88,10 +80,10 @@ var rotator = module.exports = function(controller, $section, $rotator, options)
         this.events.refreshDimensions = this.refreshDimensions.bind(this);
         this.events.pageScroll = _.throttle(this.rotateSurface.bind(this));
 
-
-        if (props.startVertical) {
-            $rotator.css('transform', 'translateX(' + props.surfaceStyles.end.translate + props.viewportUnit + ')  rotate(' + props.surfaceStyles.end.rotate + 'deg)');
+        if (options.rotateClockwise) {
+            $rotator.addClass('js--clockwise');
         }
+        $rotator.css('transform', 'translateX(' + props.surfaceStyles.start.translate + props.viewportUnit + ')  rotate(' + props.surfaceStyles.start.rotate + 'deg)');
 
         // Attach events
         // this.attachDetachEvents(true); this is called from the section module
@@ -147,9 +139,13 @@ var rotator = module.exports = function(controller, $section, $rotator, options)
             translate = props.surfaceStyles.end.translate * progress;
         } else {
             // startVertical = go into reverse
-            rotate = props.surfaceStyles.end.rotate - (props.surfaceStyles.end.rotate * progress);
-            translate = props.surfaceStyles.end.translate - (props.surfaceStyles.end.translate * progress);
+            rotate = props.surfaceStyles.start.rotate - (props.surfaceStyles.start.rotate * progress);
+            translate = props.surfaceStyles.start.translate - (props.surfaceStyles.start.translate * progress);
         }
+
+if ($section.attr('id') === 'section--3') {
+        /*globals console*/console.log($section.attr('id'), props.surfaceStyles.start.rotate * progress, props.surfaceStyles.end.rotate * progress);
+    }
 
         $rotator.css('transform', 'translateX(' + translate + props.viewportUnit + ')  rotate(' + rotate + 'deg)');
     };

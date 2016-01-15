@@ -38,6 +38,7 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
      * @property {boolean} ballDropped have we dropped ball1?
      * @property {boolean} sectionLeaveEventOn have we added the section leave event?
      * @property {object} rotator screen rotation module
+     * @property {object} rotatorOptions options for screen rotation module
      */
 
     var props = {
@@ -47,7 +48,18 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
         rotator: null,
         rotatorOptions: {
             startVertical: false,
-            moveSectionTopRotateStart: -1 / 3 // starts before scrolling into section top (1/3 of window above sectionTop)
+            moveSectionTopRotateStart: -1 / 3, // starts before scrolling into section top (1/3 of window above sectionTop)
+            rotateClockwise: false,
+            surfaceStyles: {
+                start: {
+                    translate: 0,
+                    rotate: 0
+                },
+                end: {
+                    translate: -50,
+                    rotate: -90
+                }
+            },
         }
     };
 
