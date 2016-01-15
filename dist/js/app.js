@@ -32920,9 +32920,11 @@ var controller = module.exports = function() {
                         'arrowDownButton',
                         'balls'],
             sectionLength = $('.section').length +
-                            $('.section--curious-playful-informative').length +
                             $('.section--intro').length +
-                            $('.section--making-digital-human').length,
+                            $('.section--making-digital-human').length +
+                            $('.section--curious-playful-informative').length +
+                            $('.section--mark-raul').length +
+                            $('.section--clients').length,
             maxListeners = modules.length + sectionLength;
 
          this.emitter.setMaxListeners(maxListeners);
@@ -33215,10 +33217,6 @@ var rotator = module.exports = function(controller, $section, $rotator, options)
             translate = props.surfaceStyles.start.translate - (props.surfaceStyles.start.translate * progress);
         }
 
-if ($section.attr('id') === 'section--3') {
-        /*globals console*/console.log($section.attr('id'), props.surfaceStyles.start.rotate * progress, props.surfaceStyles.end.rotate * progress);
-    }
-
         $rotator.css('transform', 'translateX(' + translate + props.viewportUnit + ')  rotate(' + rotate + 'deg)');
     };
 
@@ -33494,6 +33492,10 @@ var sectionClients = module.exports = function(controller, $section, index) {
 
         // Attach events
         this.attachDetachEvents(true);
+
+        // Set associated module.
+        // @TODO avoid accessing other module directly. event instead?
+        controller.props.sections[index].props.associatedModule = this;
     };
 
     /**
@@ -33504,8 +33506,10 @@ var sectionClients = module.exports = function(controller, $section, index) {
     this.attachDetachEvents = function(attach) {
         if (attach) {
             props.rotator.attachDetachEvents(true);
+            controller.emitter.on('sections:reset', this.events.reset);
         } else {
             props.rotator.attachDetachEvents(false);
+            controller.emitter.removeListener('sections:reset', this.events.reset);
         }
     };
 
@@ -34691,6 +34695,10 @@ var sectionMarkRaul = module.exports = function(controller, $section, index) {
 
         // Attach events
         this.attachDetachEvents(true);
+
+        // Set associated module.
+        // @TODO avoid accessing other module directly. event instead?
+        controller.props.sections[index].props.associatedModule = this;
     };
 
     /**
@@ -34701,8 +34709,10 @@ var sectionMarkRaul = module.exports = function(controller, $section, index) {
     this.attachDetachEvents = function(attach) {
         if (attach) {
             props.rotator.attachDetachEvents(true);
+            controller.emitter.on('sections:reset', this.events.reset);
         } else {
             props.rotator.attachDetachEvents(false);
+            controller.emitter.removeListener('sections:reset', this.events.reset);
         }
     };
 

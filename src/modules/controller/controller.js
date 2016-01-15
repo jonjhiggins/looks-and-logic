@@ -105,9 +105,11 @@ var controller = module.exports = function() {
                         'arrowDownButton',
                         'balls'],
             sectionLength = $('.section').length +
-                            $('.section--curious-playful-informative').length +
                             $('.section--intro').length +
-                            $('.section--making-digital-human').length,
+                            $('.section--making-digital-human').length +
+                            $('.section--curious-playful-informative').length +
+                            $('.section--mark-raul').length +
+                            $('.section--clients').length,
             maxListeners = modules.length + sectionLength;
 
          this.emitter.setMaxListeners(maxListeners);

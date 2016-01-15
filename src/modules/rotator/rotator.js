@@ -143,10 +143,6 @@ var rotator = module.exports = function(controller, $section, $rotator, options)
             translate = props.surfaceStyles.start.translate - (props.surfaceStyles.start.translate * progress);
         }
 
-if ($section.attr('id') === 'section--3') {
-        /*globals console*/console.log($section.attr('id'), props.surfaceStyles.start.rotate * progress, props.surfaceStyles.end.rotate * progress);
-    }
-
         $rotator.css('transform', 'translateX(' + translate + props.viewportUnit + ')  rotate(' + rotate + 'deg)');
     };
 

@@ -63,6 +63,10 @@ var sectionMarkRaul = module.exports = function(controller, $section, index) {
 
         // Attach events
         this.attachDetachEvents(true);
+
+        // Set associated module.
+        // @TODO avoid accessing other module directly. event instead?
+        controller.props.sections[index].props.associatedModule = this;
     };
 
     /**
@@ -73,8 +77,10 @@ var sectionMarkRaul = module.exports = function(controller, $section, index) {
     this.attachDetachEvents = function(attach) {
         if (attach) {
             props.rotator.attachDetachEvents(true);
+            controller.emitter.on('sections:reset', this.events.reset);
         } else {
             props.rotator.attachDetachEvents(false);
+            controller.emitter.removeListener('sections:reset', this.events.reset);
         }
     };
 
