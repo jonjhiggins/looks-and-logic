@@ -6,9 +6,12 @@
    ========================================================================== */
 .section--clients {
     overflow: hidden;
+    height: 200vh;
 
     .container {
         position: relative;
+        height: 100vh;
+        mix-blend-mode: difference;
     }
 
     /* ==========================================================================
