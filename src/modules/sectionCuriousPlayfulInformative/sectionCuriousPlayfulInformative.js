@@ -44,7 +44,11 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
         ballCloned: false,
         ballDropped: false,
         sectionLeaveEventOn: false,
-        rotator: null
+        rotator: null,
+        rotatorOptions: {
+            startVertical: false,
+            moveSectionTopRotateStart: -1 / 3 // starts before scrolling into section top (1/3 of window above sectionTop)
+        }
     };
 
     /**
@@ -75,9 +79,7 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
         this.refreshDimensions();
 
         // Set up screen rotation on scrolling
-        // starts before scrolling into section top (1/3 of window above sectionTop)
-        var moveSectionTopRotateStart = -1 / 3;
-        props.rotator = new Rotator(controller, $section, cache.$rotator, false, moveSectionTopRotateStart);
+        props.rotator = new Rotator(controller, $section, cache.$rotator, props.rotatorOptions);
 
         // Bind events
         this.events.refreshDimensions = this.refreshDimensions.bind(this);

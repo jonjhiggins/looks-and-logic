@@ -32,7 +32,11 @@ var sectionClients = module.exports = function(controller, $section, index) {
      */
 
     var props = {
-        rotator: null
+        rotator: null,
+        rotatorOptions: {
+            startVertical: false,
+            moveSectionTopRotateStart: 0,
+        }
     };
 
     /**
@@ -42,8 +46,9 @@ var sectionClients = module.exports = function(controller, $section, index) {
      */
 
     this.init = function() {
-        // Set up screen rotation on scrollTop
-        props.rotator = new Rotator(controller, $section, cache.$rotator, false, 0);
+        // Set up screen rotation on scrolling
+        props.rotator = new Rotator(controller, $section, cache.$rotator, props.rotatorOptions);
+
         // Attach events
         this.attachDetachEvents(true);
     };

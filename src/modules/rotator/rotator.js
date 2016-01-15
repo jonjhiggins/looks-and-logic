@@ -13,11 +13,9 @@ var $ = require('jquery'),
  * @param {object} controller
  * @param {jQuery} $section
  * @param {jQuery} $rotator
- * @param {boolean} startVertical should we start with rotator vertical
- * @param {number} moveSectionTopRotateStart float to specify how many viewports up or down to start rotation
  */
 
-var rotator = module.exports = function(controller, $section, $rotator, startVertical, moveSectionTopRotateStart) {
+var rotator = module.exports = function(controller, $section, $rotator, options) {
     'use strict';
 
     // Extend _base module JS
@@ -37,14 +35,18 @@ var rotator = module.exports = function(controller, $section, $rotator, startVer
     /**
      * Module properties, states and settings
      * @namespace props
+     * @property {number} moveSectionTopRotateStart float to specify how many viewports up or down to start rotation
+     * @property {object} surfaceStyles start/end styles for surface to animate between on scroll
      * @property {object} surfaceStyles start/end styles for surface to animate between on scroll
      * @property {number} sectionHeight
      * @property {number} sectionTopRotateStart waypoint position (px) at which to start rotation
      * @property {number} sectionHalfway waypoint position (px) halfway through section
+     * @property {boolean} startVertical should we start with rotator vertical
      * @property {string} viewportUnit at portrait, the rotator needs to be based on viewport height as the width won't cover the screen.
      */
 
     var props = {
+        moveSectionTopRotateStart: options.moveSectionTopRotateStart,
         surfaceStyles: {
             start: {
                 translate: 0,
@@ -58,6 +60,7 @@ var rotator = module.exports = function(controller, $section, $rotator, startVer
         sectionHeight: null,
         sectionTopRotateStart: null, //
         sectionHalfway: null,
+        startVertical: options.startVertical,
         viewportUnit: 'vw'
     };
 
@@ -86,7 +89,7 @@ var rotator = module.exports = function(controller, $section, $rotator, startVer
         this.events.pageScroll = _.throttle(this.rotateSurface.bind(this));
 
 
-        if (startVertical) {
+        if (props.startVertical) {
             $rotator.css('transform', 'translateX(' + props.surfaceStyles.end.translate + props.viewportUnit + ')  rotate(' + props.surfaceStyles.end.rotate + 'deg)');
         }
 
@@ -121,7 +124,7 @@ var rotator = module.exports = function(controller, $section, $rotator, startVer
 
         // curiousPlayful rotation starts before scrolling into section top (1/3 of window above sectionTop)
         // markRaul and clients rotation starts when scrolling into section top
-        props.sectionTopRotateStart = $section.offset().top + (controller.props.windowHeight * moveSectionTopRotateStart);
+        props.sectionTopRotateStart = $section.offset().top + (controller.props.windowHeight * props.moveSectionTopRotateStart);
 
         props.sectionHalfway = props.sectionTopRotateStart + (props.sectionHeight / 2);
 
@@ -138,7 +141,7 @@ var rotator = module.exports = function(controller, $section, $rotator, startVer
             rotate,
             translate;
 
-        if (!startVertical) {
+        if (!props.startVertical) {
             // normal mode
             rotate = props.surfaceStyles.end.rotate * progress;
             translate = props.surfaceStyles.end.translate * progress;
