@@ -13,6 +13,9 @@
     }
 
     // Move next section in front after ball dropped
+    &.js--ball-dropped {
+        overflow: hidden;
+    }
     &.js--ball-dropped + .section {
         z-index: 1;
     }
