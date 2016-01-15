@@ -16,7 +16,7 @@ var $ = require('jquery'),
  * @param {boolean} startVertical should we start with rotator vertical
  */
 
-var rotator = module.exports = function(controller, $section, $rotator, startVertical) {
+var rotator = module.exports = function(controller, $section, $rotator, startVertical, moveSectionTopRotateStart) {
     'use strict';
 
     // Extend _base module JS
@@ -116,16 +116,11 @@ var rotator = module.exports = function(controller, $section, $rotator, startVer
     this.refreshDimensions = function() {
         props.sectionHeight = $section.height();
         props.viewportUnit = controller.props.orientationLandscape ? 'vw' : 'vh'; // At portrait, the rotator needs to be based on viewport height
-        // as the width won't cover the screen.
+                                                                                  // as the width won't cover the screen.
 
-
-        if (!startVertical) {
-            // Normal mode rotation starts before scrolling into section top
-            props.sectionTopRotateStart = $section.offset().top - (controller.props.windowHeight / 3); // starts 1/3 of window above sectionTop
-        } else {
-            // startVertical mode rotation starts when scrolling into section top
-            props.sectionTopRotateStart = $section.offset().top;
-        }
+        // curiousPlayful rotation starts before scrolling into section top (1/3 of window above sectionTop)
+        // markRaul and clients rotation starts when scrolling into section top
+        props.sectionTopRotateStart = $section.offset().top + moveSectionTopRotateStart; // starts
 
         props.sectionHalfway = props.sectionTopRotateStart + (props.sectionHeight / 2);
 

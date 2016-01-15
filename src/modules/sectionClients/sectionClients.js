@@ -1,15 +1,15 @@
-/** @module sectionMarkRaul */
+/** @module sectionClients */
 
 var $ = require('jquery'),
     Rotator = require('../rotator/rotator.js'),
     _base = require('../_base/_base.js');
 
 /**
- * @constructor sectionMarkRaul
+ * @constructor sectionClients
  * @param {object} controller
  */
 
-var sectionMarkRaul = module.exports = function(controller, $section, index) {
+var sectionClients = module.exports = function(controller, $section, index) {
     'use strict';
 
     // Extend _base module JS
@@ -43,7 +43,7 @@ var sectionMarkRaul = module.exports = function(controller, $section, index) {
 
     this.init = function() {
         // Set up screen rotation on scrollTop
-        props.rotator = new Rotator(controller, $section, cache.$rotator, true, 0);
+        props.rotator = new Rotator(controller, $section, cache.$rotator, false, 0);
         // Attach events
         this.attachDetachEvents(true);
     };

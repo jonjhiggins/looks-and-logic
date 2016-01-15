@@ -75,7 +75,8 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
         this.refreshDimensions();
 
         // Set up screen rotation on scrollTop
-        props.rotator = new Rotator(controller, $section, cache.$rotator);
+        var moveSectionTopRotateStart = -(controller.props.windowHeight / 3);
+        props.rotator = new Rotator(controller, $section, cache.$rotator, false, moveSectionTopRotateStart);
 
         // Bind events
         this.events.refreshDimensions = this.refreshDimensions.bind(this);
