@@ -96,7 +96,14 @@ var rotator = module.exports = function(controller, $section, $rotator, options)
 
     this.attachDetachEvents = function(attach) {
         if (attach) {
-            cache.$window.on('scroll', this.events.pageScroll);
+
+            // BUG / SHAME
+            // for some reason, on repeating sections the 2nd time, 1st set of sections don't
+            // get scroll event added, unless there's this timeout :/
+            window.setTimeout(function() {
+                cache.$window.on('scroll', this.events.pageScroll);
+            }.bind(this), 100);
+
             controller.emitter.on('window:resize', this.events.refreshDimensions);
         } else {
             cache.$window.off('scroll', this.events.pageScroll);
@@ -110,6 +117,7 @@ var rotator = module.exports = function(controller, $section, $rotator, options)
      */
 
     this.refreshDimensions = function() {
+
         props.sectionHeight = $section.height();
         props.viewportUnit = controller.props.orientationLandscape ? 'vw' : 'vh'; // At portrait, the rotator needs to be based on viewport height
                                                                                   // as the width won't cover the screen.
@@ -124,7 +132,7 @@ var rotator = module.exports = function(controller, $section, $rotator, options)
 
     /**
      * On scroll: rotate surface from 0 to 90/-90 degrees depending on mouse position
-     * @method pageScroll
+     * @method rotateSurface
      */
 
     this.rotateSurface = function() {
@@ -142,6 +150,8 @@ var rotator = module.exports = function(controller, $section, $rotator, options)
             rotate = props.surfaceStyles.start.rotate - (props.surfaceStyles.start.rotate * progress);
             translate = props.surfaceStyles.start.translate - (props.surfaceStyles.start.translate * progress);
         }
+
+
 
         $rotator.css('transform', 'translateX(' + translate + props.viewportUnit + ')  rotate(' + rotate + 'deg)');
     };
