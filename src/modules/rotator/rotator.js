@@ -36,7 +36,6 @@ var rotator = module.exports = function(controller, $section, $rotator, options)
      * Module properties, states and settings
      * @namespace props
      * @property {number} moveSectionTopRotateStart float to specify how many viewports up or down to start rotation
-     * @property {boolean} rotateClockwise which way to rotate?
      * @property {object} surfaceStyles start/end styles for surface to animate between on scroll
      * @property {number} sectionHeight
      * @property {number} sectionTopRotateStart waypoint position (px) at which to start rotation
@@ -47,7 +46,6 @@ var rotator = module.exports = function(controller, $section, $rotator, options)
 
     var props = {
         moveSectionTopRotateStart: options.moveSectionTopRotateStart,
-        rotateClockwise: options.rotateClockwise,
         surfaceStyles: options.surfaceStyles,
         sectionHeight: null,
         sectionTopRotateStart: null, //
@@ -80,10 +78,7 @@ var rotator = module.exports = function(controller, $section, $rotator, options)
         this.events.refreshDimensions = this.refreshDimensions.bind(this);
         this.events.pageScroll = _.throttle(this.rotateSurface.bind(this));
 
-        if (options.rotateClockwise) {
-            $rotator.addClass('js--clockwise');
-        }
-        $rotator.css('transform', 'translateX(' + props.surfaceStyles.start.translate + props.viewportUnit + ')  rotate(' + props.surfaceStyles.start.rotate + 'deg)');
+        $rotator.css('transform', 'rotate(' + props.surfaceStyles.start.rotate + 'deg)');
 
         // Attach events
         // this.attachDetachEvents(true); this is called from the section module
@@ -157,7 +152,7 @@ var rotator = module.exports = function(controller, $section, $rotator, options)
             translate = props.surfaceStyles.start.translate - (props.surfaceStyles.start.translate * progress);
         }
 
-        $rotator.css('transform', 'translateX(' + translate + props.viewportUnit + ')  rotate(' + rotate + 'deg)');
+        $rotator.css('transform', 'translateX(' + 0 + props.viewportUnit + ')  rotate(' + rotate + 'deg)');
     };
 
     /**
