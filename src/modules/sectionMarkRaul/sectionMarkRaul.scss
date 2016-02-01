@@ -9,19 +9,7 @@
     overflow: hidden;
 
     .container {
-        //mix-blend-mode: difference;
-    }
-
-    &[data-background="black"] {
-        .name--mark {
-            color: $colourBlack;
-        }
-    }
-
-    &[data-background="white"] {
-        .name--raul {
-            color: $colourBlack;
-        }
+        mix-blend-mode: difference;
     }
 
     /* ==========================================================================
