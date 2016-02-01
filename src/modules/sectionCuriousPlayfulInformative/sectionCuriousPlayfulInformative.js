@@ -23,12 +23,10 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
      * jQuery elements
      * @namespace cache
      * @property {jQuery} $window
-     * @property {jQuery} $rotator
      */
 
     var cache = {
         $window: $(window),
-        $rotator: $section.find('.rotator')
     };
 
     /**
@@ -48,15 +46,18 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
         rotator: null,
         rotatorOptions: {
             startVertical: false,
-            moveSectionTopRotateStart: -1 / 3, // starts before scrolling into section top (1/3 of window above sectionTop)
+            //moveSectionTopRotateStart: -1 / 3, // starts before scrolling into section top (1/3 of window above sectionTop)
+            moveSectionTopRotateStart: 0, // @TODO add back in move start
             rotateClockwise: false,
             surfaceStyles: {
                 start: {
                     translate: 0,
+                    gradient: 100,
                     rotate: 0
                 },
                 end: {
                     translate: -50,
+                    gradient: 50,
                     rotate: -90
                 }
             },
@@ -91,7 +92,7 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
         this.refreshDimensions();
 
         // Set up screen rotation on scrolling
-        props.rotator = new Rotator(controller, $section, cache.$rotator, props.rotatorOptions);
+        props.rotator = new Rotator(controller, $section, props.rotatorOptions);
 
         // Bind events
         this.events.refreshDimensions = this.refreshDimensions.bind(this);
@@ -144,7 +145,7 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
                 }
 
                 if (!props.ballCloned) {
-                    controller.emitter.emit('balls:cloneBall1', cache.$rotator);
+                    //controller.emitter.emit('balls:cloneBall1', cache.$rotator);// @TODO add in
                     props.ballCloned = true;
                 }
 

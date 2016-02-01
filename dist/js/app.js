@@ -33728,24 +33728,27 @@ var $ = require('jquery'),
  * @constructor rotator
  * @param {object} controller
  * @param {jQuery} $section
- * @param {jQuery} $rotator
+ * @param {object} options
  */
 
-var rotator = module.exports = function(controller, $section, $rotator, options) {
+var rotator = module.exports = function(controller, $section, options) {
     'use strict';
 
     // Extend _base module JS
     var base = _base.apply(this);
 
+    var $rotator = $('.rotator');
+
     /**
      * jQuery elements
      * @namespace cache
      * @property {jQuery} $window
-     * @property {jQuery} $rotator
+     * @property {jQuery} $rotatorSurface
      */
 
     var cache = {
-        $window: $(window)
+        $window: $(window),
+        $rotatorSurface: $rotator.find('.rotator__surface')
     };
 
     /**
@@ -33794,7 +33797,9 @@ var rotator = module.exports = function(controller, $section, $rotator, options)
         this.events.refreshDimensions = this.refreshDimensions.bind(this);
         this.events.pageScroll = _.throttle(this.rotateSurface.bind(this));
 
-        $rotator.css('transform', 'rotate(' + props.surfaceStyles.start.rotate + 'deg)');
+
+        // @TODO add start styles
+        //$rotator.css('transform', 'rotate(' + props.surfaceStyles.start.rotate + 'deg)');
 
         // Attach events
         // this.attachDetachEvents(true); this is called from the section module
@@ -33856,19 +33861,64 @@ var rotator = module.exports = function(controller, $section, $rotator, options)
 
         var progress = Math.min(Math.max((cache.$window.scrollTop() - props.sectionTopRotateStart), 0) / (props.sectionHalfway - props.sectionTopRotateStart), 1),
             rotate,
-            translate;
+            translate,
+            scale,
+            surfaceHeight;
 
-        if (!props.startVertical) {
-            // normal mode
-            rotate = props.surfaceStyles.end.rotate * progress;
-            translate = props.surfaceStyles.end.translate * progress;
-        } else {
-            // startVertical = go into reverse
-            rotate = props.surfaceStyles.start.rotate - (props.surfaceStyles.start.rotate * progress);
-            translate = props.surfaceStyles.start.translate - (props.surfaceStyles.start.translate * progress);
+        /*globals console*/ console.log(progress);
+
+        // if (!props.startVertical) {
+        //     // normal mode
+        //     rotate = props.surfaceStyles.end.rotate * progress;
+        //     translate = props.surfaceStyles.end.translate * progress;
+        // } else {
+        //     // startVertical = go into reverse
+        //     rotate = props.surfaceStyles.start.rotate - (props.surfaceStyles.start.rotate * progress);
+        //     translate = props.surfaceStyles.start.translate - (props.surfaceStyles.start.translate * progress);
+        // }
+
+        rotate = props.surfaceStyles.start.rotate + ((props.surfaceStyles.end.rotate  - props.surfaceStyles.start.rotate) * progress);
+        translate = props.surfaceStyles.end.translate * progress;
+        scale = getGradientScale($section.width(), $section.height(), rotate); //@TODO don't measure here
+        surfaceHeight = props.surfaceStyles.start.gradient + ((props.surfaceStyles.end.gradient - props.surfaceStyles.start.gradient) * progress);
+
+        if (progress > 0) {
+            $rotator.css('transform', 'scale(' + scale + ')  rotate(' + rotate + 'deg)');
+            cache.$rotatorSurface.css('height', surfaceHeight + '%');
         }
 
-        $rotator.css('transform', 'translateX(' + 0 + props.viewportUnit + ')  rotate(' + rotate + 'deg)');
+
+
+    };
+
+    /**
+     * How much do elements need to be scaled up so that gradient background will cover screen
+     * @function getGradientScale
+     * @param {number} W width
+     * @param {number} H height
+     * @param {number} A angle in degrees
+     */
+
+    var getGradientScale = function(W, H, A) {
+      var gradLine = getGradientLineLength(W, H, A);
+      return gradLine / H;
+    };
+
+    /**
+     * Get length of gradient line running through a box
+     * Gradients have to be scaled up at certain angles to fill their container
+     * https://drafts.csswg.org/css-images/#linear-gradient-syntax
+     *
+     *
+     * @function getGradientLineLength
+     * @param {number} W width
+     * @param {number} H height
+     * @param {number} A angle in degrees
+     */
+
+    var getGradientLineLength = function(W, H, A) {
+      var radianAngle = A * Math.PI / 180; // Convert to radian
+      return Math.abs(W * Math.sin(radianAngle)) + Math.abs(H * Math.cos(radianAngle));
     };
 
     /**
@@ -34098,11 +34148,9 @@ var sectionClients = module.exports = function(controller, $section, index) {
     /**
      * jQuery elements
      * @namespace cache
-     * @property {jQuery} $rotator
      */
 
     var cache = {
-        $rotator: $section.find('.rotator')
     };
 
     /**
@@ -34121,10 +34169,12 @@ var sectionClients = module.exports = function(controller, $section, index) {
             surfaceStyles: {
                 start: {
                     translate: 0,
+                    gradient: 0,
                     rotate: 0
                 },
                 end: {
                     translate: 100,
+                    gradient: 100,
                     rotate: 180
                 }
             }
@@ -34139,7 +34189,7 @@ var sectionClients = module.exports = function(controller, $section, index) {
 
     this.init = function() {
         // Set up screen rotation on scrolling
-        props.rotator = new Rotator(controller, $section, cache.$rotator, props.rotatorOptions);
+        props.rotator = new Rotator(controller, $section, props.rotatorOptions);
 
         // Attach events
         this.attachDetachEvents(true);
@@ -34203,12 +34253,10 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
      * jQuery elements
      * @namespace cache
      * @property {jQuery} $window
-     * @property {jQuery} $rotator
      */
 
     var cache = {
         $window: $(window),
-        $rotator: $section.find('.rotator')
     };
 
     /**
@@ -34228,15 +34276,18 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
         rotator: null,
         rotatorOptions: {
             startVertical: false,
-            moveSectionTopRotateStart: -1 / 3, // starts before scrolling into section top (1/3 of window above sectionTop)
+            //moveSectionTopRotateStart: -1 / 3, // starts before scrolling into section top (1/3 of window above sectionTop)
+            moveSectionTopRotateStart: 0, // @TODO add back in move start
             rotateClockwise: false,
             surfaceStyles: {
                 start: {
                     translate: 0,
+                    gradient: 100,
                     rotate: 0
                 },
                 end: {
                     translate: -50,
+                    gradient: 50,
                     rotate: -90
                 }
             },
@@ -34271,7 +34322,7 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
         this.refreshDimensions();
 
         // Set up screen rotation on scrolling
-        props.rotator = new Rotator(controller, $section, cache.$rotator, props.rotatorOptions);
+        props.rotator = new Rotator(controller, $section, props.rotatorOptions);
 
         // Bind events
         this.events.refreshDimensions = this.refreshDimensions.bind(this);
@@ -34324,7 +34375,7 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
                 }
 
                 if (!props.ballCloned) {
-                    controller.emitter.emit('balls:cloneBall1', cache.$rotator);
+                    //controller.emitter.emit('balls:cloneBall1', cache.$rotator);// @TODO add in
                     props.ballCloned = true;
                 }
 
@@ -34942,16 +34993,17 @@ var sectionIndicator = module.exports = function(controller) {
 var $ = require('jquery'),
     ScrollMagic = require('scrollmagic'),
     snap = require('snapsvg'),
+    Rotator = require('../rotator/rotator.js'),
     _base = require('../_base/_base.js');
 
 /**
  * @constructor SectionIntro
  * @param {object} controller
- * @param {jQuery} $element section element
+ * @param {jQuery} $section section element
  * @param {number} index which number section is this
  */
 
-var SectionIntro = module.exports = function(controller, $element, index) {
+var SectionIntro = module.exports = function(controller, $section, index) {
     'use strict';
 
     // Extend _base module JS
@@ -34967,8 +35019,8 @@ var SectionIntro = module.exports = function(controller, $element, index) {
 
     var cache = {
         $window: $(window),
-        $logo: $element.find('.section__logo'),
-        $logoSvg: $element.find('.section__logo svg')
+        $logo: $section.find('.section__logo'),
+        $logoSvg: $section.find('.section__logo svg')
     };
 
     /**
@@ -34978,9 +35030,28 @@ var SectionIntro = module.exports = function(controller, $element, index) {
      * @property {boolean} ball1Dropped has ball 1 dropped?
      */
 
-    this.props = {
+    var props = {
         svgLoaded: false,
-        ball1Dropped: false
+        ball1Dropped: false,
+        rotator: null,
+        rotatorOptions: {
+            startVertical: false,
+            //moveSectionTopRotateStart: -1 / 3, // starts before scrolling into section top (1/3 of window above sectionTop)
+            moveSectionTopRotateStart: 0, // @TODO add back in move start
+            rotateClockwise: false,
+            surfaceStyles: {
+                start: {
+                    translate: 0,
+                    gradient: 0,
+                    rotate: 0
+                },
+                end: {
+                    translate: 0,
+                    gradient: 0,
+                    rotate: 0
+                }
+            },
+        }
     };
 
     /**
@@ -35017,8 +35088,12 @@ var SectionIntro = module.exports = function(controller, $element, index) {
         // @TODO avoid accessing other module directly. event instead?
         controller.props.sections[index].props.associatedModule = this;
 
+
+        // Set up screen rotation on scrolling
+        props.rotator = new Rotator(controller, $section, props.rotatorOptions);
+
         // Load the SVG
-        var svgUrl = $element.data('svg-url');
+        var svgUrl = $section.data('svg-url');
         this.loadSVG(svgUrl);
     };
 
@@ -35031,7 +35106,7 @@ var SectionIntro = module.exports = function(controller, $element, index) {
         if (attach) {
             controller.emitter.on('sections:reset', this.events.reset);
             // On leave: drop ball
-            if (!this.props.ball1Dropped) {
+            if (!props.ball1Dropped) {
                 controller.emitter.on('section:sectionLeave', this.events.sectionLeave);
             }
             // Refresh dimensions on resize
@@ -35050,7 +35125,7 @@ var SectionIntro = module.exports = function(controller, $element, index) {
 
     this.loadSVG = function(url) {
 
-        if (this.props.svgLoaded || !url) {
+        if (props.svgLoaded || !url) {
             return;
         }
 
@@ -35059,7 +35134,7 @@ var SectionIntro = module.exports = function(controller, $element, index) {
             // Add SVG
             svgObject.append(loadedSVG);
 
-            this.props.svgLoaded = true;
+            props.svgLoaded = true;
 
             // If autoscrolling, this may indicate sections are still being removed,
             // so positions will be wrong. If so, defer until autoscroll complete
@@ -35087,8 +35162,8 @@ var SectionIntro = module.exports = function(controller, $element, index) {
         // Measure balls within SVGs
         var ball1ClientRect = svgObject.select('#ball1').node.getBoundingClientRect(),
             ball2ClientRect = svgObject.select('#ball2').node.getBoundingClientRect(),
-            ball1JQueryOffset = $element.find('#ball1').offset(),
-            ball2JQueryOffset = $element.find('#ball2').offset(),
+            ball1JQueryOffset = $section.find('#ball1').offset(),
+            ball2JQueryOffset = $section.find('#ball2').offset(),
             ball1Position = {
                 top: ball1JQueryOffset.top, // For some reason, this jQuery value is accurate
                                             // in iOS following address bar resize
@@ -35108,7 +35183,7 @@ var SectionIntro = module.exports = function(controller, $element, index) {
         cache.$logo.addClass('section__logo--with-svg');
 
         //@TODO promise
-        if (!this.props.ball1Dropped){
+        if (!props.ball1Dropped){
             controller.emitter.emit('balls:showBall1', ball1Position);
         }
         controller.emitter.emit('balls:showBall2', ball2Position);
@@ -35122,10 +35197,10 @@ var SectionIntro = module.exports = function(controller, $element, index) {
 
     this.sectionLeave = function($sectionLeave) {
         // When leaving this section, trigger ball1Drop
-        if ($sectionLeave.get(0) === $element.get(0)) {
-            controller.emitter.emit('balls:ball1Drop', $element);
+        if ($sectionLeave.get(0) === $section.get(0)) {
+            controller.emitter.emit('balls:ball1Drop', $section);
             controller.emitter.removeListener('section:sectionLeave', this.events.sectionLeave);
-            this.props.ball1Dropped = true;
+            props.ball1Dropped = true;
         }
     };
 
@@ -35143,7 +35218,7 @@ var SectionIntro = module.exports = function(controller, $element, index) {
 
 };
 
-},{"../_base/_base.js":15,"jquery":6,"scrollmagic":10,"snapsvg":11}],25:[function(require,module,exports){
+},{"../_base/_base.js":15,"../rotator/rotator.js":19,"jquery":6,"scrollmagic":10,"snapsvg":11}],25:[function(require,module,exports){
 /** @module sectionMakingDigitalHuman */
 
 var $ = require('jquery'),
@@ -35301,11 +35376,9 @@ var sectionMarkRaul = module.exports = function(controller, $section, index) {
     /**
      * jQuery elements
      * @namespace cache
-     * @property {jQuery} $rotator
      */
 
     var cache = {
-        $rotator: $section.find('.rotator')
     };
 
     /**
@@ -35324,11 +35397,13 @@ var sectionMarkRaul = module.exports = function(controller, $section, index) {
             surfaceStyles: {
                 start: {
                     translate: -50, // starts vertical
+                    gradient: 50,
                     rotate: -90
                 },
                 end: {
                     translate: 0,
-                    rotate: 0
+                    gradient: 100,
+                    rotate: -180
                 }
             }
         }
@@ -35342,7 +35417,7 @@ var sectionMarkRaul = module.exports = function(controller, $section, index) {
 
     this.init = function() {
         // Set up screen rotation on scrolling
-        props.rotator = new Rotator(controller, $section, cache.$rotator, props.rotatorOptions);
+        props.rotator = new Rotator(controller, $section, props.rotatorOptions);
 
         // Attach events
         this.attachDetachEvents(true);

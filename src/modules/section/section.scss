@@ -14,17 +14,19 @@
     justify-content: center;
     text-transform: uppercase;
     &[data-background="white"] {
-        background-color: $colourWhite;
+        //background-color: $colourWhite;
         color: $colourBlack;
     }
     &[data-background="black"] {
-        background-color: $colourBlack;
+        //background-color: $colourBlack;
         color: $colourWhite;
     }
 }
 .section__content {
     flex: none;
     width: 100%;
+    z-index: 1;
+    position: relative;
 }
 
 /* ==========================================================================

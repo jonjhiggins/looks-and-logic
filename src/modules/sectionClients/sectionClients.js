@@ -18,11 +18,9 @@ var sectionClients = module.exports = function(controller, $section, index) {
     /**
      * jQuery elements
      * @namespace cache
-     * @property {jQuery} $rotator
      */
 
     var cache = {
-        $rotator: $section.find('.rotator')
     };
 
     /**
@@ -41,10 +39,12 @@ var sectionClients = module.exports = function(controller, $section, index) {
             surfaceStyles: {
                 start: {
                     translate: 0,
+                    gradient: 0,
                     rotate: 0
                 },
                 end: {
                     translate: 100,
+                    gradient: 100,
                     rotate: 180
                 }
             }
@@ -59,7 +59,7 @@ var sectionClients = module.exports = function(controller, $section, index) {
 
     this.init = function() {
         // Set up screen rotation on scrolling
-        props.rotator = new Rotator(controller, $section, cache.$rotator, props.rotatorOptions);
+        props.rotator = new Rotator(controller, $section, props.rotatorOptions);
 
         // Attach events
         this.attachDetachEvents(true);

@@ -4,16 +4,17 @@
 var $ = require('jquery'),
     ScrollMagic = require('scrollmagic'),
     snap = require('snapsvg'),
+    Rotator = require('../rotator/rotator.js'),
     _base = require('../_base/_base.js');
 
 /**
  * @constructor SectionIntro
  * @param {object} controller
- * @param {jQuery} $element section element
+ * @param {jQuery} $section section element
  * @param {number} index which number section is this
  */
 
-var SectionIntro = module.exports = function(controller, $element, index) {
+var SectionIntro = module.exports = function(controller, $section, index) {
     'use strict';
 
     // Extend _base module JS
@@ -29,8 +30,8 @@ var SectionIntro = module.exports = function(controller, $element, index) {
 
     var cache = {
         $window: $(window),
-        $logo: $element.find('.section__logo'),
-        $logoSvg: $element.find('.section__logo svg')
+        $logo: $section.find('.section__logo'),
+        $logoSvg: $section.find('.section__logo svg')
     };
 
     /**
@@ -40,9 +41,28 @@ var SectionIntro = module.exports = function(controller, $element, index) {
      * @property {boolean} ball1Dropped has ball 1 dropped?
      */
 
-    this.props = {
+    var props = {
         svgLoaded: false,
-        ball1Dropped: false
+        ball1Dropped: false,
+        rotator: null,
+        rotatorOptions: {
+            startVertical: false,
+            //moveSectionTopRotateStart: -1 / 3, // starts before scrolling into section top (1/3 of window above sectionTop)
+            moveSectionTopRotateStart: 0, // @TODO add back in move start
+            rotateClockwise: false,
+            surfaceStyles: {
+                start: {
+                    translate: 0,
+                    gradient: 0,
+                    rotate: 0
+                },
+                end: {
+                    translate: 0,
+                    gradient: 0,
+                    rotate: 0
+                }
+            },
+        }
     };
 
     /**
@@ -79,8 +99,12 @@ var SectionIntro = module.exports = function(controller, $element, index) {
         // @TODO avoid accessing other module directly. event instead?
         controller.props.sections[index].props.associatedModule = this;
 
+
+        // Set up screen rotation on scrolling
+        props.rotator = new Rotator(controller, $section, props.rotatorOptions);
+
         // Load the SVG
-        var svgUrl = $element.data('svg-url');
+        var svgUrl = $section.data('svg-url');
         this.loadSVG(svgUrl);
     };
 
@@ -93,7 +117,7 @@ var SectionIntro = module.exports = function(controller, $element, index) {
         if (attach) {
             controller.emitter.on('sections:reset', this.events.reset);
             // On leave: drop ball
-            if (!this.props.ball1Dropped) {
+            if (!props.ball1Dropped) {
                 controller.emitter.on('section:sectionLeave', this.events.sectionLeave);
             }
             // Refresh dimensions on resize
@@ -112,7 +136,7 @@ var SectionIntro = module.exports = function(controller, $element, index) {
 
     this.loadSVG = function(url) {
 
-        if (this.props.svgLoaded || !url) {
+        if (props.svgLoaded || !url) {
             return;
         }
 
@@ -121,7 +145,7 @@ var SectionIntro = module.exports = function(controller, $element, index) {
             // Add SVG
             svgObject.append(loadedSVG);
 
-            this.props.svgLoaded = true;
+            props.svgLoaded = true;
 
             // If autoscrolling, this may indicate sections are still being removed,
             // so positions will be wrong. If so, defer until autoscroll complete
@@ -149,8 +173,8 @@ var SectionIntro = module.exports = function(controller, $element, index) {
         // Measure balls within SVGs
         var ball1ClientRect = svgObject.select('#ball1').node.getBoundingClientRect(),
             ball2ClientRect = svgObject.select('#ball2').node.getBoundingClientRect(),
-            ball1JQueryOffset = $element.find('#ball1').offset(),
-            ball2JQueryOffset = $element.find('#ball2').offset(),
+            ball1JQueryOffset = $section.find('#ball1').offset(),
+            ball2JQueryOffset = $section.find('#ball2').offset(),
             ball1Position = {
                 top: ball1JQueryOffset.top, // For some reason, this jQuery value is accurate
                                             // in iOS following address bar resize
@@ -170,7 +194,7 @@ var SectionIntro = module.exports = function(controller, $element, index) {
         cache.$logo.addClass('section__logo--with-svg');
 
         //@TODO promise
-        if (!this.props.ball1Dropped){
+        if (!props.ball1Dropped){
             controller.emitter.emit('balls:showBall1', ball1Position);
         }
         controller.emitter.emit('balls:showBall2', ball2Position);
@@ -184,10 +208,10 @@ var SectionIntro = module.exports = function(controller, $element, index) {
 
     this.sectionLeave = function($sectionLeave) {
         // When leaving this section, trigger ball1Drop
-        if ($sectionLeave.get(0) === $element.get(0)) {
-            controller.emitter.emit('balls:ball1Drop', $element);
+        if ($sectionLeave.get(0) === $section.get(0)) {
+            controller.emitter.emit('balls:ball1Drop', $section);
             controller.emitter.removeListener('section:sectionLeave', this.events.sectionLeave);
-            this.props.ball1Dropped = true;
+            props.ball1Dropped = true;
         }
     };
 

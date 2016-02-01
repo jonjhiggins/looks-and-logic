@@ -12,24 +12,27 @@ var $ = require('jquery'),
  * @constructor rotator
  * @param {object} controller
  * @param {jQuery} $section
- * @param {jQuery} $rotator
+ * @param {object} options
  */
 
-var rotator = module.exports = function(controller, $section, $rotator, options) {
+var rotator = module.exports = function(controller, $section, options) {
     'use strict';
 
     // Extend _base module JS
     var base = _base.apply(this);
 
+    var $rotator = $('.rotator');
+
     /**
      * jQuery elements
      * @namespace cache
      * @property {jQuery} $window
-     * @property {jQuery} $rotator
+     * @property {jQuery} $rotatorSurface
      */
 
     var cache = {
-        $window: $(window)
+        $window: $(window),
+        $rotatorSurface: $rotator.find('.rotator__surface')
     };
 
     /**
@@ -78,7 +81,9 @@ var rotator = module.exports = function(controller, $section, $rotator, options)
         this.events.refreshDimensions = this.refreshDimensions.bind(this);
         this.events.pageScroll = _.throttle(this.rotateSurface.bind(this));
 
-        $rotator.css('transform', 'rotate(' + props.surfaceStyles.start.rotate + 'deg)');
+
+        // @TODO add start styles
+        //$rotator.css('transform', 'rotate(' + props.surfaceStyles.start.rotate + 'deg)');
 
         // Attach events
         // this.attachDetachEvents(true); this is called from the section module
@@ -140,19 +145,64 @@ var rotator = module.exports = function(controller, $section, $rotator, options)
 
         var progress = Math.min(Math.max((cache.$window.scrollTop() - props.sectionTopRotateStart), 0) / (props.sectionHalfway - props.sectionTopRotateStart), 1),
             rotate,
-            translate;
+            translate,
+            scale,
+            surfaceHeight;
 
-        if (!props.startVertical) {
-            // normal mode
-            rotate = props.surfaceStyles.end.rotate * progress;
-            translate = props.surfaceStyles.end.translate * progress;
-        } else {
-            // startVertical = go into reverse
-            rotate = props.surfaceStyles.start.rotate - (props.surfaceStyles.start.rotate * progress);
-            translate = props.surfaceStyles.start.translate - (props.surfaceStyles.start.translate * progress);
+        /*globals console*/ console.log(progress);
+
+        // if (!props.startVertical) {
+        //     // normal mode
+        //     rotate = props.surfaceStyles.end.rotate * progress;
+        //     translate = props.surfaceStyles.end.translate * progress;
+        // } else {
+        //     // startVertical = go into reverse
+        //     rotate = props.surfaceStyles.start.rotate - (props.surfaceStyles.start.rotate * progress);
+        //     translate = props.surfaceStyles.start.translate - (props.surfaceStyles.start.translate * progress);
+        // }
+
+        rotate = props.surfaceStyles.start.rotate + ((props.surfaceStyles.end.rotate  - props.surfaceStyles.start.rotate) * progress);
+        translate = props.surfaceStyles.end.translate * progress;
+        scale = getGradientScale($section.width(), $section.height(), rotate); //@TODO don't measure here
+        surfaceHeight = props.surfaceStyles.start.gradient + ((props.surfaceStyles.end.gradient - props.surfaceStyles.start.gradient) * progress);
+
+        if (progress > 0) {
+            $rotator.css('transform', 'scale(' + scale + ')  rotate(' + rotate + 'deg)');
+            cache.$rotatorSurface.css('height', surfaceHeight + '%');
         }
 
-        $rotator.css('transform', 'translateX(' + 0 + props.viewportUnit + ')  rotate(' + rotate + 'deg)');
+
+
+    };
+
+    /**
+     * How much do elements need to be scaled up so that gradient background will cover screen
+     * @function getGradientScale
+     * @param {number} W width
+     * @param {number} H height
+     * @param {number} A angle in degrees
+     */
+
+    var getGradientScale = function(W, H, A) {
+      var gradLine = getGradientLineLength(W, H, A);
+      return gradLine / H;
+    };
+
+    /**
+     * Get length of gradient line running through a box
+     * Gradients have to be scaled up at certain angles to fill their container
+     * https://drafts.csswg.org/css-images/#linear-gradient-syntax
+     *
+     *
+     * @function getGradientLineLength
+     * @param {number} W width
+     * @param {number} H height
+     * @param {number} A angle in degrees
+     */
+
+    var getGradientLineLength = function(W, H, A) {
+      var radianAngle = A * Math.PI / 180; // Convert to radian
+      return Math.abs(W * Math.sin(radianAngle)) + Math.abs(H * Math.cos(radianAngle));
     };
 
     /**

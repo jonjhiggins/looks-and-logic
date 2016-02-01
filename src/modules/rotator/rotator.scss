@@ -5,55 +5,42 @@
     /* ==========================================================================
        Variables
        ========================================================================== */
-    $rotatorWidth: 100vw;
-    $rotatorHeight: 100vh;
-    $rotatorWidthBuffer: $rotatorHeight * 2;
-    $rotatorMinHeight: $rotatorWidth * 0.75; // Extra buffer sometimes required
 
     /* ==========================================================================
        Rotating surface
        ========================================================================== */
 
-    .section[data-background="white"] {
-        .rotator__background {
-            background-color: $colourBlack;
-        }
-        .rotator {
-            background-color: $colourWhite;
-        }
-    }
-
-    .section[data-background="black"] {
-        .rotator__background {
-            background-color: $colourWhite;
-        }
-        .rotator {
-            background-color: $colourBlack;
-        }
-    }
-
-    .rotator__background,
-    .rotator {
-        position: absolute;
-        height: 100%;
-        top: 0;
-    }
+    .rotator,
+    .rotator__surface,
     .rotator__background {
+        height: 100%;
         width: 100%;
         left: 0;
     }
+
     .rotator {
-        box-sizing: content-box;
-        width: $rotatorWidth;
-        padding: 0 ($rotatorWidthBuffer / 2);
-        min-height: $rotatorMinHeight;
-        left: -($rotatorWidthBuffer / 2);
-        transform-origin: 50% 0;
-        z-index: 1; // Move in front of next section, so ball is still visible over next section
+        position: fixed;
+        top: 0;
+
         .ball {
-            margin-left: $rotatorWidthBuffer / 2;
             top: 0 !important;
         }
+    }
+
+    .rotator__surface,
+    .rotator__background {
+        position: absolute;
+    }
+
+    .rotator__background  {
+        top: 0;
+        background-color: $colourWhite;
+    }
+
+    .rotator__surface  {
+        bottom: 0;
+        background-color: $colourBlack;
+        height: 0;
     }
 
     /* ==========================================================================
