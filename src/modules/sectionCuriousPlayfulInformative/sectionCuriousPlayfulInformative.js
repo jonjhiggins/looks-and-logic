@@ -185,7 +185,6 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
                 onComplete: function() {
                     props.ballDropped = true;
                     controller.emitter.emit('balls:removeClonedBall1', $ball);
-                    $section.addClass('js--ball-dropped');
                 }
             });
 

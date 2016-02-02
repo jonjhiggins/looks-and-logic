@@ -14,14 +14,7 @@
         position: relative; // move in front of .rotator
         overflow: hidden; // Mask out text until it's revealed on scroll down
         z-index: 1; // Move in front of previous section
-    }
-
-    // Move next section in front after ball dropped
-    &.js--ball-dropped {
-        overflow: hidden;
-    }
-    &.js--ball-dropped + .section {
-        z-index: 1;
+        mix-blend-mode: difference;
     }
 
     /* ==========================================================================
