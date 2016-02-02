@@ -50,6 +50,7 @@ var rotator = module.exports = function(controller, $section, options) {
 
     var props = {
         moveSectionTopRotateStart: options.moveSectionTopRotateStart,
+        moveSectionBottomRotateEnd: options.moveSectionTopRotateStart ? options.moveSectionTopRotateStart : 0,
         surfaceStyles: options.surfaceStyles,
         sectionHeight: null,
         sectionTopRotateStart: null, //
@@ -128,8 +129,13 @@ var rotator = module.exports = function(controller, $section, options) {
         // markRaul and clients rotation starts when scrolling into section top
         props.sectionTopRotateStart = $section.offset().top + (controller.props.windowHeight * props.moveSectionTopRotateStart);
 
-        props.sectionHalfway = props.sectionTopRotateStart + (props.sectionHeight / 2);
-        props.sectionBottom = $section.offset().top + (props.sectionHeight);
+        // @TODO remove props.sectionHalfway = props.sectionTopRotateStart + (props.sectionHeight / 2);
+        if (props.moveSectionBottomRotateEnd) {
+            props.sectionBottom = $section.offset().top + (props.sectionHeight - props.moveSectionBottomRotateEnd);
+        } else {
+            props.sectionBottom = $section.offset().top + (props.sectionHeight);
+        }
+
 
     };
 

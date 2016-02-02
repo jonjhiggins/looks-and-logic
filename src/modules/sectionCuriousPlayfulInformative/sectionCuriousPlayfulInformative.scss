@@ -6,6 +6,10 @@
 
     //height: 133.3vh; //@TODO make longer;
 
+    &[data-background] {
+        background: none;
+    }
+
     .container {
         position: relative; // move in front of .rotator
         overflow: hidden; // Mask out text until it's revealed on scroll down

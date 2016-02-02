@@ -27,6 +27,7 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
 
     var cache = {
         $window: $(window),
+        $rotatorSurface: $('.rotator__surface')
     };
 
     /**
@@ -46,13 +47,13 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
         rotator: null,
         rotatorOptions: {
             startVertical: false,
-            //moveSectionTopRotateStart: -1 / 3, // starts before scrolling into section top (1/3 of window above sectionTop)
-            moveSectionTopRotateStart: 0, // @TODO add back in move start
+            moveSectionTopRotateStart: -1 / 3, // starts before scrolling into section top (1/3 of window above sectionTop)
+            //moveSectionTopRotateStart: 0, // @TODO add back in move start
             rotateClockwise: false,
             surfaceStyles: {
                 start: {
                     translate: 0,
-                    gradient: 100,
+                    gradient: 66.6,
                     rotate: 0
                 },
                 end: {
@@ -145,7 +146,7 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
                 }
 
                 if (!props.ballCloned) {
-                    //controller.emitter.emit('balls:cloneBall1', cache.$rotator);// @TODO add in
+                    controller.emitter.emit('balls:cloneBall1', cache.$rotatorSurface);
                     props.ballCloned = true;
                 }
 
@@ -175,7 +176,7 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
             props.ballCloned &&
             !props.ballDropped) {
 
-            var $ball = $section.find('.ball');
+            var $ball = cache.$rotatorSurface.find('.ball');
 
             TweenMax.to($ball, 0.4, {
                 x: '-=' + controller.props.windowHeight * 2, // ball going down, but is rotated 90

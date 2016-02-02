@@ -38,9 +38,10 @@ var sectionMakingDigitalHuman = module.exports = function(controller, $section, 
         rotatorOptions: {
             startVertical: false,
             moveSectionTopRotateStart: -1/3,
+            moveSectionBottomRotateEnd: -1/3,
             rotateClockwise: false,
             surfaceStyles: {
-                hidden: true,
+                //hidden: true,
                 start: {
                     translate: 0,
                     gradient: 0,

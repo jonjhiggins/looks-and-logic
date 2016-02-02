@@ -33766,6 +33766,7 @@ var rotator = module.exports = function(controller, $section, options) {
 
     var props = {
         moveSectionTopRotateStart: options.moveSectionTopRotateStart,
+        moveSectionBottomRotateEnd: options.moveSectionTopRotateStart ? options.moveSectionTopRotateStart : 0,
         surfaceStyles: options.surfaceStyles,
         sectionHeight: null,
         sectionTopRotateStart: null, //
@@ -33844,8 +33845,13 @@ var rotator = module.exports = function(controller, $section, options) {
         // markRaul and clients rotation starts when scrolling into section top
         props.sectionTopRotateStart = $section.offset().top + (controller.props.windowHeight * props.moveSectionTopRotateStart);
 
-        props.sectionHalfway = props.sectionTopRotateStart + (props.sectionHeight / 2);
-        props.sectionBottom = $section.offset().top + (props.sectionHeight);
+        // @TODO remove props.sectionHalfway = props.sectionTopRotateStart + (props.sectionHeight / 2);
+        if (props.moveSectionBottomRotateEnd) {
+            props.sectionBottom = $section.offset().top + (props.sectionHeight - props.moveSectionBottomRotateEnd);
+        } else {
+            props.sectionBottom = $section.offset().top + (props.sectionHeight);
+        }
+
 
     };
 
@@ -34266,6 +34272,7 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
 
     var cache = {
         $window: $(window),
+        $rotatorSurface: $('.rotator__surface')
     };
 
     /**
@@ -34285,13 +34292,13 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
         rotator: null,
         rotatorOptions: {
             startVertical: false,
-            //moveSectionTopRotateStart: -1 / 3, // starts before scrolling into section top (1/3 of window above sectionTop)
-            moveSectionTopRotateStart: 0, // @TODO add back in move start
+            moveSectionTopRotateStart: -1 / 3, // starts before scrolling into section top (1/3 of window above sectionTop)
+            //moveSectionTopRotateStart: 0, // @TODO add back in move start
             rotateClockwise: false,
             surfaceStyles: {
                 start: {
                     translate: 0,
-                    gradient: 100,
+                    gradient: 66.6,
                     rotate: 0
                 },
                 end: {
@@ -34384,7 +34391,7 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
                 }
 
                 if (!props.ballCloned) {
-                    //controller.emitter.emit('balls:cloneBall1', cache.$rotator);// @TODO add in
+                    controller.emitter.emit('balls:cloneBall1', cache.$rotatorSurface);
                     props.ballCloned = true;
                 }
 
@@ -34414,7 +34421,7 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
             props.ballCloned &&
             !props.ballDropped) {
 
-            var $ball = $section.find('.ball');
+            var $ball = cache.$rotatorSurface.find('.ball');
 
             TweenMax.to($ball, 0.4, {
                 x: '-=' + controller.props.windowHeight * 2, // ball going down, but is rotated 90
@@ -35271,9 +35278,10 @@ var sectionMakingDigitalHuman = module.exports = function(controller, $section, 
         rotatorOptions: {
             startVertical: false,
             moveSectionTopRotateStart: -1/3,
+            moveSectionBottomRotateEnd: -1/3,
             rotateClockwise: false,
             surfaceStyles: {
-                hidden: true,
+                //hidden: true,
                 start: {
                     translate: 0,
                     gradient: 0,
