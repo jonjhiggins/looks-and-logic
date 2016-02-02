@@ -33751,7 +33751,8 @@ var rotator = module.exports = function(controller, $section, options) {
 
     var cache = {
         $window: $(window),
-        $rotatorSurface: $rotator.find('.rotator__surface')
+        $rotatorSurface: $rotator.find('.rotator__surface'),
+        $rotatorRotation: $rotator.find('.rotator__rotation')
     };
 
     /**
@@ -33875,7 +33876,9 @@ var rotator = module.exports = function(controller, $section, options) {
         surfaceHeight = props.surfaceStyles.start.gradient + ((props.surfaceStyles.end.gradient - props.surfaceStyles.start.gradient) * progress);
 
         if (progress > 0) {
-            $rotator.css('transform', 'scale(' + scale + ')  rotate(' + rotate + 'deg)');
+
+            $rotator.css('background-image', ' linear-gradient(' + rotate + 'deg, #000 ' + surfaceHeight + '%, transparent ' + surfaceHeight + '%)');
+            cache.$rotatorRotation.css('transform', 'scale(' + scale + ')  rotate(' + rotate + 'deg)');
             cache.$rotatorSurface.css('height', surfaceHeight + '%');
         }
 

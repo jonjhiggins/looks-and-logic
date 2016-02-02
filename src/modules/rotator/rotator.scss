@@ -12,7 +12,7 @@
 
     .rotator,
     .rotator__surface,
-    .rotator__background {
+    .rotator__rotation {
         height: 100%;
         width: 100%;
         left: 0;
@@ -28,14 +28,12 @@
     }
 
     .rotator__surface,
-    .rotator__background {
+    .rotator__rotation {
         position: absolute;
     }
 
-    .rotator__background  {
+    .rotator__rotation  {
         top: 0;
-        background-color: $colourWhite;
-        display: none;
     }
 
     .rotator__surface  {
