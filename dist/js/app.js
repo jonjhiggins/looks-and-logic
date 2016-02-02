@@ -33894,6 +33894,12 @@ var rotator = module.exports = function(controller, $section, options) {
         if (progress > 0) {
             $rotator.css('transform', 'scale(' + scale + ')  rotate(' + rotate + 'deg)');
             cache.$rotatorSurface.css('height', surfaceHeight + '%');
+
+            if (props.surfaceStyles.hidden) {
+                $rotator.hide();
+            } else {
+                $rotator.show();
+            }
         }
 
 
@@ -35273,6 +35279,7 @@ var sectionMakingDigitalHuman = module.exports = function(controller, $section, 
             moveSectionTopRotateStart: -1/3,
             rotateClockwise: false,
             surfaceStyles: {
+                hidden: true,
                 start: {
                     translate: 0,
                     gradient: 0,

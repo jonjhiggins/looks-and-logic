@@ -178,6 +178,12 @@ var rotator = module.exports = function(controller, $section, options) {
         if (progress > 0) {
             $rotator.css('transform', 'scale(' + scale + ')  rotate(' + rotate + 'deg)');
             cache.$rotatorSurface.css('height', surfaceHeight + '%');
+
+            if (props.surfaceStyles.hidden) {
+                $rotator.hide();
+            } else {
+                $rotator.show();
+            }
         }
 
 
