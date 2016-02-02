@@ -92,6 +92,8 @@ var SectionIntro = module.exports = function(controller, $section, index) {
         // Bind events
         this.events.sectionLeave = this.sectionLeave.bind(this);
         this.events.resize = this.measureAndShowBalls.bind(this);
+        // Set up screen rotation on scrolling
+        props.rotator = new Rotator(controller, $section, props.rotatorOptions);
         // Attach events
         this.attachDetachEvents(true);
 
@@ -100,8 +102,7 @@ var SectionIntro = module.exports = function(controller, $section, index) {
         controller.props.sections[index].props.associatedModule = this;
 
 
-        // Set up screen rotation on scrolling
-        props.rotator = new Rotator(controller, $section, props.rotatorOptions);
+
 
         // Load the SVG
         var svgUrl = $section.data('svg-url');
@@ -122,10 +123,12 @@ var SectionIntro = module.exports = function(controller, $section, index) {
             }
             // Refresh dimensions on resize
             controller.emitter.on('window:resize', this.events.resize);
+            props.rotator.attachDetachEvents(true);
         } else {
             controller.emitter.removeListener('sections:reset', this.events.reset);
             controller.emitter.removeListener('section:sectionLeave', this.events.sectionLeave);
             controller.emitter.removeListener('window:resize', this.events.resize);
+            props.rotator.attachDetachEvents(false);
         }
     };
 

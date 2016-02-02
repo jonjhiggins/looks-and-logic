@@ -2,6 +2,7 @@
 
 var $ = require('jquery'),
     ScrollMagic = require('scrollmagic'),
+    Rotator = require('../rotator/rotator.js'),
     _base = require('../_base/_base.js');
 
 /**
@@ -22,7 +23,35 @@ var sectionMakingDigitalHuman = module.exports = function(controller, $section, 
      */
 
     var cache = {
-        $window: $(window),
+        $window: $(window)
+    };
+
+    /**
+     * properties, states and settings
+     * @namespace props
+     * @property {number} svgLoaded
+     * @property {boolean} ball1Dropped has ball 1 dropped?
+     */
+
+    var props = {
+        rotator: null,
+        rotatorOptions: {
+            startVertical: false,
+            moveSectionTopRotateStart: -1/3,
+            rotateClockwise: false,
+            surfaceStyles: {
+                start: {
+                    translate: 0,
+                    gradient: 0,
+                    rotate: 0
+                },
+                end: {
+                    translate: 0,
+                    gradient: 100,
+                    rotate: 0
+                }
+            },
+        }
     };
 
     /**
@@ -50,6 +79,8 @@ var sectionMakingDigitalHuman = module.exports = function(controller, $section, 
         this.refreshDimensions();
         // Bind events
         this.events.refreshDimensions = this.refreshDimensions.bind(this);
+        // Set up screen rotation on scrolling
+        props.rotator = new Rotator(controller, $section, props.rotatorOptions);
         // Attach events
         this.attachDetachEvents(true);
         // ScrollMagic scene
@@ -69,9 +100,11 @@ var sectionMakingDigitalHuman = module.exports = function(controller, $section, 
         if (attach) {
             controller.emitter.on('sections:reset', this.events.reset);
             controller.emitter.on('window:resize', this.events.refreshDimensions);
+            props.rotator.attachDetachEvents(true);
         } else {
             controller.emitter.removeListener('sections:reset', this.events.reset);
             controller.emitter.removeListener('window:resize', this.events.refreshDimensions);
+            props.rotator.attachDetachEvents(false);
         }
     };
 

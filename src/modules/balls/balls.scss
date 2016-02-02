@@ -8,6 +8,7 @@
 .ball {
     position: absolute;
     background: url(../img/ball--black.svg) 50% 50% no-repeat;
+    z-index: 1;
 
     &.js--hidden {
         display: none;

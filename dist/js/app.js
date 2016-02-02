@@ -33759,6 +33759,7 @@ var rotator = module.exports = function(controller, $section, options) {
      * @property {number} sectionHeight
      * @property {number} sectionTopRotateStart waypoint position (px) at which to start rotation
      * @property {number} sectionHalfway waypoint position (px) halfway through section
+     * @property {number} sectionBottom waypoint position (px) bottom of section
      * @property {boolean} startVertical should we start with rotator vertical
      * @property {string} viewportUnit at portrait, the rotator needs to be based on viewport height as the width won't cover the screen.
      */
@@ -33769,6 +33770,7 @@ var rotator = module.exports = function(controller, $section, options) {
         sectionHeight: null,
         sectionTopRotateStart: null, //
         sectionHalfway: null,
+        sectionBottom: null,
         startVertical: options.startVertical,
         viewportUnit: 'vw'
     };
@@ -33843,6 +33845,7 @@ var rotator = module.exports = function(controller, $section, options) {
         props.sectionTopRotateStart = $section.offset().top + (controller.props.windowHeight * props.moveSectionTopRotateStart);
 
         props.sectionHalfway = props.sectionTopRotateStart + (props.sectionHeight / 2);
+        props.sectionBottom = $section.offset().top + (props.sectionHeight);
 
     };
 
@@ -33859,13 +33862,19 @@ var rotator = module.exports = function(controller, $section, options) {
             return;
         }
 
-        var progress = Math.min(Math.max((cache.$window.scrollTop() - props.sectionTopRotateStart), 0) / (props.sectionHalfway - props.sectionTopRotateStart), 1),
+        /*globals console*/
+        if ($section.attr('id') === 'section--1') {
+            console.log(cache.$window.scrollTop(), props.sectionTopRotateStart, props.sectionBottom + props.sectionTopRotateStart, props.sectionHeight);
+        }
+
+
+        var progress = Math.min(Math.max((cache.$window.scrollTop() - props.sectionTopRotateStart), 0) / (props.sectionBottom - props.sectionTopRotateStart), 1),
             rotate,
             translate,
             scale,
             surfaceHeight;
 
-        /*globals console*/ console.log(progress);
+        /*globals console*/// console.log($section.attr('id'), progress);
 
         // if (!props.startVertical) {
         //     // normal mode
@@ -35081,6 +35090,8 @@ var SectionIntro = module.exports = function(controller, $section, index) {
         // Bind events
         this.events.sectionLeave = this.sectionLeave.bind(this);
         this.events.resize = this.measureAndShowBalls.bind(this);
+        // Set up screen rotation on scrolling
+        props.rotator = new Rotator(controller, $section, props.rotatorOptions);
         // Attach events
         this.attachDetachEvents(true);
 
@@ -35089,8 +35100,7 @@ var SectionIntro = module.exports = function(controller, $section, index) {
         controller.props.sections[index].props.associatedModule = this;
 
 
-        // Set up screen rotation on scrolling
-        props.rotator = new Rotator(controller, $section, props.rotatorOptions);
+
 
         // Load the SVG
         var svgUrl = $section.data('svg-url');
@@ -35111,10 +35121,12 @@ var SectionIntro = module.exports = function(controller, $section, index) {
             }
             // Refresh dimensions on resize
             controller.emitter.on('window:resize', this.events.resize);
+            props.rotator.attachDetachEvents(true);
         } else {
             controller.emitter.removeListener('sections:reset', this.events.reset);
             controller.emitter.removeListener('section:sectionLeave', this.events.sectionLeave);
             controller.emitter.removeListener('window:resize', this.events.resize);
+            props.rotator.attachDetachEvents(false);
         }
     };
 
@@ -35223,6 +35235,7 @@ var SectionIntro = module.exports = function(controller, $section, index) {
 
 var $ = require('jquery'),
     ScrollMagic = require('scrollmagic'),
+    Rotator = require('../rotator/rotator.js'),
     _base = require('../_base/_base.js');
 
 /**
@@ -35243,7 +35256,35 @@ var sectionMakingDigitalHuman = module.exports = function(controller, $section, 
      */
 
     var cache = {
-        $window: $(window),
+        $window: $(window)
+    };
+
+    /**
+     * properties, states and settings
+     * @namespace props
+     * @property {number} svgLoaded
+     * @property {boolean} ball1Dropped has ball 1 dropped?
+     */
+
+    var props = {
+        rotator: null,
+        rotatorOptions: {
+            startVertical: false,
+            moveSectionTopRotateStart: -1/3,
+            rotateClockwise: false,
+            surfaceStyles: {
+                start: {
+                    translate: 0,
+                    gradient: 0,
+                    rotate: 0
+                },
+                end: {
+                    translate: 0,
+                    gradient: 100,
+                    rotate: 0
+                }
+            },
+        }
     };
 
     /**
@@ -35271,6 +35312,8 @@ var sectionMakingDigitalHuman = module.exports = function(controller, $section, 
         this.refreshDimensions();
         // Bind events
         this.events.refreshDimensions = this.refreshDimensions.bind(this);
+        // Set up screen rotation on scrolling
+        props.rotator = new Rotator(controller, $section, props.rotatorOptions);
         // Attach events
         this.attachDetachEvents(true);
         // ScrollMagic scene
@@ -35290,9 +35333,11 @@ var sectionMakingDigitalHuman = module.exports = function(controller, $section, 
         if (attach) {
             controller.emitter.on('sections:reset', this.events.reset);
             controller.emitter.on('window:resize', this.events.refreshDimensions);
+            props.rotator.attachDetachEvents(true);
         } else {
             controller.emitter.removeListener('sections:reset', this.events.reset);
             controller.emitter.removeListener('window:resize', this.events.refreshDimensions);
+            props.rotator.attachDetachEvents(false);
         }
     };
 
@@ -35355,7 +35400,7 @@ var sectionMakingDigitalHuman = module.exports = function(controller, $section, 
     this.init();
 };
 
-},{"../_base/_base.js":15,"jquery":6,"scrollmagic":10}],26:[function(require,module,exports){
+},{"../_base/_base.js":15,"../rotator/rotator.js":19,"jquery":6,"scrollmagic":10}],26:[function(require,module,exports){
 /** @module sectionMarkRaul */
 
 var $ = require('jquery'),

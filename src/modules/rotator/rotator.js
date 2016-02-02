@@ -43,6 +43,7 @@ var rotator = module.exports = function(controller, $section, options) {
      * @property {number} sectionHeight
      * @property {number} sectionTopRotateStart waypoint position (px) at which to start rotation
      * @property {number} sectionHalfway waypoint position (px) halfway through section
+     * @property {number} sectionBottom waypoint position (px) bottom of section
      * @property {boolean} startVertical should we start with rotator vertical
      * @property {string} viewportUnit at portrait, the rotator needs to be based on viewport height as the width won't cover the screen.
      */
@@ -53,6 +54,7 @@ var rotator = module.exports = function(controller, $section, options) {
         sectionHeight: null,
         sectionTopRotateStart: null, //
         sectionHalfway: null,
+        sectionBottom: null,
         startVertical: options.startVertical,
         viewportUnit: 'vw'
     };
@@ -127,6 +129,7 @@ var rotator = module.exports = function(controller, $section, options) {
         props.sectionTopRotateStart = $section.offset().top + (controller.props.windowHeight * props.moveSectionTopRotateStart);
 
         props.sectionHalfway = props.sectionTopRotateStart + (props.sectionHeight / 2);
+        props.sectionBottom = $section.offset().top + (props.sectionHeight);
 
     };
 
@@ -143,13 +146,19 @@ var rotator = module.exports = function(controller, $section, options) {
             return;
         }
 
-        var progress = Math.min(Math.max((cache.$window.scrollTop() - props.sectionTopRotateStart), 0) / (props.sectionHalfway - props.sectionTopRotateStart), 1),
+        /*globals console*/
+        if ($section.attr('id') === 'section--1') {
+            console.log(cache.$window.scrollTop(), props.sectionTopRotateStart, props.sectionBottom + props.sectionTopRotateStart, props.sectionHeight);
+        }
+
+
+        var progress = Math.min(Math.max((cache.$window.scrollTop() - props.sectionTopRotateStart), 0) / (props.sectionBottom - props.sectionTopRotateStart), 1),
             rotate,
             translate,
             scale,
             surfaceHeight;
 
-        /*globals console*/ console.log(progress);
+        /*globals console*/// console.log($section.attr('id'), progress);
 
         // if (!props.startVertical) {
         //     // normal mode

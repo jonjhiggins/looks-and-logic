@@ -13,12 +13,13 @@
     align-items: center;
     justify-content: center;
     text-transform: uppercase;
+    z-index: 1;
     &[data-background="white"] {
-        //background-color: $colourWhite;
+        background-color: $colourWhite;
         color: $colourBlack;
     }
     &[data-background="black"] {
-        //background-color: $colourBlack;
+        background-color: $colourBlack;
         color: $colourWhite;
     }
 }
