@@ -17,4 +17,10 @@
         margin-top: 33.333 * 1vh;
         position: relative;
     }
+
+    &.js--scene-leave{
+        .section__title {
+            display: none;
+        }
+    }
 }

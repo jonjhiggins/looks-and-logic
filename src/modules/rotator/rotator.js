@@ -146,11 +146,6 @@ var rotator = module.exports = function(controller, $section, options) {
             return;
         }
 
-        /*globals console*/
-        if ($section.attr('id') === 'section--1') {
-            console.log(cache.$window.scrollTop(), props.sectionTopRotateStart, props.sectionBottom + props.sectionTopRotateStart, props.sectionHeight);
-        }
-
 
         var progress = Math.min(Math.max((cache.$window.scrollTop() - props.sectionTopRotateStart), 0) / (props.sectionBottom - props.sectionTopRotateStart), 1),
             rotate,
@@ -158,7 +153,6 @@ var rotator = module.exports = function(controller, $section, options) {
             scale,
             surfaceHeight;
 
-        /*globals console*/// console.log($section.attr('id'), progress);
 
         // if (!props.startVertical) {
         //     // normal mode

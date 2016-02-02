@@ -133,6 +133,14 @@ var sectionMakingDigitalHuman = module.exports = function(controller, $section, 
             pushFollowers: false
         });
 
+        this.scenePinTitle.on('start', function(event) {
+            $section.removeClass('js--scene-leave');
+        });
+
+        this.scenePinTitle.on('end', function(event) {
+            $section.addClass('js--scene-leave');
+        });
+
         // ScrollMagic Safari/Firefox bug
         // https://github.com/janpaepke/ScrollMagic/issues/458
         cache.$window.scrollTop(scrollTop);
