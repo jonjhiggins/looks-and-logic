@@ -41,7 +41,8 @@ var controller = module.exports = function() {
      * @property {array} sectionClientss app's sectionClients
      * @property {object} scrollScenes scrollmagic controller
      * @property {string} staticAssetPath used for loading images via JS. differs between aerobatic and localhost
-     * @property {number} windowHeight
+     * @property {number} windowHeight,
+     * @property {number} windowWidth
      */
 
     this.props = {
@@ -60,7 +61,8 @@ var controller = module.exports = function() {
         sectionClientss: [],
         scrollScenes: new ScrollMagic.Controller(),
         staticAssetPath: (typeof __aerobatic__ !== 'undefined') ? __aerobatic__.staticAssetPath : '',
-        windowHeight: 0
+        windowHeight: 0,
+        windowWidth: 0
     };
 
     /**
@@ -140,6 +142,7 @@ var controller = module.exports = function() {
 
       this.refreshDimensions = function () {
           this.props.windowHeight = cache.$window.height();
+          this.props.windowWidth = cache.$window.width();
           this.props.orientationLandscape = Modernizr.mq('screen and (orientation: landscape)');
       };
 

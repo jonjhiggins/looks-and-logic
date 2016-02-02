@@ -42,10 +42,7 @@ var rotator = module.exports = function(controller, $section, options) {
      * @property {object} surfaceStyles start/end styles for surface to animate between on scroll
      * @property {number} sectionHeight
      * @property {number} sectionTopRotateStart waypoint position (px) at which to start rotation
-     * @property {number} sectionHalfway waypoint position (px) halfway through section
      * @property {number} sectionBottom waypoint position (px) bottom of section
-     * @property {boolean} startVertical should we start with rotator vertical
-     * @property {string} viewportUnit at portrait, the rotator needs to be based on viewport height as the width won't cover the screen.
      */
 
     var props = {
@@ -54,10 +51,7 @@ var rotator = module.exports = function(controller, $section, options) {
         surfaceStyles: options.surfaceStyles,
         sectionHeight: null,
         sectionTopRotateStart: null, //
-        sectionHalfway: null,
         sectionBottom: null,
-        startVertical: options.startVertical,
-        viewportUnit: 'vw'
     };
 
     /**
@@ -122,14 +116,11 @@ var rotator = module.exports = function(controller, $section, options) {
     this.refreshDimensions = function() {
 
         props.sectionHeight = $section.height();
-        props.viewportUnit = controller.props.orientationLandscape ? 'vw' : 'vh'; // At portrait, the rotator needs to be based on viewport height
-                                                                                  // as the width won't cover the screen.
 
         // curiousPlayful rotation starts before scrolling into section top (1/3 of window above sectionTop)
         // markRaul and clients rotation starts when scrolling into section top
         props.sectionTopRotateStart = $section.offset().top + (controller.props.windowHeight * props.moveSectionTopRotateStart);
 
-        // @TODO remove props.sectionHalfway = props.sectionTopRotateStart + (props.sectionHeight / 2);
         if (props.moveSectionBottomRotateEnd) {
             props.sectionBottom = $section.offset().top + (props.sectionHeight - props.moveSectionBottomRotateEnd);
         } else {
@@ -159,31 +150,14 @@ var rotator = module.exports = function(controller, $section, options) {
             scale,
             surfaceHeight;
 
-
-        // if (!props.startVertical) {
-        //     // normal mode
-        //     rotate = props.surfaceStyles.end.rotate * progress;
-        //     translate = props.surfaceStyles.end.translate * progress;
-        // } else {
-        //     // startVertical = go into reverse
-        //     rotate = props.surfaceStyles.start.rotate - (props.surfaceStyles.start.rotate * progress);
-        //     translate = props.surfaceStyles.start.translate - (props.surfaceStyles.start.translate * progress);
-        // }
-
         rotate = props.surfaceStyles.start.rotate + ((props.surfaceStyles.end.rotate  - props.surfaceStyles.start.rotate) * progress);
         translate = props.surfaceStyles.end.translate * progress;
-        scale = getGradientScale($section.width(), $section.height(), rotate); //@TODO don't measure here
+        scale = getGradientScale(controller.props.windowWidth, props.sectionHeight , rotate);
         surfaceHeight = props.surfaceStyles.start.gradient + ((props.surfaceStyles.end.gradient - props.surfaceStyles.start.gradient) * progress);
 
         if (progress > 0) {
             $rotator.css('transform', 'scale(' + scale + ')  rotate(' + rotate + 'deg)');
             cache.$rotatorSurface.css('height', surfaceHeight + '%');
-
-            if (props.surfaceStyles.hidden) {
-                $rotator.hide();
-            } else {
-                $rotator.show();
-            }
         }
 
 

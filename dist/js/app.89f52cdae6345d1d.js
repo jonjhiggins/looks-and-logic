@@ -33498,7 +33498,8 @@ var controller = module.exports = function() {
      * @property {array} sectionClientss app's sectionClients
      * @property {object} scrollScenes scrollmagic controller
      * @property {string} staticAssetPath used for loading images via JS. differs between aerobatic and localhost
-     * @property {number} windowHeight
+     * @property {number} windowHeight,
+     * @property {number} windowWidth
      */
 
     this.props = {
@@ -33517,7 +33518,8 @@ var controller = module.exports = function() {
         sectionClientss: [],
         scrollScenes: new ScrollMagic.Controller(),
         staticAssetPath: (typeof __aerobatic__ !== 'undefined') ? __aerobatic__.staticAssetPath : '',
-        windowHeight: 0
+        windowHeight: 0,
+        windowWidth: 0
     };
 
     /**
@@ -33597,6 +33599,7 @@ var controller = module.exports = function() {
 
       this.refreshDimensions = function () {
           this.props.windowHeight = cache.$window.height();
+          this.props.windowWidth = cache.$window.width();
           this.props.orientationLandscape = Modernizr.mq('screen and (orientation: landscape)');
       };
 
@@ -33758,10 +33761,7 @@ var rotator = module.exports = function(controller, $section, options) {
      * @property {object} surfaceStyles start/end styles for surface to animate between on scroll
      * @property {number} sectionHeight
      * @property {number} sectionTopRotateStart waypoint position (px) at which to start rotation
-     * @property {number} sectionHalfway waypoint position (px) halfway through section
      * @property {number} sectionBottom waypoint position (px) bottom of section
-     * @property {boolean} startVertical should we start with rotator vertical
-     * @property {string} viewportUnit at portrait, the rotator needs to be based on viewport height as the width won't cover the screen.
      */
 
     var props = {
@@ -33770,10 +33770,7 @@ var rotator = module.exports = function(controller, $section, options) {
         surfaceStyles: options.surfaceStyles,
         sectionHeight: null,
         sectionTopRotateStart: null, //
-        sectionHalfway: null,
         sectionBottom: null,
-        startVertical: options.startVertical,
-        viewportUnit: 'vw'
     };
 
     /**
@@ -33838,14 +33835,11 @@ var rotator = module.exports = function(controller, $section, options) {
     this.refreshDimensions = function() {
 
         props.sectionHeight = $section.height();
-        props.viewportUnit = controller.props.orientationLandscape ? 'vw' : 'vh'; // At portrait, the rotator needs to be based on viewport height
-                                                                                  // as the width won't cover the screen.
 
         // curiousPlayful rotation starts before scrolling into section top (1/3 of window above sectionTop)
         // markRaul and clients rotation starts when scrolling into section top
         props.sectionTopRotateStart = $section.offset().top + (controller.props.windowHeight * props.moveSectionTopRotateStart);
 
-        // @TODO remove props.sectionHalfway = props.sectionTopRotateStart + (props.sectionHeight / 2);
         if (props.moveSectionBottomRotateEnd) {
             props.sectionBottom = $section.offset().top + (props.sectionHeight - props.moveSectionBottomRotateEnd);
         } else {
@@ -33875,31 +33869,14 @@ var rotator = module.exports = function(controller, $section, options) {
             scale,
             surfaceHeight;
 
-
-        // if (!props.startVertical) {
-        //     // normal mode
-        //     rotate = props.surfaceStyles.end.rotate * progress;
-        //     translate = props.surfaceStyles.end.translate * progress;
-        // } else {
-        //     // startVertical = go into reverse
-        //     rotate = props.surfaceStyles.start.rotate - (props.surfaceStyles.start.rotate * progress);
-        //     translate = props.surfaceStyles.start.translate - (props.surfaceStyles.start.translate * progress);
-        // }
-
         rotate = props.surfaceStyles.start.rotate + ((props.surfaceStyles.end.rotate  - props.surfaceStyles.start.rotate) * progress);
         translate = props.surfaceStyles.end.translate * progress;
-        scale = getGradientScale($section.width(), $section.height(), rotate); //@TODO don't measure here
+        scale = getGradientScale(controller.props.windowWidth, props.sectionHeight , rotate);
         surfaceHeight = props.surfaceStyles.start.gradient + ((props.surfaceStyles.end.gradient - props.surfaceStyles.start.gradient) * progress);
 
         if (progress > 0) {
             $rotator.css('transform', 'scale(' + scale + ')  rotate(' + rotate + 'deg)');
             cache.$rotatorSurface.css('height', surfaceHeight + '%');
-
-            if (props.surfaceStyles.hidden) {
-                $rotator.hide();
-            } else {
-                $rotator.show();
-            }
         }
 
 
@@ -34178,14 +34155,12 @@ var sectionClients = module.exports = function(controller, $section, index) {
     var props = {
         rotator: null,
         rotatorOptions: {
-            startVertical: false,
             moveSectionTopRotateStart: 0,
-            rotateClockwise: true,
             surfaceStyles: {
                 start: {
                     translate: 0,
-                    gradient: 0,
-                    rotate: 0
+                    gradient: 100,
+                    rotate: -180
                 },
                 end: {
                     translate: 100,
@@ -34291,10 +34266,7 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
         sectionLeaveEventOn: false,
         rotator: null,
         rotatorOptions: {
-            startVertical: false,
             moveSectionTopRotateStart: -1 / 3, // starts before scrolling into section top (1/3 of window above sectionTop)
-            //moveSectionTopRotateStart: 0, // @TODO add back in move start
-            rotateClockwise: false,
             surfaceStyles: {
                 start: {
                     translate: 0,
@@ -35050,10 +35022,7 @@ var SectionIntro = module.exports = function(controller, $section, index) {
         ball1Dropped: false,
         rotator: null,
         rotatorOptions: {
-            startVertical: false,
-            //moveSectionTopRotateStart: -1 / 3, // starts before scrolling into section top (1/3 of window above sectionTop)
             moveSectionTopRotateStart: 0, // @TODO add back in move start
-            rotateClockwise: false,
             surfaceStyles: {
                 start: {
                     translate: 0,
@@ -35275,12 +35244,9 @@ var sectionMakingDigitalHuman = module.exports = function(controller, $section, 
     var props = {
         rotator: null,
         rotatorOptions: {
-            startVertical: false,
             moveSectionTopRotateStart: -1/3,
             moveSectionBottomRotateEnd: -1/3,
-            rotateClockwise: false,
             surfaceStyles: {
-                //hidden: true,
                 start: {
                     translate: 0,
                     gradient: 0,
@@ -35452,9 +35418,7 @@ var sectionMarkRaul = module.exports = function(controller, $section, index) {
     var props = {
         rotator: null,
         rotatorOptions: {
-            startVertical: true,
             moveSectionTopRotateStart: 0,
-            rotateClockwise: false,
             surfaceStyles: {
                 start: {
                     translate: -50, // starts vertical

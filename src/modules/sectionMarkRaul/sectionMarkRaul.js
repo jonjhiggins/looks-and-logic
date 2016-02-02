@@ -33,9 +33,7 @@ var sectionMarkRaul = module.exports = function(controller, $section, index) {
     var props = {
         rotator: null,
         rotatorOptions: {
-            startVertical: true,
             moveSectionTopRotateStart: 0,
-            rotateClockwise: false,
             surfaceStyles: {
                 start: {
                     translate: -50, // starts vertical

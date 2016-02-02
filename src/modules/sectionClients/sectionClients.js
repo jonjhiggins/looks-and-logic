@@ -33,14 +33,12 @@ var sectionClients = module.exports = function(controller, $section, index) {
     var props = {
         rotator: null,
         rotatorOptions: {
-            startVertical: false,
             moveSectionTopRotateStart: 0,
-            rotateClockwise: true,
             surfaceStyles: {
                 start: {
                     translate: 0,
-                    gradient: 0,
-                    rotate: 0
+                    gradient: 100,
+                    rotate: -180
                 },
                 end: {
                     translate: 100,

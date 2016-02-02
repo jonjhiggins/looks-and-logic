@@ -46,10 +46,7 @@ var SectionIntro = module.exports = function(controller, $section, index) {
         ball1Dropped: false,
         rotator: null,
         rotatorOptions: {
-            startVertical: false,
-            //moveSectionTopRotateStart: -1 / 3, // starts before scrolling into section top (1/3 of window above sectionTop)
             moveSectionTopRotateStart: 0, // @TODO add back in move start
-            rotateClockwise: false,
             surfaceStyles: {
                 start: {
                     translate: 0,

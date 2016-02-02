@@ -5,25 +5,10 @@
    Common
    ========================================================================== */
 .section--clients {
-    overflow: hidden;
-    height: 200vh;
-    display: block;
 
-    .container {
-        position: relative;
-        height: 100vh;
-        mix-blend-mode: difference;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
 
-    /* ==========================================================================
-       Rotator
-       ========================================================================== */
-
-    .rotator {
-        z-index: 0;
+    &[data-background] {
+        background: none;
     }
 
 }
