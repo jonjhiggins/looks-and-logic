@@ -149,7 +149,7 @@ var rotator = module.exports = function(controller, $section, options) {
 
         // Only run calculations and set styles if section is in view
         if (inView) {
-            var progress = Math.min(Math.max((scrollTop - props.sectionTopRotateStart), 0) / (props.sectionBottom - props.sectionTopRotateStart), 1),
+            var progress = (scrollTop - props.sectionTopRotateStart) / (props.sectionBottom - props.sectionTopRotateStart),
                 rotate = props.surfaceStyles.start.rotate + ((props.surfaceStyles.end.rotate  - props.surfaceStyles.start.rotate) * progress),
                 scale = getGradientScale(controller.props.windowWidth, props.sectionHeight , rotate),
                 surfaceHeight = props.surfaceStyles.start.gradient + ((props.surfaceStyles.end.gradient - props.surfaceStyles.start.gradient) * progress);
