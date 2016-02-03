@@ -33832,31 +33832,41 @@ var rotator = module.exports = function(controller, $section, options) {
             return;
         }
 
+        var scrollTop = cache.$window.scrollTop(),
+            inView = (scrollTop >= props.sectionTopRotateStart) && (scrollTop < props.sectionBottom);
 
-        var progress = Math.min(Math.max((cache.$window.scrollTop() - props.sectionTopRotateStart), 0) / (props.sectionBottom - props.sectionTopRotateStart), 1),
-            rotate,
-            translate,
-            scale,
-            surfaceHeight;
+        // Only run calculations and set styles if section is in view
+        if (inView) {
+            var progress = Math.min(Math.max((scrollTop - props.sectionTopRotateStart), 0) / (props.sectionBottom - props.sectionTopRotateStart), 1),
+                rotate = props.surfaceStyles.start.rotate + ((props.surfaceStyles.end.rotate  - props.surfaceStyles.start.rotate) * progress),
+                translate = props.surfaceStyles.end.translate * progress,
+                scale = getGradientScale(controller.props.windowWidth, props.sectionHeight , rotate),
+                surfaceHeight = props.surfaceStyles.start.gradient + ((props.surfaceStyles.end.gradient - props.surfaceStyles.start.gradient) * progress);
 
-        rotate = props.surfaceStyles.start.rotate + ((props.surfaceStyles.end.rotate  - props.surfaceStyles.start.rotate) * progress);
-        translate = props.surfaceStyles.end.translate * progress;
-        scale = getGradientScale(controller.props.windowWidth, props.sectionHeight , rotate);
-        surfaceHeight = props.surfaceStyles.start.gradient + ((props.surfaceStyles.end.gradient - props.surfaceStyles.start.gradient) * progress);
-
-        if (progress > 0) {
-
-            $rotator.css('background-image', ' linear-gradient(' + rotate + 'deg, #000 ' + surfaceHeight + '%, transparent ' + surfaceHeight + '%)');
-            cache.$rotatorRotation.css('transform', 'scale(' + scale + ')  rotate(' + rotate + 'deg)');
-            cache.$rotatorSurface.css('height', surfaceHeight + '%');
+            setRotatorStyles(rotate, surfaceHeight, scale);
         }
-
-
 
     };
 
     /**
+     * Update visual appearance of rotator
+     * Both a linear-gradient (to totally fill viewport) and an element are used (so the ball can sit on it as it's rotated)
+     *
+     * @function setRotatorStyles
+     * @param {number} rotate angle surface should rotate to
+     * @param {number} surfaceHeight height of the surface within the rotator
+     * @param {number} scale scale the surface's parent needs to be increased to fill the viewport
+     */
+
+    var setRotatorStyles = function(rotate, surfaceHeight, scale) {
+        $rotator.css('background-image', ' linear-gradient(' + rotate + 'deg, #000 ' + surfaceHeight + '%, transparent ' + surfaceHeight + '%)');
+        cache.$rotatorRotation.css('transform', 'scale(' + scale + ')  rotate(' + rotate + 'deg)');
+        cache.$rotatorSurface.css('height', surfaceHeight + '%');
+    };
+
+    /**
      * How much do elements need to be scaled up so that gradient background will cover screen
+     *
      * @function getGradientScale
      * @param {number} W width
      * @param {number} H height
