@@ -34,7 +34,7 @@ var sectionMarkRaul = module.exports = function(controller, $section, index) {
         rotator: null,
         rotatorOptions: {
             moveSectionTopRotateStart: 0,
-            easing: [{s:0,cp:0,e:0},{s:0,cp:0,e:0},{s:0,cp:0,e:1}],
+            easingArray: [{s:0,cp:0,e:0},{s:0,cp:0,e:0},{s:0,cp:0,e:1}],
             surfaceStyles: {
                 start: {
                     gradient: 50,

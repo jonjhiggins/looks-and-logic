@@ -49,8 +49,8 @@ var rotator = module.exports = function(controller, $section, options) {
      */
 
     var props = {
-        easing: options.easing ? options.easing : false,
-        easeFunction: null,
+        easingArray: options.easingArray ? options.easingArray : false,
+        easeFunction: options.easeFunction ? options.easeFunction : false,
         moveSectionTopRotateStart: options.moveSectionTopRotateStart,
         moveSectionBottomRotateEnd: options.moveSectionTopRotateStart ? options.moveSectionTopRotateStart : 0,
         surfaceStyles: options.surfaceStyles,
@@ -86,8 +86,8 @@ var rotator = module.exports = function(controller, $section, options) {
         this.events.refreshDimensions = this.refreshDimensions.bind(this);
         this.events.pageScroll = _.throttle(this.rotateSurface.bind(this));
 
-        if (props.easing) {
-            createEase();
+        if (props.easingArray) {
+            createEase(props.easingArray);
         }
 
         // Set start styles
@@ -179,9 +179,10 @@ var rotator = module.exports = function(controller, $section, options) {
     /**
      * Create easing function
      * @function createEase
+     * @param {array} easingArray
      */
 
-    var createEase = function() {
+    var createEase = function(easingArray) {
         var CustomEase = (function() {
             var easings = {};
 
@@ -223,7 +224,7 @@ var rotator = module.exports = function(controller, $section, options) {
             };
         })();
 
-        CustomEase.create('easing', props.easing);
+        CustomEase.create('easing', easingArray);
 
         props.easeFunction = CustomEase.byName('easing');
     };

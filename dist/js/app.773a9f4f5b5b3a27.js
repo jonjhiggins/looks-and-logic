@@ -33737,8 +33737,8 @@ var rotator = module.exports = function(controller, $section, options) {
      */
 
     var props = {
-        easing: options.easing ? options.easing : false,
-        easeFunction: null,
+        easingArray: options.easingArray ? options.easingArray : false,
+        easeFunction: options.easeFunction ? options.easeFunction : false,
         moveSectionTopRotateStart: options.moveSectionTopRotateStart,
         moveSectionBottomRotateEnd: options.moveSectionTopRotateStart ? options.moveSectionTopRotateStart : 0,
         surfaceStyles: options.surfaceStyles,
@@ -33774,8 +33774,8 @@ var rotator = module.exports = function(controller, $section, options) {
         this.events.refreshDimensions = this.refreshDimensions.bind(this);
         this.events.pageScroll = _.throttle(this.rotateSurface.bind(this));
 
-        if (props.easing) {
-            createEase();
+        if (props.easingArray) {
+            createEase(props.easingArray);
         }
 
         // Set start styles
@@ -33867,9 +33867,10 @@ var rotator = module.exports = function(controller, $section, options) {
     /**
      * Create easing function
      * @function createEase
+     * @param {array} easingArray
      */
 
-    var createEase = function() {
+    var createEase = function(easingArray) {
         var CustomEase = (function() {
             var easings = {};
 
@@ -33911,7 +33912,7 @@ var rotator = module.exports = function(controller, $section, options) {
             };
         })();
 
-        CustomEase.create('easing', props.easing);
+        CustomEase.create('easing', easingArray);
 
         props.easeFunction = CustomEase.byName('easing');
     };
@@ -34325,6 +34326,9 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
         sectionLeaveEventOn: false,
         rotator: null,
         rotatorOptions: {
+            easeFunction: function(progress) {
+                return Math.min((progress + progress), 1);
+            },
             moveSectionTopRotateStart: -1 / 3, // starts before scrolling into section top (1/3 of window above sectionTop)
             surfaceStyles: {
                 start: {
@@ -35472,7 +35476,7 @@ var sectionMarkRaul = module.exports = function(controller, $section, index) {
         rotator: null,
         rotatorOptions: {
             moveSectionTopRotateStart: 0,
-            easing: [{s:0,cp:0,e:0},{s:0,cp:0,e:0},{s:0,cp:0,e:1}],
+            easingArray: [{s:0,cp:0,e:0},{s:0,cp:0,e:0},{s:0,cp:0,e:1}],
             surfaceStyles: {
                 start: {
                     gradient: 50,

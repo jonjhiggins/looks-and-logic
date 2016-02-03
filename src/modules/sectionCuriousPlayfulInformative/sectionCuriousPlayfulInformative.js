@@ -46,6 +46,9 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
         sectionLeaveEventOn: false,
         rotator: null,
         rotatorOptions: {
+            easeFunction: function(progress) {
+                return Math.min((progress + progress), 1);
+            },
             moveSectionTopRotateStart: -1 / 3, // starts before scrolling into section top (1/3 of window above sectionTop)
             surfaceStyles: {
                 start: {
