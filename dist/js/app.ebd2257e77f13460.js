@@ -33727,6 +33727,8 @@ var rotator = module.exports = function(controller, $section, options) {
     /**
      * Module properties, states and settings
      * @namespace props
+     * @property {array} easing custom easing array
+     * @property {function} easeFunction custom easing function
      * @property {number} moveSectionTopRotateStart float to specify how many viewports up or down to start rotation
      * @property {object} surfaceStyles start/end styles for surface to animate between on scroll
      * @property {number} sectionHeight
@@ -33735,12 +33737,14 @@ var rotator = module.exports = function(controller, $section, options) {
      */
 
     var props = {
+        easing: options.easing ? options.easing : false,
+        easeFunction: null,
         moveSectionTopRotateStart: options.moveSectionTopRotateStart,
         moveSectionBottomRotateEnd: options.moveSectionTopRotateStart ? options.moveSectionTopRotateStart : 0,
         surfaceStyles: options.surfaceStyles,
         sectionHeight: null,
         sectionTopRotateStart: null, //
-        sectionBottom: null,
+        sectionBottom: null
     };
 
     /**
@@ -33759,6 +33763,9 @@ var rotator = module.exports = function(controller, $section, options) {
      * @method init
      */
 
+    this.easeFunc = null;
+
+
     this.init = function() {
 
         this.refreshDimensions();
@@ -33767,8 +33774,14 @@ var rotator = module.exports = function(controller, $section, options) {
         this.events.refreshDimensions = this.refreshDimensions.bind(this);
         this.events.pageScroll = _.throttle(this.rotateSurface.bind(this));
 
+        if (props.easing) {
+            createEase();
+        }
+
         // Set start styles
         this.rotateSurface();
+
+
 
         // Attach events
         // this.attachDetachEvents(true); this is called from the section module
@@ -33835,14 +33848,72 @@ var rotator = module.exports = function(controller, $section, options) {
 
         // Only run calculations and set styles if section is in view
         if (sectionIsInView(scrollTop)) {
-            var progress = (scrollTop - props.sectionTopRotateStart) / (props.sectionBottom - props.sectionTopRotateStart),
-                rotate = props.surfaceStyles.start.rotate + ((props.surfaceStyles.end.rotate  - props.surfaceStyles.start.rotate) * progress),
-                scale = getGradientScale(controller.props.windowWidth, props.sectionHeight , rotate),
+            var progress = (scrollTop - props.sectionTopRotateStart) / (props.sectionBottom - props.sectionTopRotateStart);
+
+            if (props.easeFunction) {
+                progress = props.easeFunction(progress);
+            }
+
+
+            var rotate = props.surfaceStyles.start.rotate + ((props.surfaceStyles.end.rotate - props.surfaceStyles.start.rotate) * progress),
+                scale = getGradientScale(controller.props.windowWidth, props.sectionHeight, rotate),
                 surfaceHeight = props.surfaceStyles.start.gradient + ((props.surfaceStyles.end.gradient - props.surfaceStyles.start.gradient) * progress);
 
             setRotatorStyles(rotate, surfaceHeight, scale);
         }
 
+    };
+
+    /**
+     * Create easing function
+     * @function createEase
+     */
+
+    var createEase = function() {
+        var CustomEase = (function() {
+            var easings = {};
+
+            function create(name, points) {
+                var sections = points.length,
+                    sectionStep = 1 / sections,
+                    curves = [],
+                    i;
+
+                var createCurveFunction = function(p) {
+                    return function(t) {
+                        return Math.pow(1 - t, 2) * p.s + 2 * t * (1 - t) * p.cp + Math.pow(t, 2) * p.e;
+                    };
+                };
+
+                for (i = 0; i < sections; i++) {
+                    curves.push(createCurveFunction(points[i]));
+                }
+
+                easings[name] = function(t) {
+                    var curveIndex = Math.floor(t / sectionStep),
+                        curveProgress = t % sectionStep / sectionStep;
+
+                    return curves[curveIndex](curveProgress);
+                };
+
+                easings[name].getRatio = function(t) {
+                    return easings[name](t);
+                };
+            }
+
+            function byName(name) {
+                return easings[name];
+            }
+
+            return {
+                create: create,
+                byName: byName
+            };
+        })();
+
+        CustomEase.create('easing', props.easing);
+
+        props.easeFunction = CustomEase.byName('easing');
     };
 
     /**
@@ -33882,8 +33953,8 @@ var rotator = module.exports = function(controller, $section, options) {
      */
 
     var getGradientScale = function(W, H, A) {
-      var gradLine = getGradientLineLength(W, H, A);
-      return gradLine / H;
+        var gradLine = getGradientLineLength(W, H, A);
+        return gradLine / H;
     };
 
     /**
@@ -33899,8 +33970,8 @@ var rotator = module.exports = function(controller, $section, options) {
      */
 
     var getGradientLineLength = function(W, H, A) {
-      var radianAngle = A * Math.PI / 180; // Convert to radian
-      return Math.abs(W * Math.sin(radianAngle)) + Math.abs(H * Math.cos(radianAngle));
+        var radianAngle = A * Math.PI / 180; // Convert to radian
+        return Math.abs(W * Math.sin(radianAngle)) + Math.abs(H * Math.cos(radianAngle));
     };
 
     /**
@@ -35401,6 +35472,7 @@ var sectionMarkRaul = module.exports = function(controller, $section, index) {
         rotator: null,
         rotatorOptions: {
             moveSectionTopRotateStart: 0,
+            easing: [{s:0,cp:0,e:0},{s:0,cp:0,e:0},{s:0,cp:0,e:1}],
             surfaceStyles: {
                 start: {
                     gradient: 50,
