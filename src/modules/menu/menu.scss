@@ -22,7 +22,7 @@
 
   %menuCloseState {
       .menu__button__icon {
-      	background-color: rgba(0,0,0,0.0);
+      	background-color: rgba($colourWhite,0.0);
       	transition-delay: 0.2s;
       }
 
@@ -67,7 +67,7 @@
 .menu__button__icon:after {
 	width: rem($widthMenuButton);
 	height: rem($heightMenuButtonIconLine);
-	background-color: #000;
+	background-color: $colourWhite;
 	display: block;
 }
 
