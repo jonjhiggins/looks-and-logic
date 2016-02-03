@@ -33820,7 +33820,7 @@ var rotator = module.exports = function(controller, $section, options) {
     };
 
     /**
-     * On scroll: rotate surface from 0 to 90/-90 degrees depending on mouse position
+     * On scroll: rotate surface to a given angle
      * @method rotateSurface
      */
 
@@ -33839,7 +33839,6 @@ var rotator = module.exports = function(controller, $section, options) {
         if (inView) {
             var progress = Math.min(Math.max((scrollTop - props.sectionTopRotateStart), 0) / (props.sectionBottom - props.sectionTopRotateStart), 1),
                 rotate = props.surfaceStyles.start.rotate + ((props.surfaceStyles.end.rotate  - props.surfaceStyles.start.rotate) * progress),
-                translate = props.surfaceStyles.end.translate * progress,
                 scale = getGradientScale(controller.props.windowWidth, props.sectionHeight , rotate),
                 surfaceHeight = props.surfaceStyles.start.gradient + ((props.surfaceStyles.end.gradient - props.surfaceStyles.start.gradient) * progress);
 
@@ -34140,12 +34139,10 @@ var sectionClients = module.exports = function(controller, $section, index) {
             moveSectionTopRotateStart: 0,
             surfaceStyles: {
                 start: {
-                    translate: 0,
                     gradient: 100,
                     rotate: -180
                 },
                 end: {
-                    translate: 100,
                     gradient: 100,
                     rotate: 180
                 }
@@ -34251,12 +34248,10 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
             moveSectionTopRotateStart: -1 / 3, // starts before scrolling into section top (1/3 of window above sectionTop)
             surfaceStyles: {
                 start: {
-                    translate: 0,
                     gradient: 66.6,
                     rotate: 0
                 },
                 end: {
-                    translate: -50,
                     gradient: 50,
                     rotate: -90
                 }
@@ -35007,12 +35002,10 @@ var SectionIntro = module.exports = function(controller, $section, index) {
             moveSectionTopRotateStart: 0, // @TODO add back in move start
             surfaceStyles: {
                 start: {
-                    translate: 0,
                     gradient: 0,
                     rotate: 0
                 },
                 end: {
-                    translate: 0,
                     gradient: 0,
                     rotate: 0
                 }
@@ -35230,12 +35223,10 @@ var sectionMakingDigitalHuman = module.exports = function(controller, $section, 
             moveSectionBottomRotateEnd: -1/3,
             surfaceStyles: {
                 start: {
-                    translate: 0,
                     gradient: 0,
                     rotate: 0
                 },
                 end: {
-                    translate: 0,
                     gradient: 100,
                     rotate: 0
                 }
@@ -35403,12 +35394,10 @@ var sectionMarkRaul = module.exports = function(controller, $section, index) {
             moveSectionTopRotateStart: 0,
             surfaceStyles: {
                 start: {
-                    translate: -50, // starts vertical
                     gradient: 50,
                     rotate: -90
                 },
                 end: {
-                    translate: 0,
                     gradient: 100,
                     rotate: -180
                 }

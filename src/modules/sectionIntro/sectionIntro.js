@@ -49,12 +49,10 @@ var SectionIntro = module.exports = function(controller, $section, index) {
             moveSectionTopRotateStart: 0, // @TODO add back in move start
             surfaceStyles: {
                 start: {
-                    translate: 0,
                     gradient: 0,
                     rotate: 0
                 },
                 end: {
-                    translate: 0,
                     gradient: 0,
                     rotate: 0
                 }

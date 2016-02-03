@@ -36,12 +36,10 @@ var sectionMarkRaul = module.exports = function(controller, $section, index) {
             moveSectionTopRotateStart: 0,
             surfaceStyles: {
                 start: {
-                    translate: -50, // starts vertical
                     gradient: 50,
                     rotate: -90
                 },
                 end: {
-                    translate: 0,
                     gradient: 100,
                     rotate: -180
                 }

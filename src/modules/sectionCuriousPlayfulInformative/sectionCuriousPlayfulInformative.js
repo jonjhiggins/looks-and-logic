@@ -49,12 +49,10 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
             moveSectionTopRotateStart: -1 / 3, // starts before scrolling into section top (1/3 of window above sectionTop)
             surfaceStyles: {
                 start: {
-                    translate: 0,
                     gradient: 66.6,
                     rotate: 0
                 },
                 end: {
-                    translate: -50,
                     gradient: 50,
                     rotate: -90
                 }

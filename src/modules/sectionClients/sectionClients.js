@@ -36,12 +36,10 @@ var sectionClients = module.exports = function(controller, $section, index) {
             moveSectionTopRotateStart: 0,
             surfaceStyles: {
                 start: {
-                    translate: 0,
                     gradient: 100,
                     rotate: -180
                 },
                 end: {
-                    translate: 100,
                     gradient: 100,
                     rotate: 180
                 }

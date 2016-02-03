@@ -132,7 +132,7 @@ var rotator = module.exports = function(controller, $section, options) {
     };
 
     /**
-     * On scroll: rotate surface from 0 to 90/-90 degrees depending on mouse position
+     * On scroll: rotate surface to a given angle
      * @method rotateSurface
      */
 
@@ -151,7 +151,6 @@ var rotator = module.exports = function(controller, $section, options) {
         if (inView) {
             var progress = Math.min(Math.max((scrollTop - props.sectionTopRotateStart), 0) / (props.sectionBottom - props.sectionTopRotateStart), 1),
                 rotate = props.surfaceStyles.start.rotate + ((props.surfaceStyles.end.rotate  - props.surfaceStyles.start.rotate) * progress),
-                translate = props.surfaceStyles.end.translate * progress,
                 scale = getGradientScale(controller.props.windowWidth, props.sectionHeight , rotate),
                 surfaceHeight = props.surfaceStyles.start.gradient + ((props.surfaceStyles.end.gradient - props.surfaceStyles.start.gradient) * progress);
 
