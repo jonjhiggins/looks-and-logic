@@ -124,7 +124,11 @@ $sectionIndicatorLinkRingScale: 0.625;
         color: $colourWhite;
     }
 
-    .sectionIndicator__link:before {
+    .sectionIndicator__link.active:before {
         opacity: 1;
+    }
+
+    .sectionIndicator__link:before {
+        opacity: 0.75;
     }
 }
