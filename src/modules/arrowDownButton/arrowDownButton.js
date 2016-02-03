@@ -206,38 +206,7 @@ var ArrowDownButton = module.exports = function(controller) {
      */
 
     var buttonShow = function() {
-        changeIconColour();
         $button.removeClass('hidden');
-    };
-
-    /**
-     * Change icon colour to stand out from background
-     * @function changeIconColour
-     */
-
-    var changeIconColour = function() {
-
-        var $backgroundSection; // section behind the arrowDownButton
-
-        // If no background colour, section hasn't been inited yet
-        if (!$currentSection.attr('data-background')) {
-            controller.emitter.once('section:sectionsInited', changeIconColour);
-            return;
-        }
-
-        // Check if next section is overlapping current section,
-        // requiring arrow to take into account that section's background colour
-        if (controller.props.windowHeight <= $currentSection.height()) {
-            $backgroundSection = $currentSection; // normal
-        } else {
-            $backgroundSection = controller.getNextSection($currentSection); // overlapping
-        }
-
-        if ($backgroundSection.attr('data-background') === 'white') {
-            $button.attr('data-colour', 'black');
-        } else {
-            $button.attr('data-colour', 'white');
-        }
     };
 
     /**

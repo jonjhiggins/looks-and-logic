@@ -21,6 +21,7 @@ $arrowDownPadding: 12;
     margin-left: rem(-12 - $arrowDownPadding);
     z-index: 20;
     box-sizing: content-box;
+    mix-blend-mode:difference;
 }
 
 /* ==========================================================================
