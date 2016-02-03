@@ -79,9 +79,8 @@ var rotator = module.exports = function(controller, $section, options) {
         this.events.refreshDimensions = this.refreshDimensions.bind(this);
         this.events.pageScroll = _.throttle(this.rotateSurface.bind(this));
 
-
-        // @TODO add start styles
-        //$rotator.css('transform', 'rotate(' + props.surfaceStyles.start.rotate + 'deg)');
+        // Set start styles
+        this.rotateSurface();
 
         // Attach events
         // this.attachDetachEvents(true); this is called from the section module
@@ -144,11 +143,10 @@ var rotator = module.exports = function(controller, $section, options) {
             return;
         }
 
-        var scrollTop = cache.$window.scrollTop(),
-            inView = (scrollTop >= props.sectionTopRotateStart) && (scrollTop < props.sectionBottom);
+        var scrollTop = cache.$window.scrollTop();
 
         // Only run calculations and set styles if section is in view
-        if (inView) {
+        if (sectionIsInView(scrollTop)) {
             var progress = (scrollTop - props.sectionTopRotateStart) / (props.sectionBottom - props.sectionTopRotateStart),
                 rotate = props.surfaceStyles.start.rotate + ((props.surfaceStyles.end.rotate  - props.surfaceStyles.start.rotate) * progress),
                 scale = getGradientScale(controller.props.windowWidth, props.sectionHeight , rotate),
@@ -157,6 +155,17 @@ var rotator = module.exports = function(controller, $section, options) {
             setRotatorStyles(rotate, surfaceHeight, scale);
         }
 
+    };
+
+    /**
+     * Is section that called rorator in view?
+     *
+     * @function sectionIsInView
+     * @param {number} scrollTop window's scrolltop
+     */
+
+    var sectionIsInView = function(scrollTop) {
+        return (scrollTop >= props.sectionTopRotateStart) && (scrollTop < props.sectionBottom);
     };
 
     /**
