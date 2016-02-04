@@ -8,10 +8,49 @@
 
     mix-blend-mode: difference;
     z-index: 1;
+    height: auto;
+    min-height: 100vh;
+
+    .container {
+        flex-basis: 100%;
+        box-sizing: border-box;
+    }
 
     &[data-background] {
         background: none;
         color: $colourWhite;
+    }
+
+    /* ==========================================================================
+       Client list
+       ========================================================================== */
+
+    .client-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+
+    .client-list__item {
+        flex-basis: 50%;
+    }
+
+    .client-logo {
+        padding: 1em;
+        border: 1px solid;
+    }
+
+    /* ==========================================================================
+       Responsive
+       ========================================================================== */
+
+    @media only screen and (min-width: rem($bpMedium)) {
+        .client-list__item {
+            flex-basis: 25%;
+        }
     }
 
 }
