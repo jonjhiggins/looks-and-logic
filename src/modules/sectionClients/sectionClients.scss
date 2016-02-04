@@ -6,9 +6,21 @@
    ========================================================================== */
 .section--clients {
 
+    height: 200vh;
+
 
     &[data-background] {
         background: none;
+    }
+
+    align-items: baseline;
+    justify-content: baseline;
+
+    .container {
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
 }

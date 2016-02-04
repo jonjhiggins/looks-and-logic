@@ -33867,6 +33867,12 @@ var rotator = module.exports = function(controller, $section, options) {
 
     /**
      * Create easing function
+     * 
+     * array is in format [{start, centrePoint, end}]
+     * edit using https://greensock.com/customease and http://frux.github.io/gsap-customease/
+     * adapted from https://github.com/frux/gsap-customease
+     *
+     *
      * @function createEase
      * @param {array} easingArray
      */
@@ -35478,7 +35484,7 @@ var sectionMarkRaul = module.exports = function(controller, $section, index) {
         rotator: null,
         rotatorOptions: {
             moveSectionTopRotateStart: 0,
-            easingArray: [{s:0,cp:0,e:0},{s:0,cp:0,e:0},{s:0,cp:0,e:1}],
+            easingArray: [{s:0,cp:0,e:0},{s:0,cp:0,e:0},{s:0,cp:0.5,e:1},{s:1,cp:1,e:1}],
             surfaceStyles: {
                 start: {
                     gradient: 50,

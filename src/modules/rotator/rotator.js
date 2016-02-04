@@ -179,6 +179,12 @@ var rotator = module.exports = function(controller, $section, options) {
 
     /**
      * Create easing function
+     * 
+     * array is in format [{start, centrePoint, end}]
+     * edit using https://greensock.com/customease and http://frux.github.io/gsap-customease/
+     * adapted from https://github.com/frux/gsap-customease
+     *
+     *
      * @function createEase
      * @param {array} easingArray
      */
