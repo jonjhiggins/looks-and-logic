@@ -33539,7 +33539,8 @@ var controller = module.exports = function() {
                             $('.section--making-digital-human').length +
                             $('.section--curious-playful-informative').length +
                             $('.section--mark-raul').length +
-                            $('.section--clients').length,
+                            $('.section--clients').length +
+                            $('.section--two-guys-working').length,
             maxListeners = modules.length + sectionLength;
 
          this.emitter.setMaxListeners(maxListeners);
