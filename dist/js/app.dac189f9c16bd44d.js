@@ -33223,6 +33223,8 @@ var Balls = module.exports = function(controller) {
         this.events.cloneBall1 = cloneBall.bind(null, 1);
         this.events.removeClonedBall1 = removeClonedBall.bind(null, 1);
         this.events.showBall2 = showBall.bind(null, 2);
+        this.events.cloneBall2 = cloneBall.bind(null, 2);
+        this.events.removeClonedBall2 = removeClonedBall.bind(null, 2);
         this.events.resize = onResize.bind(this);
         // Attach events
         this.attachDetachEvents(true);
@@ -33251,6 +33253,8 @@ var Balls = module.exports = function(controller) {
             controller.emitter.on('balls:cloneBall1', this.events.cloneBall1);
             controller.emitter.on('balls:removeClonedBall1', this.events.removeClonedBall1);
             controller.emitter.on('balls:showBall2', this.events.showBall2);
+            controller.emitter.on('balls:cloneBall2', this.events.cloneBall2);
+            controller.emitter.on('balls:removeClonedBall2', this.events.removeClonedBall2);
             controller.emitter.on('window:resize', this.events.resize);
         } else {
             controller.emitter.removeListener('sections:reset', this.events.reset);
@@ -33300,7 +33304,7 @@ var Balls = module.exports = function(controller) {
      */
 
     var showBall = function(ballNo, position) {
-
+        
         var $ball = cache['$ball' + ballNo];
 
         $ball.css({
@@ -34481,7 +34485,7 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
             props.ballCloned &&
             !props.ballDropped) {
 
-            var $ball = cache.$rotatorBallContainer.find('.ball');
+            var $ball = cache.$rotatorBallContainer.find('.ball--1');
 
             TweenMax.to($ball, 0.4, {
                 x: '-=' + controller.props.windowHeight * 2, // ball going down, but is rotated 90
@@ -35090,24 +35094,30 @@ var SectionIntro = module.exports = function(controller, $section, index) {
      * @property {jQuery} window
      * @property {jQuery} $logo
      * @property {jQuery} $logoSvg logo's svg element
+     * @property {jQuery} $rotatorBallContainer
      */
 
     var cache = {
         $window: $(window),
         $logo: $section.find('.section__logo'),
-        $logoSvg: $section.find('.section__logo svg')
+        $logoSvg: $section.find('.section__logo svg'),
+        $rotatorBallContainer: $('.rotator__ball-container')
     };
 
     /**
      * properties, states and settings
      * @namespace props
      * @property {number} svgLoaded
+     * @property {boolean} isFirstSection is this first of ALL sections (i.e. not repeated)
      * @property {boolean} ball1Dropped has ball 1 dropped?
+     * @property {object} sceneFixTitle scrollMagic scene for fixing the title in position
      */
 
     var props = {
         svgLoaded: false,
+        isFirstSection: true,
         ball1Dropped: false,
+        sceneFixTitle: null,
         rotator: null,
         rotatorOptions: {
             moveSectionTopRotateStart: 0, // @TODO add back in move start
@@ -35148,9 +35158,11 @@ var SectionIntro = module.exports = function(controller, $section, index) {
      */
 
     this.init = function() {
+        // Check if first sectionLeave
+        props.isFirstSection = checkIfFirstSection();
         // Bind events
         this.events.sectionLeave = this.sectionLeave.bind(this);
-        this.events.resize = this.measureAndShowBalls.bind(this);
+        this.events.resize = this.refreshDimensions.bind(this);
         // Set up screen rotation on scrolling
         props.rotator = new Rotator(controller, $section, props.rotatorOptions);
         // Attach events
@@ -35160,12 +35172,24 @@ var SectionIntro = module.exports = function(controller, $section, index) {
         // @TODO avoid accessing other module directly. event instead?
         controller.props.sections[index].props.associatedModule = this;
 
-
+        if (!props.isFirstSection) {
+            // ScrollMagic scene
+            this.setupScene();
+        }
 
 
         // Load the SVG
         var svgUrl = $section.data('svg-url');
         this.loadSVG(svgUrl);
+    };
+
+    /**
+     * @method checkIfFirstSection
+     * @returns {boolean}
+     */
+
+    var checkIfFirstSection = function() {
+        return $('.section--intro').get(0) === $section.get(0);
     };
 
     /**
@@ -35216,6 +35240,11 @@ var SectionIntro = module.exports = function(controller, $section, index) {
             }
 
             this.measureAndShowBalls();
+
+            if (!props.isFirstSection) {
+                // @TODO remove from rotator
+                controller.emitter.emit('balls:cloneBall2', cache.$rotatorBallContainer);
+            }
 
         }.bind(this));
     };
@@ -35278,12 +35307,68 @@ var SectionIntro = module.exports = function(controller, $section, index) {
     };
 
     /**
+     * ScrollMagic scene
+     * When repeating the section, it should be pinned behind the last section of previous set
+     *
+     *
+     * @function setupScene
+     */
+
+    this.setupScene = function() {
+
+        if (props.sceneFixTitle) {
+            props.sceneFixTitle.destroy(true);
+        }
+
+        // ScrollMagic Safari/Firefox bug
+        // https://github.com/janpaepke/ScrollMagic/issues/458
+        var scrollTop = cache.$window.scrollTop();
+
+        props.sceneFixTitle = new ScrollMagic.Scene({
+            triggerElement: $section.prev().get(0),
+            duration: $section.prev().height(), // refreshed on resize in refreshDimensions
+            triggerHook: 0,
+        });
+
+        // Fix and unfix title
+        props.sceneFixTitle
+            .on('enter', function() {
+                $section.addClass('section--title-fixed');
+            }.bind(this))
+            .on('leave', function() {
+                $section.removeClass('section--title-fixed');
+            }.bind(this));
+
+        // ScrollMagic Safari/Firefox bug
+        // https://github.com/janpaepke/ScrollMagic/issues/458
+        cache.$window.scrollTop(scrollTop);
+
+        props.sceneFixTitle.addTo(controller.props.scrollScenes);
+    };
+
+    /**
+     * Get and store dimensions
+     * @method refreshDimensions
+     */
+
+    this.refreshDimensions = function() {
+        this.measureAndShowBalls();
+        if (this.sceneFixTitle) {
+            this.sceneFixTitle.duration($section.prev().height());
+        }
+    };
+
+    /**
      * Destroy all
      * @method destroy
      */
 
     this.destroy = function() {
         this.attachDetachEvents(false);
+
+        if (props.sceneFixTitle) {
+            props.sceneFixTitle.destroy(true);
+        }
     };
 
 

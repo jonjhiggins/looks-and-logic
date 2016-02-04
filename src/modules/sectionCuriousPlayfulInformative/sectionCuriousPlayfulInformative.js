@@ -174,7 +174,7 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
             props.ballCloned &&
             !props.ballDropped) {
 
-            var $ball = cache.$rotatorBallContainer.find('.ball');
+            var $ball = cache.$rotatorBallContainer.find('.ball--1');
 
             TweenMax.to($ball, 0.4, {
                 x: '-=' + controller.props.windowHeight * 2, // ball going down, but is rotated 90

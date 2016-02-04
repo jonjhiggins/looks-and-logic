@@ -73,6 +73,8 @@ var Balls = module.exports = function(controller) {
         this.events.cloneBall1 = cloneBall.bind(null, 1);
         this.events.removeClonedBall1 = removeClonedBall.bind(null, 1);
         this.events.showBall2 = showBall.bind(null, 2);
+        this.events.cloneBall2 = cloneBall.bind(null, 2);
+        this.events.removeClonedBall2 = removeClonedBall.bind(null, 2);
         this.events.resize = onResize.bind(this);
         // Attach events
         this.attachDetachEvents(true);
@@ -101,6 +103,8 @@ var Balls = module.exports = function(controller) {
             controller.emitter.on('balls:cloneBall1', this.events.cloneBall1);
             controller.emitter.on('balls:removeClonedBall1', this.events.removeClonedBall1);
             controller.emitter.on('balls:showBall2', this.events.showBall2);
+            controller.emitter.on('balls:cloneBall2', this.events.cloneBall2);
+            controller.emitter.on('balls:removeClonedBall2', this.events.removeClonedBall2);
             controller.emitter.on('window:resize', this.events.resize);
         } else {
             controller.emitter.removeListener('sections:reset', this.events.reset);
@@ -150,7 +154,7 @@ var Balls = module.exports = function(controller) {
      */
 
     var showBall = function(ballNo, position) {
-
+        
         var $ball = cache['$ball' + ballNo];
 
         $ball.css({
