@@ -1,15 +1,15 @@
-/** @module sectionClients */
+/** @module sectionTwoGuysWorking */
 
 var $ = require('jquery'),
     Rotator = require('../rotator/rotator.js'),
     _base = require('../_base/_base.js');
 
 /**
- * @constructor sectionClients
+ * @constructor sectionTwoGuysWorking
  * @param {object} controller
  */
 
-var sectionClients = module.exports = function(controller, $section, index) {
+var sectionTwoGuysWorking = module.exports = function(controller, $section, index) {
     'use strict';
 
     // Extend _base module JS
