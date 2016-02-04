@@ -29,11 +29,13 @@ var sectionMakingDigitalHuman = module.exports = function(controller, $section, 
     /**
      * properties, states and settings
      * @namespace props
+     * @property {number} scenePinTitleDuration how long the title pin should last (of scene height)
      * @property {number} svgLoaded
      * @property {boolean} ball1Dropped has ball 1 dropped?
      */
 
     var props = {
+        scenePinTitleDuration: 0.666,
         rotator: null,
         rotatorOptions: {
             moveSectionTopRotateStart: -1/3,
@@ -122,7 +124,7 @@ var sectionMakingDigitalHuman = module.exports = function(controller, $section, 
 
         this.scenePinTitle = new ScrollMagic.Scene({
             triggerElement: $section.get(0),
-            duration: $section.height(), // refreshed on resize in refreshDimensions
+            duration: getScenePinTitleHeight(), // refreshed on resize in refreshDimensions
             triggerHook: 0
         })
         .setPin($section.get(0), {
@@ -134,6 +136,7 @@ var sectionMakingDigitalHuman = module.exports = function(controller, $section, 
         });
 
         this.scenePinTitle.on('end', function(event) {
+            /*globals console*/ console.log('end');
             $section.addClass('js--scene-leave');
         });
 
@@ -144,6 +147,15 @@ var sectionMakingDigitalHuman = module.exports = function(controller, $section, 
         this.scenePinTitle.addTo(controller.props.scrollScenes);
     };
 
+    /**
+     * Get and store dimensions
+     * @function refreshDimensions
+     * @returns {number} scenePinTitleHeight
+     */
+
+    var getScenePinTitleHeight = function() {
+        return $section.height() * props.scenePinTitleDuration;
+    };
 
 
     /**
@@ -153,7 +165,7 @@ var sectionMakingDigitalHuman = module.exports = function(controller, $section, 
 
     this.refreshDimensions = function() {
         if (this.scenePinTitle) {
-            this.scenePinTitle.duration($section.height());
+            this.scenePinTitle.duration(getScenePinTitleHeight());
         }
     };
 
