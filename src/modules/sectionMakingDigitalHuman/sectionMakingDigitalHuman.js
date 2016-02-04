@@ -136,7 +136,6 @@ var sectionMakingDigitalHuman = module.exports = function(controller, $section, 
         });
 
         this.scenePinTitle.on('end', function(event) {
-            /*globals console*/ console.log('end');
             $section.addClass('js--scene-leave');
         });
 
