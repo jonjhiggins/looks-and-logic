@@ -10,3 +10,15 @@
    @function rem($sizeValue) {
      @return ($sizeValue / 16) + rem;
    }
+
+   /* ==========================================================================
+      Styles to extend
+      ========================================================================== */
+
+   %containerTopOfFlexbox {
+       height: 100vh;
+       display: flex;
+       align-items: center;
+       justify-content: center;
+       flex-basis: 100%;
+   }
