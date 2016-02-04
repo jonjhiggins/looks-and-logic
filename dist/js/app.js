@@ -34221,12 +34221,13 @@ var sectionClients = module.exports = function(controller, $section, index) {
      * Module properties, states and settings
      * @namespace props
      * @property {object} rotator screen rotation module
-     * @property {object} rotatorOptions options for screen rotation module
+     * @property {object} rotatorOptionsA options for clients--a screen rotation module
+     * @property {object} rotatorOptionsB options for clients--b screen rotation module
      */
 
     var props = {
         rotator: null,
-        rotatorOptions: {
+        rotatorOptionsA: {
             moveSectionTopRotateStart: 0,
             surfaceStyles: {
                 start: {
@@ -34235,6 +34236,19 @@ var sectionClients = module.exports = function(controller, $section, index) {
                 },
                 end: {
                     gradient: 0,
+                    rotate: -180
+                }
+            }
+        },
+        rotatorOptionsB: {
+            moveSectionTopRotateStart: 0,
+            surfaceStyles: {
+                start: {
+                    gradient: 0,
+                    rotate: -180
+                },
+                end: {
+                    gradient: 100,
                     rotate: -180
                 }
             }
@@ -34249,7 +34263,9 @@ var sectionClients = module.exports = function(controller, $section, index) {
 
     this.init = function() {
         // Set up screen rotation on scrolling
-        props.rotator = new Rotator(controller, $section, props.rotatorOptions);
+
+        var rotatorOptions = $section.hasClass('section--clients--a') ? props.rotatorOptionsA : props.rotatorOptionsB;
+        props.rotator = new Rotator(controller, $section, rotatorOptions);
 
         // Attach events
         this.attachDetachEvents(true);
