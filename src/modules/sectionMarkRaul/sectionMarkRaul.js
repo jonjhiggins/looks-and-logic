@@ -41,8 +41,8 @@ var sectionMarkRaul = module.exports = function(controller, $section, index) {
                     rotate: -90
                 },
                 end: {
-                    gradient: 100,
-                    rotate: -180
+                    gradient: 75,
+                    rotate: 0
                 }
             }
         }

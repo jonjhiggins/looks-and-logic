@@ -6,8 +6,12 @@
    ========================================================================== */
 .section--clients {
 
+    mix-blend-mode: difference;
+    z-index: 1;
+
     &[data-background] {
         background: none;
+        color: $colourWhite;
     }
 
 }

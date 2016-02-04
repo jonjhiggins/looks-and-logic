@@ -34231,12 +34231,12 @@ var sectionClients = module.exports = function(controller, $section, index) {
             moveSectionTopRotateStart: 0,
             surfaceStyles: {
                 start: {
-                    gradient: 100,
-                    rotate: -180
+                    gradient: 75,
+                    rotate: 0
                 },
                 end: {
-                    gradient: 0,
-                    rotate: -180
+                    gradient: 25,
+                    rotate: 180
                 }
             }
         },
@@ -34244,7 +34244,7 @@ var sectionClients = module.exports = function(controller, $section, index) {
             moveSectionTopRotateStart: 0,
             surfaceStyles: {
                 start: {
-                    gradient: 0,
+                    gradient: 25,
                     rotate: -180
                 },
                 end: {
@@ -35509,8 +35509,8 @@ var sectionMarkRaul = module.exports = function(controller, $section, index) {
                     rotate: -90
                 },
                 end: {
-                    gradient: 100,
-                    rotate: -180
+                    gradient: 75,
+                    rotate: 0
                 }
             }
         }
