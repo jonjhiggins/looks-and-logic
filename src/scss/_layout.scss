@@ -21,17 +21,6 @@
    html,
    body {
       overflow-x: hidden;
-
-      &:after {
-          content: '';
-          position: fixed;
-          left: 50%;
-          top: 0;
-          bottom: 0;
-          width: 1px;
-          background: rgba(255,0,0,0.5);
-          z-index: 10;
-      }
    }
 
 /* ==========================================================================
