@@ -27,7 +27,7 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
 
     var cache = {
         $window: $(window),
-        $rotatorSurface: $('.rotator__surface')
+        $rotatorBallContainer: $('.rotator__ball-container')
     };
 
     /**
@@ -144,7 +144,7 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
                 }
 
                 if (!props.ballCloned) {
-                    controller.emitter.emit('balls:cloneBall1', cache.$rotatorSurface);
+                    controller.emitter.emit('balls:cloneBall1', cache.$rotatorBallContainer);
                     props.ballCloned = true;
                 }
 
@@ -174,7 +174,7 @@ var sectionCuriousPlayfulInformative = module.exports = function(controller, $se
             props.ballCloned &&
             !props.ballDropped) {
 
-            var $ball = cache.$rotatorSurface.find('.ball');
+            var $ball = cache.$rotatorBallContainer.find('.ball');
 
             TweenMax.to($ball, 0.4, {
                 x: '-=' + controller.props.windowHeight * 2, // ball going down, but is rotated 90
