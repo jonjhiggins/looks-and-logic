@@ -63,6 +63,9 @@ var sectionTwoGuysWorking = module.exports = function(controller, $section, inde
         // Set associated module.
         // @TODO avoid accessing other module directly. event instead?
         controller.props.sections[index].props.associatedModule = this;
+
+        // Clone ball2 into the section
+        controller.emitter.emit('balls:cloneBall2', $section);
     };
 
     /**

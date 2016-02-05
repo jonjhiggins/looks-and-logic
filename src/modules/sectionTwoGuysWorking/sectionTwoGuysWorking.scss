@@ -9,4 +9,19 @@
     &[data-background] {
         background: none;
     }
+
+    // When normal scrolling, pin to bottom
+    .ball {
+        top: auto !important;
+        bottom: 0 !important;
+    }
+
+    // When fixed via scroll magic, pin to top
+    .scrollmagic-pin-spacer {
+        .ball {
+            top: 0 !important;
+            bottom: auto !important;
+            mix-blend-mode: difference;
+        }
+    }
 }
