@@ -178,6 +178,11 @@ var Balls = module.exports = function(controller) {
 
     var cloneBall = function(ballNo, $element) {
 
+        // Check if SVG holding balls has been loaded
+        if (!controller.props.introSvgLoaded) {
+            controller.emitter.once('intro:svgLoaded', cloneBall.bind(this, ballNo, $element));
+        }
+
         var $ball = cache['$ball' + ballNo],
             $ballClone = $ball.clone(),
             id = 'ball--' + ballNo + '-clone';

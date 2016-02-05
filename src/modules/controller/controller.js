@@ -33,6 +33,7 @@ var controller = module.exports = function() {
      * @namespace $prop
      * @property {boolean} arrowDownButton is arrowDownButton active / visible? It is only shown/hidden once
      * @property {boolean} autoScrolling is app auto-scrolling? Used to differentiate manual scrolling
+     * @property {boolean} introSvgLoaded has sectionIntros SVG been loaded?
      * @property {array} sections app's sections
      * @property {array} sectionIntros app's sectionIntros
      * @property {array} sectionMakingDigitalHumans app's sectionMakingDigitalHumans
@@ -53,6 +54,7 @@ var controller = module.exports = function() {
         breakpoints: {
             medium: 740
         },
+        introSvgLoaded: false,
         orientationLandscape: true,
         sections: [],
         sectionIntros: [],
@@ -85,7 +87,17 @@ var controller = module.exports = function() {
          this.emitter.on('window:autoScrollingEnd', this.autoScrolling.bind(this, false));
          this.emitter.on('window:resize', this.refreshDimensions.bind(this));
          this.emitter.on('sections:reset', this.sectionsReset.bind(this));
+         this.emitter.on('intro:svgLoaded', introSvgLoaded.bind(this));
 
+     };
+
+     /**
+      * Called when sections are reset
+      * @function introSvgLoaded
+      */
+
+     var introSvgLoaded = function() {
+         this.introSvgLoaded = true;
      };
 
      /**
