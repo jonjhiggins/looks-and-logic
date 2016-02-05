@@ -173,6 +173,8 @@ var SectionIntro = module.exports = function(controller, $section, index) {
 
                 this.measureAndShowBalls();
 
+            } else {
+                $section.addClass('js--section-repeated');
             }
 
         }.bind(this));
