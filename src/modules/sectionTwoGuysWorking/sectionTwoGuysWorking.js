@@ -26,11 +26,13 @@ var sectionTwoGuysWorking = module.exports = function(controller, $section, inde
     /**
      * Module properties, states and settings
      * @namespace props
+     * @property {boolean} ballCloned has ball been cloned?
      * @property {object} rotator screen rotation module
      * @property {object} rotatorOptions options for screen rotation module
      */
 
     var props = {
+        ballCloned: false,
         rotator: null,
         rotatorOptions: {
             moveSectionTopRotateStart: 0,
@@ -65,7 +67,10 @@ var sectionTwoGuysWorking = module.exports = function(controller, $section, inde
         controller.props.sections[index].props.associatedModule = this;
 
         // Clone ball2 into the section
-        controller.emitter.emit('balls:cloneBall2', $section);
+        if (!props.ballCloned) {
+            controller.emitter.emit('balls:cloneBall2', $section);
+            props.ballCloned = true;
+        }
     };
 
     /**
