@@ -288,8 +288,8 @@ var SectionIntro = module.exports = function(controller, $section, index) {
         }
 
 
-        if (this.sceneFixTitle) {
-            this.sceneFixTitle.duration($section.prev().height());
+        if (props.sceneFixTitle) {
+            props.sceneFixTitle.duration($section.prev().height());
         }
     };
 
