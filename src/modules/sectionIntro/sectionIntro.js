@@ -26,14 +26,12 @@ var SectionIntro = module.exports = function(controller, $section, index) {
      * @property {jQuery} window
      * @property {jQuery} $logo
      * @property {jQuery} $logoSvg logo's svg element
-     * @property {jQuery} $rotatorBallContainer
      */
 
     var cache = {
         $window: $(window),
         $logo: $section.find('.section__logo'),
-        $logoSvg: $section.find('.section__logo svg'),
-        $rotatorBallContainer: $('.rotator__ball-container')
+        $logoSvg: $section.find('.section__logo svg')
     };
 
     /**
@@ -165,17 +163,16 @@ var SectionIntro = module.exports = function(controller, $section, index) {
 
             props.svgLoaded = true;
 
-            // If autoscrolling, this may indicate sections are still being removed,
-            // so positions will be wrong. If so, defer until autoscroll complete
-            if (controller.props.autoScrolling) {
-                controller.emitter.once('window:autoScrollingEnd', this.measureAndShowBalls.bind(this));
-            }
+            if (props.isFirstSection) {
 
-            this.measureAndShowBalls();
+                // If autoscrolling, this may indicate sections are still being removed,
+                // so positions will be wrong. If so, defer until autoscroll complete
+                if (controller.props.autoScrolling) {
+                    controller.emitter.once('window:autoScrollingEnd', this.measureAndShowBalls.bind(this));
+                }
 
-            if (!props.isFirstSection) {
-                // @TODO remove from rotator
-                controller.emitter.emit('balls:cloneBall2', cache.$rotatorBallContainer);
+                this.measureAndShowBalls();
+
             }
 
         }.bind(this));
@@ -284,7 +281,11 @@ var SectionIntro = module.exports = function(controller, $section, index) {
      */
 
     this.refreshDimensions = function() {
-        this.measureAndShowBalls();
+        if (props.isFirstSection) {
+            this.measureAndShowBalls();
+        }
+
+
         if (this.sceneFixTitle) {
             this.sceneFixTitle.duration($section.prev().height());
         }
