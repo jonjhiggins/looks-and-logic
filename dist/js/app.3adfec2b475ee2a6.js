@@ -33263,6 +33263,8 @@ var Balls = module.exports = function(controller) {
             controller.emitter.removeListener('balls:cloneBall1', this.events.cloneBall1);
             controller.emitter.removeListener('balls:removeClonedBall1', this.events.removeClonedBall1);
             controller.emitter.removeListener('balls:showBall2', this.events.showBall2);
+            controller.emitter.removeListener('balls:cloneBall2', this.events.cloneBall2);
+            controller.emitter.removeListener('balls:removeClonedBall2', this.events.removeClonedBall2);
             controller.emitter.removeListener('window:resize', this.events.resize);
         }
     };
@@ -33304,7 +33306,7 @@ var Balls = module.exports = function(controller) {
      */
 
     var showBall = function(ballNo, position) {
-        
+
         var $ball = cache['$ball' + ballNo];
 
         $ball.css({
@@ -33326,6 +33328,12 @@ var Balls = module.exports = function(controller) {
 
     var cloneBall = function(ballNo, $element) {
 
+        // Check if SVG holding balls has been loaded
+        if (!controller.props.introSvgLoaded) {
+            controller.emitter.once('intro:svgLoaded', cloneBall.bind(this, ballNo, $element));
+            return;
+        }
+
         var $ball = cache['$ball' + ballNo],
             $ballClone = $ball.clone(),
             id = 'ball--' + ballNo + '-clone';
@@ -33334,17 +33342,19 @@ var Balls = module.exports = function(controller) {
         $ballClone.attr('id', id);
         cache['$ball' + ballNo + 'Clone'] = $('#' + id);
 
-
         // Append cloned ball
         $element.append($ballClone);
 
-        // @TODO this should probably be in sectionCuriousPlayfulInformative
-        TweenMax.set($ballClone, {
-            y: -$ballClone.height(),
-            scaleX: 0.9
-        });
+        if (ballNo === 1) {
+            // @TODO this should probably be in sectionCuriousPlayfulInformative
+            TweenMax.set($ballClone, {
+                y: -$ballClone.height(),
+                scaleX: 0.9
+            });
+        }
 
-        hideShowBall(1, true);
+
+        hideShowBall(ballNo, true);
     };
 
     /**
@@ -33463,6 +33473,7 @@ var controller = module.exports = function() {
      * @namespace $prop
      * @property {boolean} arrowDownButton is arrowDownButton active / visible? It is only shown/hidden once
      * @property {boolean} autoScrolling is app auto-scrolling? Used to differentiate manual scrolling
+     * @property {boolean} introSvgLoaded has sectionIntros SVG been loaded?
      * @property {array} sections app's sections
      * @property {array} sectionIntros app's sectionIntros
      * @property {array} sectionMakingDigitalHumans app's sectionMakingDigitalHumans
@@ -33483,6 +33494,7 @@ var controller = module.exports = function() {
         breakpoints: {
             medium: 740
         },
+        introSvgLoaded: false,
         orientationLandscape: true,
         sections: [],
         sectionIntros: [],
@@ -33515,7 +33527,17 @@ var controller = module.exports = function() {
          this.emitter.on('window:autoScrollingEnd', this.autoScrolling.bind(this, false));
          this.emitter.on('window:resize', this.refreshDimensions.bind(this));
          this.emitter.on('sections:reset', this.sectionsReset.bind(this));
+         this.emitter.on('intro:svgLoaded', introSvgLoaded.bind(this));
 
+     };
+
+     /**
+      * Called when sections are reset
+      * @function introSvgLoaded
+      */
+
+     var introSvgLoaded = function() {
+         this.props.introSvgLoaded = true;
      };
 
      /**
@@ -35067,7 +35089,7 @@ var sectionIndicator = module.exports = function(controller) {
 
 },{"../_base/_base.js":15,"./../../../node_modules/gsap/src/uncompressed/TweenLite.js":3,"jquery":6,"raf":9,"underscore":12}],24:[function(require,module,exports){
 /** @module Section */
-/*globals Power2:true, console*/
+/*globals Power2:true*/
 
 var $ = require('jquery'),
     ScrollMagic = require('scrollmagic'),
@@ -35094,14 +35116,14 @@ var SectionIntro = module.exports = function(controller, $section, index) {
      * @property {jQuery} window
      * @property {jQuery} $logo
      * @property {jQuery} $logoSvg logo's svg element
-     * @property {jQuery} $rotatorBallContainer
+     * @property {jQuery} $ball2Clone
      */
 
     var cache = {
         $window: $(window),
         $logo: $section.find('.section__logo'),
         $logoSvg: $section.find('.section__logo svg'),
-        $rotatorBallContainer: $('.rotator__ball-container')
+        $ball2Clone: null
     };
 
     /**
@@ -35111,6 +35133,7 @@ var SectionIntro = module.exports = function(controller, $section, index) {
      * @property {boolean} isFirstSection is this first of ALL sections (i.e. not repeated)
      * @property {boolean} ball1Dropped has ball 1 dropped?
      * @property {object} sceneFixTitle scrollMagic scene for fixing the title in position
+     * @property {object} sceneFixBall scrollMagic scene for fixing the ball in position
      */
 
     var props = {
@@ -35118,6 +35141,7 @@ var SectionIntro = module.exports = function(controller, $section, index) {
         isFirstSection: true,
         ball1Dropped: false,
         sceneFixTitle: null,
+        sceneFixBall: null,
         rotator: null,
         rotatorOptions: {
             moveSectionTopRotateStart: 0, // @TODO add back in move start
@@ -35174,7 +35198,11 @@ var SectionIntro = module.exports = function(controller, $section, index) {
 
         if (!props.isFirstSection) {
             // ScrollMagic scene
-            this.setupScene();
+            if (!props.svgLoaded) {
+                controller.emitter.once('intro:svgLoaded', this.setupScenes.bind(this));
+            } else {
+                this.setupScenes();
+            }
         }
 
 
@@ -35231,20 +35259,22 @@ var SectionIntro = module.exports = function(controller, $section, index) {
             // Add SVG
             svgObject.append(loadedSVG);
 
+            if (props.isFirstSection) {
+
+                // If autoscrolling, this may indicate sections are still being removed,
+                // so positions will be wrong. If so, defer until autoscroll complete
+                if (controller.props.autoScrolling) {
+                    controller.emitter.once('window:autoScrollingEnd', this.measureAndShowBalls.bind(this));
+                }
+
+                this.measureAndShowBalls();
+
+            } else {
+                $section.addClass('js--section-repeated');
+            }
+
             props.svgLoaded = true;
-
-            // If autoscrolling, this may indicate sections are still being removed,
-            // so positions will be wrong. If so, defer until autoscroll complete
-            if (controller.props.autoScrolling) {
-                controller.emitter.once('window:autoScrollingEnd', this.measureAndShowBalls.bind(this));
-            }
-
-            this.measureAndShowBalls();
-
-            if (!props.isFirstSection) {
-                // @TODO remove from rotator
-                controller.emitter.emit('balls:cloneBall2', cache.$rotatorBallContainer);
-            }
+            controller.emitter.emit('intro:svgLoaded');
 
         }.bind(this));
     };
@@ -35311,39 +35341,93 @@ var SectionIntro = module.exports = function(controller, $section, index) {
      * When repeating the section, it should be pinned behind the last section of previous set
      *
      *
-     * @function setupScene
+     * @function setupScenes
      */
 
-    this.setupScene = function() {
+    this.setupScenes = function() {
+
+        // Refresh selector
+        cache.$ball2Clone = $section.prev().find('.ball');
 
         if (props.sceneFixTitle) {
             props.sceneFixTitle.destroy(true);
+        }
+
+        if (props.sceneFixBall) {
+            props.sceneFixBall.destroy(true);
         }
 
         // ScrollMagic Safari/Firefox bug
         // https://github.com/janpaepke/ScrollMagic/issues/458
         var scrollTop = cache.$window.scrollTop();
 
+        // TITLE
         props.sceneFixTitle = new ScrollMagic.Scene({
             triggerElement: $section.prev().get(0),
-            duration: $section.prev().height(), // refreshed on resize in refreshDimensions
+            duration: getSceneHeight(), // refreshed on resize in refreshDimensions
             triggerHook: 0,
         });
 
-        // Fix and unfix title
+        // TITLE: Fix and unfix
         props.sceneFixTitle
             .on('enter', function() {
                 $section.addClass('section--title-fixed');
-            }.bind(this))
+            })
             .on('leave', function() {
                 $section.removeClass('section--title-fixed');
-            }.bind(this));
+            });
+
+        // BALL
+        props.sceneFixBall = new ScrollMagic.Scene({
+            triggerElement: $section.get(0),
+            triggerHook: 0,
+        });
+
+        setSceneFixBallPositions();
+
+        props.sceneFixBall.setPin(cache.$ball2Clone.get(0), {pushFollowers: false});
+
+        // BALL Hide and show ball in intro SVG
+        // ....
+        props.sceneFixBall
+            .on('enter', function(event) {
+                if (event.scrollDirection === 'REVERSE') {
+                    $section.removeClass('js--show-ball-2');
+                }
+            })
+            .on('leave', function(event) {
+                if (event.scrollDirection === 'FORWARD') {
+                    $section.addClass('js--show-ball-2');
+                }
+
+            });
 
         // ScrollMagic Safari/Firefox bug
         // https://github.com/janpaepke/ScrollMagic/issues/458
         cache.$window.scrollTop(scrollTop);
 
         props.sceneFixTitle.addTo(controller.props.scrollScenes);
+        props.sceneFixBall.addTo(controller.props.scrollScenes);
+    };
+
+    /**
+     * Set all positions for fixing the ball
+     * @function setSceneFixBallPositions
+     */
+
+    var setSceneFixBallPositions = function() {
+        if (!props.svgLoaded) {
+            return;
+        }
+        var ball2CloneHeight = cache.$ball2Clone.height(),
+            ball2Top = svgObject.select('#ball2').node.getBoundingClientRect().top - $section.get(0).getBoundingClientRect().top;
+
+        props.sceneFixBall.duration(ball2Top + ball2CloneHeight);
+        props.sceneFixBall.offset(-ball2CloneHeight);
+
+        props.sceneFixBall.on('progress', function(event) {
+            cache.$ball2Clone.css('transform', 'translateY(' + event.progress * ball2Top + 'px)');
+        });
     };
 
     /**
@@ -35352,10 +35436,28 @@ var SectionIntro = module.exports = function(controller, $section, index) {
      */
 
     this.refreshDimensions = function() {
-        this.measureAndShowBalls();
-        if (this.sceneFixTitle) {
-            this.sceneFixTitle.duration($section.prev().height());
+        if (props.isFirstSection) {
+            this.measureAndShowBalls();
         }
+
+
+        if (props.sceneFixTitle) {
+            props.sceneFixTitle.duration(getSceneHeight());
+        }
+
+        if (props.sceneFixBall) {
+            setSceneFixBallPositions();
+        }
+    };
+
+    /**
+     * Central place for scene heights
+     * @method getSceneHeight
+     * @returns {number}
+     */
+
+    var getSceneHeight = function() {
+        return $section.prev().height() * 2;
     };
 
     /**
@@ -35368,6 +35470,10 @@ var SectionIntro = module.exports = function(controller, $section, index) {
 
         if (props.sceneFixTitle) {
             props.sceneFixTitle.destroy(true);
+        }
+
+        if (props.sceneFixBall) {
+            props.sceneFixBall.destroy(true);
         }
     };
 
@@ -35586,6 +35692,7 @@ var sectionMarkRaul = module.exports = function(controller, $section, index) {
      */
 
     var cache = {
+        $name: $section.find('.name')
     };
 
     /**
@@ -35625,6 +35732,11 @@ var sectionMarkRaul = module.exports = function(controller, $section, index) {
 
         // Attach events
         this.attachDetachEvents(true);
+
+        // @TODO do event properly
+        cache.$name.on('click', function() {
+            /*globals console*/ console.log('Name');
+        });
 
         // Set associated module.
         // @TODO avoid accessing other module directly. event instead?
@@ -35688,11 +35800,13 @@ var sectionTwoGuysWorking = module.exports = function(controller, $section, inde
     /**
      * Module properties, states and settings
      * @namespace props
+     * @property {boolean} ballCloned has ball been cloned?
      * @property {object} rotator screen rotation module
      * @property {object} rotatorOptions options for screen rotation module
      */
 
     var props = {
+        ballCloned: false,
         rotator: null,
         rotatorOptions: {
             moveSectionTopRotateStart: 0,
@@ -35725,6 +35839,12 @@ var sectionTwoGuysWorking = module.exports = function(controller, $section, inde
         // Set associated module.
         // @TODO avoid accessing other module directly. event instead?
         controller.props.sections[index].props.associatedModule = this;
+
+        // Clone ball2 into the section
+        if (!props.ballCloned) {
+            controller.emitter.emit('balls:cloneBall2', $section);
+            props.ballCloned = true;
+        }
     };
 
     /**

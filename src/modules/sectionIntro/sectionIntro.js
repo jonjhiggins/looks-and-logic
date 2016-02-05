@@ -1,5 +1,5 @@
 /** @module Section */
-/*globals Power2:true, console*/
+/*globals Power2:true*/
 
 var $ = require('jquery'),
     ScrollMagic = require('scrollmagic'),
@@ -26,12 +26,14 @@ var SectionIntro = module.exports = function(controller, $section, index) {
      * @property {jQuery} window
      * @property {jQuery} $logo
      * @property {jQuery} $logoSvg logo's svg element
+     * @property {jQuery} $ball2Clone
      */
 
     var cache = {
         $window: $(window),
         $logo: $section.find('.section__logo'),
-        $logoSvg: $section.find('.section__logo svg')
+        $logoSvg: $section.find('.section__logo svg'),
+        $ball2Clone: null
     };
 
     /**
@@ -41,6 +43,7 @@ var SectionIntro = module.exports = function(controller, $section, index) {
      * @property {boolean} isFirstSection is this first of ALL sections (i.e. not repeated)
      * @property {boolean} ball1Dropped has ball 1 dropped?
      * @property {object} sceneFixTitle scrollMagic scene for fixing the title in position
+     * @property {object} sceneFixBall scrollMagic scene for fixing the ball in position
      */
 
     var props = {
@@ -48,6 +51,7 @@ var SectionIntro = module.exports = function(controller, $section, index) {
         isFirstSection: true,
         ball1Dropped: false,
         sceneFixTitle: null,
+        sceneFixBall: null,
         rotator: null,
         rotatorOptions: {
             moveSectionTopRotateStart: 0, // @TODO add back in move start
@@ -104,7 +108,11 @@ var SectionIntro = module.exports = function(controller, $section, index) {
 
         if (!props.isFirstSection) {
             // ScrollMagic scene
-            this.setupScene();
+            if (!props.svgLoaded) {
+                controller.emitter.once('intro:svgLoaded', this.setupScenes.bind(this));
+            } else {
+                this.setupScenes();
+            }
         }
 
 
@@ -161,8 +169,6 @@ var SectionIntro = module.exports = function(controller, $section, index) {
             // Add SVG
             svgObject.append(loadedSVG);
 
-            props.svgLoaded = true;
-
             if (props.isFirstSection) {
 
                 // If autoscrolling, this may indicate sections are still being removed,
@@ -176,6 +182,9 @@ var SectionIntro = module.exports = function(controller, $section, index) {
             } else {
                 $section.addClass('js--section-repeated');
             }
+
+            props.svgLoaded = true;
+            controller.emitter.emit('intro:svgLoaded');
 
         }.bind(this));
     };
@@ -242,39 +251,93 @@ var SectionIntro = module.exports = function(controller, $section, index) {
      * When repeating the section, it should be pinned behind the last section of previous set
      *
      *
-     * @function setupScene
+     * @function setupScenes
      */
 
-    this.setupScene = function() {
+    this.setupScenes = function() {
+
+        // Refresh selector
+        cache.$ball2Clone = $section.prev().find('.ball');
 
         if (props.sceneFixTitle) {
             props.sceneFixTitle.destroy(true);
+        }
+
+        if (props.sceneFixBall) {
+            props.sceneFixBall.destroy(true);
         }
 
         // ScrollMagic Safari/Firefox bug
         // https://github.com/janpaepke/ScrollMagic/issues/458
         var scrollTop = cache.$window.scrollTop();
 
+        // TITLE
         props.sceneFixTitle = new ScrollMagic.Scene({
             triggerElement: $section.prev().get(0),
-            duration: $section.prev().height(), // refreshed on resize in refreshDimensions
+            duration: getSceneHeight(), // refreshed on resize in refreshDimensions
             triggerHook: 0,
         });
 
-        // Fix and unfix title
+        // TITLE: Fix and unfix
         props.sceneFixTitle
             .on('enter', function() {
                 $section.addClass('section--title-fixed');
-            }.bind(this))
+            })
             .on('leave', function() {
                 $section.removeClass('section--title-fixed');
-            }.bind(this));
+            });
+
+        // BALL
+        props.sceneFixBall = new ScrollMagic.Scene({
+            triggerElement: $section.get(0),
+            triggerHook: 0,
+        });
+
+        setSceneFixBallPositions();
+
+        props.sceneFixBall.setPin(cache.$ball2Clone.get(0), {pushFollowers: false});
+
+        // BALL Hide and show ball in intro SVG
+        // ....
+        props.sceneFixBall
+            .on('enter', function(event) {
+                if (event.scrollDirection === 'REVERSE') {
+                    $section.removeClass('js--show-ball-2');
+                }
+            })
+            .on('leave', function(event) {
+                if (event.scrollDirection === 'FORWARD') {
+                    $section.addClass('js--show-ball-2');
+                }
+
+            });
 
         // ScrollMagic Safari/Firefox bug
         // https://github.com/janpaepke/ScrollMagic/issues/458
         cache.$window.scrollTop(scrollTop);
 
         props.sceneFixTitle.addTo(controller.props.scrollScenes);
+        props.sceneFixBall.addTo(controller.props.scrollScenes);
+    };
+
+    /**
+     * Set all positions for fixing the ball
+     * @function setSceneFixBallPositions
+     */
+
+    var setSceneFixBallPositions = function() {
+        if (!props.svgLoaded) {
+            return;
+        }
+        var ball2CloneHeight = cache.$ball2Clone.height(),
+            ball2Top = svgObject.select('#ball2').node.getBoundingClientRect().top - $section.get(0).getBoundingClientRect().top;
+
+        props.sceneFixBall.duration(ball2Top + ball2CloneHeight);
+        props.sceneFixBall.offset(-ball2CloneHeight);
+
+        props.sceneFixBall.on('progress', function(event) {
+            cache.$ball2Clone.css('transform', 'translateY(' + event.progress * ball2Top + 'px)');
+        });
     };
 
     /**
@@ -289,8 +352,22 @@ var SectionIntro = module.exports = function(controller, $section, index) {
 
 
         if (props.sceneFixTitle) {
-            props.sceneFixTitle.duration($section.prev().height());
+            props.sceneFixTitle.duration(getSceneHeight());
         }
+
+        if (props.sceneFixBall) {
+            setSceneFixBallPositions();
+        }
+    };
+
+    /**
+     * Central place for scene heights
+     * @method getSceneHeight
+     * @returns {number}
+     */
+
+    var getSceneHeight = function() {
+        return $section.prev().height() * 2;
     };
 
     /**
@@ -303,6 +380,10 @@ var SectionIntro = module.exports = function(controller, $section, index) {
 
         if (props.sceneFixTitle) {
             props.sceneFixTitle.destroy(true);
+        }
+
+        if (props.sceneFixBall) {
+            props.sceneFixBall.destroy(true);
         }
     };
 
