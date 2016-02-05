@@ -97,7 +97,7 @@ var controller = module.exports = function() {
       */
 
      var introSvgLoaded = function() {
-         this.introSvgLoaded = true;
+         this.props.introSvgLoaded = true;
      };
 
      /**
