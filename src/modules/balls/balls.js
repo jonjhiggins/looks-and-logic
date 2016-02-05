@@ -113,6 +113,8 @@ var Balls = module.exports = function(controller) {
             controller.emitter.removeListener('balls:cloneBall1', this.events.cloneBall1);
             controller.emitter.removeListener('balls:removeClonedBall1', this.events.removeClonedBall1);
             controller.emitter.removeListener('balls:showBall2', this.events.showBall2);
+            controller.emitter.removeListener('balls:cloneBall2', this.events.cloneBall2);
+            controller.emitter.removeListener('balls:removeClonedBall2', this.events.removeClonedBall2);
             controller.emitter.removeListener('window:resize', this.events.resize);
         }
     };
@@ -154,7 +156,7 @@ var Balls = module.exports = function(controller) {
      */
 
     var showBall = function(ballNo, position) {
-        
+
         var $ball = cache['$ball' + ballNo];
 
         $ball.css({
@@ -184,17 +186,19 @@ var Balls = module.exports = function(controller) {
         $ballClone.attr('id', id);
         cache['$ball' + ballNo + 'Clone'] = $('#' + id);
 
-
         // Append cloned ball
         $element.append($ballClone);
 
-        // @TODO this should probably be in sectionCuriousPlayfulInformative
-        TweenMax.set($ballClone, {
-            y: -$ballClone.height(),
-            scaleX: 0.9
-        });
+        if (ballNo === 1) {
+            // @TODO this should probably be in sectionCuriousPlayfulInformative
+            TweenMax.set($ballClone, {
+                y: -$ballClone.height(),
+                scaleX: 0.9
+            });
+        }
 
-        hideShowBall(1, true);
+
+        hideShowBall(ballNo, true);
     };
 
     /**
