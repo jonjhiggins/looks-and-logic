@@ -21,6 +21,7 @@ var sectionMarkRaul = module.exports = function(controller, $section, index) {
      */
 
     var cache = {
+        $name: $section.find('.name')
     };
 
     /**
@@ -60,6 +61,11 @@ var sectionMarkRaul = module.exports = function(controller, $section, index) {
 
         // Attach events
         this.attachDetachEvents(true);
+
+        // @TODO do event properly
+        cache.$name.on('click', function() {
+            /*globals console*/ console.log('Name');
+        });
 
         // Set associated module.
         // @TODO avoid accessing other module directly. event instead?
