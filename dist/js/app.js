@@ -35129,6 +35129,7 @@ var SectionIntro = module.exports = function(controller, $section, index) {
     /**
      * properties, states and settings
      * @namespace props
+     * @property {number} ball2Top ball2 top position
      * @property {number} svgLoaded
      * @property {boolean} isFirstSection is this first of ALL sections (i.e. not repeated)
      * @property {boolean} ball1Dropped has ball 1 dropped?
@@ -35137,6 +35138,7 @@ var SectionIntro = module.exports = function(controller, $section, index) {
      */
 
     var props = {
+        ball2Top: 0,
         svgLoaded: false,
         isFirstSection: true,
         ball1Dropped: false,
@@ -35346,8 +35348,15 @@ var SectionIntro = module.exports = function(controller, $section, index) {
 
     this.setupScenes = function() {
 
+        if (!svgObject || !props.svgLoaded) {
+            return;
+        }
+
         // Refresh selector
         cache.$ball2Clone = $section.prev().find('.ball');
+
+        // Measure ball 2 top position
+        props.ball2Top = svgObject.select('#ball2').node.getBoundingClientRect().top - $section.get(0).getBoundingClientRect().top;
 
         if (props.sceneFixTitle) {
             props.sceneFixTitle.destroy(true);
@@ -35375,6 +35384,8 @@ var SectionIntro = module.exports = function(controller, $section, index) {
             })
             .on('leave', function() {
                 $section.removeClass('section--title-fixed');
+                // Move the logo down to where the fixed position version left off
+                $section.find('.section__logo').css('transform', 'translateY(' +  props.ball2Top + 'px)');
             });
 
         // BALL
@@ -35419,14 +35430,13 @@ var SectionIntro = module.exports = function(controller, $section, index) {
         if (!props.svgLoaded) {
             return;
         }
-        var ball2CloneHeight = cache.$ball2Clone.height(),
-            ball2Top = svgObject.select('#ball2').node.getBoundingClientRect().top - $section.get(0).getBoundingClientRect().top;
+        var ball2CloneHeight = cache.$ball2Clone.height();
 
-        props.sceneFixBall.duration(ball2Top + ball2CloneHeight);
+        props.sceneFixBall.duration(props.ball2Top + ball2CloneHeight);
         props.sceneFixBall.offset(-ball2CloneHeight);
 
         props.sceneFixBall.on('progress', function(event) {
-            cache.$ball2Clone.css('transform', 'translateY(' + event.progress * ball2Top + 'px)');
+            cache.$ball2Clone.css('transform', 'translateY(' + event.progress * props.ball2Top + 'px)');
         });
     };
 
@@ -35440,13 +35450,16 @@ var SectionIntro = module.exports = function(controller, $section, index) {
             this.measureAndShowBalls();
         }
 
-
-        if (props.sceneFixTitle) {
-            props.sceneFixTitle.duration(getSceneHeight());
+        if (props.sceneFixBall || props.sceneFixTitle) {
+            props.ball2Top = svgObject.select('#ball2').node.getBoundingClientRect().top - $section.get(0).getBoundingClientRect().top;
         }
 
         if (props.sceneFixBall) {
             setSceneFixBallPositions();
+        }
+
+        if (props.sceneFixTitle) {
+            props.sceneFixTitle.duration(getSceneHeight());
         }
     };
 
@@ -35457,7 +35470,7 @@ var SectionIntro = module.exports = function(controller, $section, index) {
      */
 
     var getSceneHeight = function() {
-        return $section.prev().height() * 2;
+        return $section.prev().height() + props.ball2Top;
     };
 
     /**

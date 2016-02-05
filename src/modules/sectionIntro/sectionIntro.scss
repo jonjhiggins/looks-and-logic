@@ -48,6 +48,12 @@
     &.js--section-repeated {
 
         //height: 200vh;
+        // align-items: baseline;
+        //
+        // .container {
+        //     height: 50%;
+        // }
+
         .section__logo {
             background: none;
         }
@@ -78,6 +84,7 @@
             top: 0;
             left: 0;
             right: 0;
+            height: 100%;
         }
     }
 }
