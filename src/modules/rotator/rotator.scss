@@ -21,6 +21,7 @@
     .rotator {
         position: fixed;
         top: 0;
+        pointer-events: none;
 
         .ball {
             top: 0 !important;
